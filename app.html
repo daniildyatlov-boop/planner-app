@@ -7,8 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="cache-buster" content="<?php echo time(); ?>">
-<meta name="version" content="v6.22.0-AGGRESSIVE-RENDER">
-<title>Планер v6.22 AGGRESSIVE RENDER</title>
+<meta name="version" content="v6.23.0-DIRECT-HTML">
+<title>Планер v6.23 DIRECT HTML</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -6162,6 +6162,65 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // КРИТИЧЕСКИ ВАЖНО: Принудительно вызываем render много раз с разными задержками
     render(); // Сразу
+    
+    // РАДИКАЛЬНОЕ РЕШЕНИЕ: Если render не работает, вставляем HTML напрямую
+    setTimeout(() => {
+      console.log('Радикальная проверка через 200ms');
+      
+      // Проверяем есть ли задачи в localStorage
+      const saved = localStorage.getItem('planner_plans');
+      if (saved) {
+        const savedPlans = JSON.parse(saved);
+        console.log('Найдены задачи в localStorage:', savedPlans);
+        
+        if (savedPlans.length > 0) {
+          // Проверяем отображаются ли они
+          const empty = document.getElementById('empty');
+          const plansContainer = document.getElementById('plansContainer');
+          
+          if (empty && plansContainer && empty.style.display !== 'none') {
+            console.log('ПРИНУДИТЕЛЬНАЯ ВСТАВКА HTML');
+            
+            // Принудительно показываем задачи
+            empty.style.display = 'none';
+            plansContainer.style.display = 'flex';
+            
+            const plansEl = document.getElementById('plans');
+            if (plansEl) {
+              let html = '';
+              const today = new Date().toDateString();
+              
+              savedPlans.forEach(plan => {
+                if (new Date(plan.date).toDateString() === today) {
+                  html += `
+                    <div class="plan ${plan.completed ? 'completed' : ''}">
+                      <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
+                      <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
+                        <div class="plan-title">
+                          ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${plan.title}
+                        </div>
+                        ${plan.room ? `<div class="room">🏠 ${plan.room}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                }
+              });
+              
+              if (html) {
+                html += `
+                  <button class="add-task-btn" onclick="showAdd()">
+                    <span class="add-icon">+</span>
+                    Добавить задачу
+                  </button>
+                `;
+                plansEl.innerHTML = html;
+                console.log('HTML вставлен принудительно!');
+              }
+            }
+          }
+        }
+      }
+    }, 200);
     
     setTimeout(() => {
       console.log('Render через 50ms');

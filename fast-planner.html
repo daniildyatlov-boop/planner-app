@@ -126,7 +126,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .room-input-modal:focus{outline:none;border-color:#007aff;background:white;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
 .room-input-modal::placeholder{color:#8e8e93}
 .modal-buttons{display:flex;gap:12px}
-.modal-btn{flex:1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.2s ease}
+.modal-btn{flex:1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.2s ease;min-height:48px;display:block !important}
 .modal-btn.cancel{background:#f0f0f0;color:#000}
 .modal-btn.cancel:active{opacity:0.8}
 .modal-btn.add{background:#007aff !important;color:white !important;display:block !important;opacity:1 !important}
@@ -293,9 +293,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <div class="add-room-content" onclick="event.stopPropagation()">
 <div class="add-room-title">Новая комната</div>
 <input class="room-input-modal" id="newRoomModal" placeholder="Название комнаты" autofocus>
-<div class="modal-buttons" style="display:flex !important;">
-<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()" style="display:block !important; background:#007aff !important; color:white !important;">Добавить</button>
-<button class="modal-btn cancel" onclick="hideAddRoomModal()" style="display:block !important;">Отмена</button>
+<div class="modal-buttons" style="display:flex !important; flex-direction:row !important; gap:12px !important;">
+<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()" style="display:block !important; background:#007aff !important; color:white !important; flex:1 !important; order:1 !important;">Добавить</button>
+<button class="modal-btn cancel" onclick="hideAddRoomModal()" style="display:block !important; background:#f0f0f0 !important; color:#000 !important; flex:1 !important; order:2 !important;">Отмена</button>
 </div>
 </div>
 </div>
@@ -817,26 +817,20 @@ if(input)input.value='';
 }
 
 function addRoomFromModal(){
-console.log('addRoomFromModal вызвана!');
 const input=document.getElementById('newRoomModal');
 const roomName=input.value.trim();
-console.log('Название комнаты:', roomName);
 if(!roomName){
-alert('Введите название комнаты!');
 return;
 }
 if(teams.includes(roomName)){
-alert('Комната с таким названием уже существует');
 return;
 }
 
 teams.push(roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
-console.log('Комната добавлена:', roomName);
 renderRooms();
 updateRoomsSelect();
 hideAddRoomModal();
-alert('Комната "' + roomName + '" добавлена!');
 }
 
 function deleteRoom(roomName){

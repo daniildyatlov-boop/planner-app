@@ -439,7 +439,8 @@ color:#007AFF;
 <div class="app">
 <!-- Main Screen -->
 <div class="header">
-<button class="header-btn left" onclick="showRooms()" style="display:none" id="roomsBtn">Комнаты</button>
+<button class="header-btn left" onclick="showProfile()" id="profileBtn">👤</button>
+<button class="header-btn left" onclick="showRooms()" style="display:none;left:64px" id="roomsBtn">Комнаты</button>
 <div class="header-title">🍎 Планы</div>
 <button class="header-btn right" onclick="showAdd()" id="addBtn">Добавить</button>
 <button class="header-btn right" onclick="showSupport()" id="supportBtn" style="right:80px;display:block">ℹ️</button>
@@ -525,6 +526,35 @@ color:#007AFF;
 <div class="info-section">
 <div class="info-title">Статус</div>
 <div class="info-value">🍎 Активна</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Profile Screen -->
+<div class="modal-screen" id="profileScreen">
+<div class="header">
+<button class="header-btn left" onclick="hideProfile()">Назад</button>
+<div class="header-title">Профиль</div>
+<button class="header-btn right" onclick="editProfile()">Изменить</button>
+</div>
+<div class="content">
+<div class="support-info">
+<div class="info-section">
+<div class="info-title">Имя пользователя</div>
+<div class="info-value" id="userName">Пользователь</div>
+</div>
+<div class="info-section">
+<div class="info-title">Telegram ID</div>
+<div class="info-value" id="userId">—</div>
+</div>
+<div class="info-section">
+<div class="info-title">Планов создано</div>
+<div class="info-value" id="plansCount">0</div>
+</div>
+<div class="info-section">
+<div class="info-title">Комнат создано</div>
+<div class="info-value" id="roomsCount">0</div>
 </div>
 </div>
 </div>
@@ -814,6 +844,33 @@ function hideSupport() {
 document.getElementById('supportScreen').classList.remove('show');
 }
 
+// Profile functions
+function showProfile() {
+updateProfileInfo();
+document.getElementById('profileScreen').classList.add('show');
+}
+
+function hideProfile() {
+document.getElementById('profileScreen').classList.remove('show');
+}
+
+function updateProfileInfo() {
+// Update user info from Telegram
+if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+const user = tg.initDataUnsafe.user;
+document.getElementById('userName').textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+document.getElementById('userId').textContent = user.id;
+}
+
+// Update stats
+document.getElementById('plansCount').textContent = plans.length;
+document.getElementById('roomsCount').textContent = rooms.length;
+}
+
+function editProfile() {
+alert('Редактирование профиля будет доступно в следующих версиях');
+}
+
 function showAbout() {
 const buildDate = new Date().toLocaleDateString('ru-RU');
 alert(`🍎 Планы v2.1 - iOS 26 Design
@@ -839,6 +896,10 @@ if (document.getElementById('addScreen').classList.contains('show')) {
 hideAdd();
 } else if (document.getElementById('roomsScreen').classList.contains('show')) {
 hideRooms();
+} else if (document.getElementById('supportScreen').classList.contains('show')) {
+hideSupport();
+} else if (document.getElementById('profileScreen').classList.contains('show')) {
+hideProfile();
 } else if (document.getElementById('menuOverlay').classList.contains('show')) {
 hideMenu();
 } else {

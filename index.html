@@ -599,6 +599,9 @@ const addScreen=document.getElementById('add');
 addScreen.classList.add('show');
 document.getElementById('date').value=date.toISOString().split('T')[0];
 updateRoomsSelect();
+// Скрываем кнопку профиля чтобы не конфликтовала с кнопкой Отмена
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn)profileBtn.style.visibility='hidden';
 setTimeout(()=>{
 document.getElementById('title').focus();
 },350);
@@ -842,6 +845,9 @@ renderRooms();
 function hideAdd(){
 const addScreen=document.getElementById('add');
 addScreen.classList.remove('show');
+// Показываем кнопку профиля обратно
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn)profileBtn.style.visibility='visible';
 setTimeout(()=>{
 clearForm();
 },300);

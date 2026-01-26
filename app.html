@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.5-FULLSCREEN-EDIT">
-<title>Планер v6.5 Fullscreen Edit</title>
+<meta name="version" content="v6.5.1-FIX-EDIT-BUG">
+<title>Планер v6.5.1 Fix Edit Bug</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -1433,6 +1433,9 @@ function editPlan() {
 }
 
 function showEditPlan() {
+  // Очищаем временную переменную даты
+  window.editPlanNewDate = null;
+  
   document.getElementById('editPlanScreen').classList.add('show');
   document.querySelector('.header').style.display = 'none';
 }
@@ -1480,6 +1483,9 @@ function setEditDate(daysOffset) {
   const formattedDate = `${newDate.getDate()} ${months[newDate.getMonth()]}. ${newDate.getFullYear()}г.`;
   document.getElementById('editPlanDate').textContent = formattedDate;
   
+  // Сохраняем новую дату в временную переменную
+  window.editPlanNewDate = newDate.toISOString().split('T')[0];
+  
   hidePopup();
 }
 
@@ -1490,18 +1496,15 @@ function savePlanEdit() {
   const newTitle = document.getElementById('editPlanTitle').value.trim();
   if (!newTitle) return;
   
-  // Parse date back
-  const dateText = document.getElementById('editPlanDate').textContent;
-  const today = new Date();
-  if (dateText.includes('сегодня') || dateText.includes(today.getDate().toString())) {
-    plan.date = today.toISOString().split('T')[0];
-  } else {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    plan.date = tomorrow.toISOString().split('T')[0];
+  // Обновляем только название, дату изменяем только если была выбрана новая
+  plan.title = newTitle;
+  
+  // Если была выбрана новая дата через setEditDate
+  if (window.editPlanNewDate) {
+    plan.date = window.editPlanNewDate;
+    window.editPlanNewDate = null; // Очищаем временную переменную
   }
   
-  plan.title = newTitle;
   savePlans();
   render();
   hideEditPlan();
@@ -1866,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.5 Fullscreen Edit загружен');
+  console.log('🚀 Планер v6.5.1 Fix Edit Bug загружен');
 });
 </script>
 </body>

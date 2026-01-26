@@ -176,6 +176,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .info-item{display:flex;justify-content:space-between;align-items:center}
 .info-label{font-size:16px;color:#000}
 .info-value{font-size:16px;color:#8e8e93}
+.profile-menu{padding:20px;display:flex;flex-direction:column;gap:12px}
+.profile-menu-btn{width:100%;background:white;border:none;border-radius:16px;padding:20px;display:flex;align-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04);transition:all 0.2s ease;text-align:left}
+.profile-menu-btn:active{opacity:0.8;transform:scale(0.98)}
+.menu-btn-icon{font-size:24px;margin-right:16px;width:32px;display:flex;align-items:center;justify-content:center}
+.menu-btn-text{flex:1}
+.menu-btn-title{font-size:17px;font-weight:600;color:#000;margin-bottom:2px}
+.menu-btn-desc{font-size:13px;color:#8e8e93}
+.menu-btn-arrow{font-size:18px;color:#c7c7cc}
 </style>
 </head>
 <body>
@@ -302,79 +310,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 </div>
 
-<div class="profile-section">
-<div class="section-title">Профиль</div>
-<div class="profile-list">
-<div class="profile-item" onclick="editEmail()">
-<div class="profile-info">
-<div class="profile-label">Email</div>
-<div class="profile-value" id="userEmail">user@example.com</div>
+<div class="profile-menu">
+<button class="profile-menu-btn" onclick="showAccount()">
+<div class="menu-btn-icon">👤</div>
+<div class="menu-btn-text">
+<div class="menu-btn-title">Аккаунт</div>
+<div class="menu-btn-desc">Личные данные и подписка</div>
 </div>
-<div class="profile-arrow">›</div>
-</div>
-<div class="profile-item" onclick="editTimezone()">
-<div class="profile-info">
-<div class="profile-label">Часовой пояс</div>
-<div class="profile-value" id="userTimezone">GMT+3 (Москва)</div>
-</div>
-<div class="profile-arrow">›</div>
-</div>
-<div class="profile-item" onclick="editLanguage()">
-<div class="profile-info">
-<div class="profile-label">Язык</div>
-<div class="profile-value" id="userLanguage">Русский</div>
-</div>
-<div class="profile-arrow">›</div>
-</div>
-</div>
-</div>
+<div class="menu-btn-arrow">›</div>
+</button>
 
-<div class="profile-section">
-<div class="section-title">Аккаунт</div>
-<div class="profile-list">
-<div class="profile-item">
-<div class="profile-info">
-<div class="profile-label">Дата регистрации</div>
-<div class="profile-value" id="registrationDate">27 января 2025</div>
+<button class="profile-menu-btn" onclick="showSettings()">
+<div class="menu-btn-icon">⚙️</div>
+<div class="menu-btn-text">
+<div class="menu-btn-title">Настройки</div>
+<div class="menu-btn-desc">Уведомления и предпочтения</div>
 </div>
-</div>
-<div class="profile-item" onclick="manageSubscription()">
-<div class="profile-info">
-<div class="profile-label">Следующая подписка</div>
-<div class="profile-value" id="nextSubscription">Бесплатный план</div>
-</div>
-<div class="profile-arrow">›</div>
-</div>
-</div>
-</div>
+<div class="menu-btn-arrow">›</div>
+</button>
 
-<div class="profile-section">
-<div class="section-title">Настройки</div>
-<div class="profile-list">
-<div class="profile-item">
-<div class="profile-info">
-<div class="profile-label">Уведомления</div>
-<div class="profile-desc">Напоминания о задачах</div>
+<button class="profile-menu-btn" onclick="showSupport()">
+<div class="menu-btn-icon">💬</div>
+<div class="menu-btn-text">
+<div class="menu-btn-title">Поддержка</div>
+<div class="menu-btn-desc">Помощь и обратная связь</div>
 </div>
-<label class="toggle">
-<input type="checkbox" id="notifications" checked onchange="saveNotificationSettings()">
-<span class="toggle-slider"></span>
-</label>
-</div>
-</div>
-</div>
-
-<div class="profile-section">
-<div class="section-title">Поддержка</div>
-<div class="profile-list">
-<div class="profile-item" onclick="contactSupport()">
-<div class="profile-info">
-<div class="profile-label">Обратиться в поддержку</div>
-<div class="profile-desc">Помощь и вопросы</div>
-</div>
-<div class="profile-arrow">›</div>
-</div>
-</div>
+<div class="menu-btn-arrow">›</div>
+</button>
 </div>
 </div>
 </div>
@@ -595,6 +557,23 @@ function contactSupport(){
 const message='Здравствуйте! У меня есть вопрос по приложению Планер.';
 const telegramUrl=`https://t.me/share/url?url=${encodeURIComponent(message)}`;
 window.open(telegramUrl,'_blank');
+}
+
+function showAccount(){
+alert('Аккаунт:\n\nEmail: ' + (localStorage.getItem('userEmail')||'user@example.com') + '\nДата регистрации: 27 января 2025\nПодписка: Бесплатный план');
+}
+
+function showSettings(){
+const notifications=localStorage.getItem('notifications')!=='false';
+const timezone=localStorage.getItem('userTimezone')||'GMT+3 (Москва)';
+const language=localStorage.getItem('userLanguage')||'Русский';
+alert('Настройки:\n\nУведомления: ' + (notifications?'Включены':'Выключены') + '\nЧасовой пояс: ' + timezone + '\nЯзык: ' + language);
+}
+
+function showSupport(){
+if(confirm('Обратиться в поддержку?\n\nВы будете перенаправлены в Telegram для отправки сообщения.')){
+contactSupport();
+}
 }
 
 function hideRooms(){

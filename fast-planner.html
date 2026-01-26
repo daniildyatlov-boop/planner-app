@@ -49,17 +49,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .plan-content{flex:1}
 .plan-title{font-size:17px;margin-bottom:2px;color:#000;font-weight:500}
 .room{font-size:13px;color:#8e8e93;background:#f8f9fa;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px}
-.add{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--tg-theme-bg-color,#fff);z-index:100;display:none;flex-direction:column}
-.add.show{display:flex}
-.add-header{padding:20px 20px 20px;background:var(--tg-theme-bg-color,#fff);border-bottom:0.5px solid var(--tg-theme-hint-color,rgba(0,0,0,0.1));display:flex;align-items:center;justify-content:space-between}
-.header-btn{background:none;border:none;font-size:17px;color:var(--tg-theme-link-color,#007aff);cursor:pointer;padding:8px}
-.header-btn:active{opacity:0.6}
-.add-content{flex:1;padding:20px}
-.form-group{margin-bottom:20px}
-.label{font-size:13px;color:var(--tg-theme-hint-color,#8e8e93);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block}
-.input{width:100%;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:none;border-radius:8px;padding:16px;font-size:17px;font-family:inherit;color:var(--tg-theme-text-color,#000)}
-.input:focus{outline:none;background:rgba(0,122,255,0.1)}
-.input::placeholder{color:var(--tg-theme-hint-color,#8e8e93)}
+.add{position:fixed;top:0;left:0;right:0;bottom:0;background:#f2f2f7;z-index:100;display:none;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
+.add.show{display:flex;transform:translateY(0)}
+.add-header{padding:16px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
+.header-btn{background:none;border:none;font-size:17px;color:#007aff;cursor:pointer;padding:8px 12px;border-radius:8px;font-weight:500}
+.header-btn:active{opacity:0.6;background:rgba(0,122,255,0.1)}
+.add-content{flex:1;padding:24px 20px;overflow-y:auto}
+.form-group{margin-bottom:24px}
+.add-title{font-size:17px;font-weight:600;color:#000}
+.label{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block}
+.input{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease}
+.input:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
+.input::placeholder{color:#c7c7cc}
 .row{display:flex;gap:12px}
 .row .form-group{flex:1}
 .menu{position:fixed;bottom:0;left:0;right:0;background:var(--tg-theme-bg-color,#fff);border-top:0.5px solid var(--tg-theme-hint-color,rgba(0,0,0,0.1));padding:20px;z-index:200;display:none}
@@ -84,8 +85,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .team-input:focus{outline:none;background:rgba(0,122,255,0.1)}
 .team-input::placeholder{color:var(--tg-theme-hint-color,#8e8e93)}
 .select-wrapper{position:relative}
-.select{width:100%;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:none;border-radius:8px;padding:16px;font-size:17px;font-family:inherit;color:var(--tg-theme-text-color,#000);appearance:none;cursor:pointer}
-.select:focus{outline:none;background:rgba(0,122,255,0.1)}
+.select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;appearance:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease}
+.select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
+.select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#c7c7cc;font-size:18px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -118,7 +120,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <div class="add" id="add">
 <div class="add-header">
 <button class="header-btn" onclick="cancelAdd()">Отмена</button>
-<div class="title">Новый план</div>
+<div class="add-title">Новый план</div>
 <button class="header-btn" onclick="save()">Готово</button>
 </div>
 <div class="add-content">
@@ -301,10 +303,13 @@ render();
 }
 
 function showAdd(){
-document.getElementById('add').classList.add('show');
+const addScreen=document.getElementById('add');
+addScreen.classList.add('show');
 document.getElementById('date').value=date.toISOString().split('T')[0];
 updateTeamsSelect();
-setTimeout(()=>document.getElementById('title').focus(),50);
+setTimeout(()=>{
+document.getElementById('title').focus();
+},350);
 }
 
 function showTeams(){
@@ -351,8 +356,11 @@ renderTeams();
 }
 
 function hideAdd(){
-document.getElementById('add').classList.remove('show');
+const addScreen=document.getElementById('add');
+addScreen.classList.remove('show');
+setTimeout(()=>{
 clearForm();
+},300);
 }
 
 function cancelAdd(){

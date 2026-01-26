@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.3-ENHANCED-PROGRESS">
-<title>Планер v6.3 Enhanced Progress</title>
+<meta name="version" content="v6.4-ENHANCED-PLAN-MENU">
+<title>Планер v6.4 Enhanced Plan Menu</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -320,29 +320,6 @@ body{
   border:1px solid rgba(139,92,246,0.3);
 }
 
-/* DELETE BUTTON */
-.delete-plan-btn{
-  width:var(--spacing-3xl);
-  height:var(--spacing-3xl);
-  background:none;
-  border:none;
-  border-radius:var(--spacing-lg);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  color:#ef4444;
-  font-size:var(--spacing-lg);
-  margin-left:var(--spacing-sm);
-  flex-shrink:0;
-  transition:all 0.2s ease;
-}
-.delete-plan-btn:active{
-  background:rgba(239,68,68,0.2);
-  opacity:0.7;
-  transform:scale(0.9);
-}
-
 /* MODALS */
 .modal{
   position:fixed;
@@ -527,7 +504,7 @@ body{
 .calendar-day.selected{background:#8b5cf6;color:white;box-shadow:0 0 var(--spacing-sm) rgba(139,92,246,0.4)}
 .calendar-day.other-month{color:#6b7280}
 
-/* OVERLAY MENU */
+/* PLAN MENU */
 .overlay{
   position:fixed;
   top:0;
@@ -539,38 +516,108 @@ body{
   display:none;
   opacity:0;
   transition:opacity 0.3s ease;
-  align-items:center;
+  align-items:flex-end;
   justify-content:center;
 }
 .overlay.show{
   display:flex;
   opacity:1;
 }
-.menu{
+.plan-menu{
   background:#1c1c1e;
   border:1px solid #2c2c2e;
-  border-radius:var(--border-radius);
-  min-width:250px;
-  box-shadow:0 var(--spacing-sm) var(--spacing-3xl) rgba(0,0,0,0.6);
-  overflow:hidden;
-}
-.menu-btn{
+  border-radius:var(--spacing-lg) var(--spacing-lg) 0 0;
   width:100%;
+  max-width:500px;
+  box-shadow:0 -var(--spacing-xs) var(--spacing-3xl) rgba(0,0,0,0.6);
+  transform:translateY(100%);
+  transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.overlay.show .plan-menu{
+  transform:translateY(0);
+}
+
+.plan-menu-header{
+  padding:var(--spacing-lg) var(--spacing-xl);
+  border-bottom:1px solid #2c2c2e;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.plan-menu-title{
+  font-size:18px;
+  font-weight:600;
+  color:#ffffff;
+}
+.plan-menu-close{
   background:none;
   border:none;
-  padding:var(--spacing-lg) var(--spacing-xl);
-  font-size:var(--spacing-lg);
-  text-align:center;
+  color:#8e8e93;
+  font-size:var(--spacing-2xl);
   cursor:pointer;
-  color:#6366f1;
-  font-weight:500;
+  width:var(--spacing-3xl);
+  height:var(--spacing-3xl);
+  border-radius:var(--spacing-lg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   transition:all 0.2s ease;
 }
-.menu-btn:not(:last-child){
-  border-bottom:1px solid #2c2c2e;
+.plan-menu-close:active{
+  background:#2c2c2e;
+  opacity:0.7;
 }
-.menu-btn:active{background:#2c2c2e}
-.menu-btn.del{color:#ef4444}
+
+.plan-menu-content{
+  padding:var(--spacing-lg) 0 var(--spacing-3xl);
+}
+.plan-menu-section{
+  margin-bottom:var(--spacing-lg);
+}
+.plan-menu-section:last-child{
+  margin-bottom:0;
+}
+
+.plan-menu-item{
+  display:flex;
+  align-items:center;
+  padding:var(--spacing-lg) var(--spacing-xl);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.plan-menu-item:active{
+  background:#2c2c2e;
+}
+.plan-menu-item.danger{
+  color:#ef4444;
+}
+.plan-menu-item.danger .menu-item-title{
+  color:#ef4444;
+}
+
+.menu-item-icon{
+  font-size:var(--spacing-xl);
+  width:var(--spacing-3xl);
+  height:var(--spacing-3xl);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-right:var(--spacing-md);
+  flex-shrink:0;
+}
+.menu-item-text{
+  flex:1;
+}
+.menu-item-title{
+  font-size:var(--spacing-lg);
+  font-weight:500;
+  color:#ffffff;
+  margin-bottom:2px;
+}
+.menu-item-desc{
+  font-size:var(--spacing-md);
+  color:#8e8e93;
+}
 
 /* FIXED BUTTON */
 .add-btn-fixed{
@@ -933,9 +980,57 @@ body{
 
 <!-- MENU OVERLAY -->
 <div class="overlay" id="overlay" onclick="hideMenu()">
-  <div class="menu" id="menu" onclick="event.stopPropagation()">
-    <button class="menu-btn" onclick="editPlan()">Редактировать</button>
-    <button class="menu-btn del" onclick="deletePlan()">Удалить</button>
+  <div class="plan-menu" id="menu" onclick="event.stopPropagation()">
+    <div class="plan-menu-header">
+      <div class="plan-menu-title" id="menuPlanTitle">План</div>
+      <button class="plan-menu-close" onclick="hideMenu()">×</button>
+    </div>
+    
+    <div class="plan-menu-content">
+      <div class="plan-menu-section">
+        <div class="plan-menu-item" onclick="togglePlanComplete()">
+          <div class="menu-item-icon" id="completeIcon">✓</div>
+          <div class="menu-item-text">
+            <div class="menu-item-title" id="completeText">Отметить выполненным</div>
+            <div class="menu-item-desc">Изменить статус задачи</div>
+          </div>
+        </div>
+        
+        <div class="plan-menu-item" onclick="editPlan()">
+          <div class="menu-item-icon">✏️</div>
+          <div class="menu-item-text">
+            <div class="menu-item-title">Редактировать</div>
+            <div class="menu-item-desc">Изменить название или комнату</div>
+          </div>
+        </div>
+        
+        <div class="plan-menu-item" onclick="duplicatePlan()">
+          <div class="menu-item-icon">📋</div>
+          <div class="menu-item-text">
+            <div class="menu-item-title">Дублировать</div>
+            <div class="menu-item-desc">Создать копию плана</div>
+          </div>
+        </div>
+        
+        <div class="plan-menu-item" onclick="movePlanDate()">
+          <div class="menu-item-icon">📅</div>
+          <div class="menu-item-text">
+            <div class="menu-item-title">Перенести</div>
+            <div class="menu-item-desc">Изменить дату выполнения</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="plan-menu-section">
+        <div class="plan-menu-item danger" onclick="deletePlan()">
+          <div class="menu-item-icon">🗑️</div>
+          <div class="menu-item-text">
+            <div class="menu-item-title">Удалить план</div>
+            <div class="menu-item-desc">Это действие нельзя отменить</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1135,7 +1230,6 @@ function render() {
             <div class="plan-title">${escapeHtml(plan.title)}</div>
             ${plan.room ? `<div class="room">${escapeHtml(plan.room)}</div>` : ''}
           </div>
-          <button class="delete-plan-btn" onclick="quickDeletePlan('${plan.id}', event)">×</button>
         </div>
       `;
     });
@@ -1255,7 +1349,102 @@ function clearForm() {
 
 function showPlanMenu(id) {
   selectedPlanId = id;
+  const plan = plans.find(p => p.id === id);
+  if (!plan) return;
+  
+  // Update menu title
+  document.getElementById('menuPlanTitle').textContent = plan.title;
+  
+  // Update complete/incomplete button
+  const completeIcon = document.getElementById('completeIcon');
+  const completeText = document.getElementById('completeText');
+  
+  if (plan.completed) {
+    completeIcon.textContent = '↩️';
+    completeText.textContent = 'Отметить невыполненным';
+  } else {
+    completeIcon.textContent = '✓';
+    completeText.textContent = 'Отметить выполненным';
+  }
+  
   document.getElementById('overlay').classList.add('show');
+}
+
+function togglePlanComplete() {
+  if (!selectedPlanId) return;
+  
+  const plan = plans.find(p => p.id === selectedPlanId);
+  if (plan) {
+    plan.completed = !plan.completed;
+    savePlans();
+    render();
+  }
+  
+  hideMenu();
+}
+
+function duplicatePlan() {
+  if (!selectedPlanId) return;
+  
+  const plan = plans.find(p => p.id === selectedPlanId);
+  if (!plan) return;
+  
+  const newPlan = {
+    id: Date.now().toString(),
+    title: plan.title + ' (копия)',
+    date: plan.date,
+    room: plan.room,
+    completed: false
+  };
+  
+  plans.push(newPlan);
+  savePlans();
+  render();
+  hideMenu();
+  
+  showPopup(
+    'План дублирован',
+    `Создана копия плана "${plan.title}"`,
+    [{ text: 'OK', type: 'confirm', action: hidePopup }]
+  );
+}
+
+function movePlanDate() {
+  if (!selectedPlanId) return;
+  
+  hideMenu();
+  
+  showPopup(
+    'Перенести план',
+    'Выберите новую дату для выполнения плана',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Завтра', type: 'confirm', action: () => movePlanToDate(1) },
+      { text: 'Послезавтра', type: 'confirm', action: () => movePlanToDate(2) }
+    ]
+  );
+}
+
+function movePlanToDate(daysOffset) {
+  if (!selectedPlanId) return;
+  
+  const plan = plans.find(p => p.id === selectedPlanId);
+  if (!plan) return;
+  
+  const newDate = new Date();
+  newDate.setDate(newDate.getDate() + daysOffset);
+  
+  plan.date = newDate.toISOString().split('T')[0];
+  savePlans();
+  render();
+  hidePopup();
+  
+  const dateText = daysOffset === 1 ? 'завтра' : 'послезавтра';
+  showPopup(
+    'План перенесён',
+    `План "${plan.title}" перенесён на ${dateText}`,
+    [{ text: 'OK', type: 'confirm', action: hidePopup }]
+  );
 }
 
 function hideMenu() {
@@ -1290,27 +1479,6 @@ function deletePlan() {
 
 function confirmDeletePlan() {
   plans = plans.filter(p => p.id !== selectedPlanId);
-  savePlans();
-  hidePopup();
-  hideMenu();
-  render();
-}
-
-function quickDeletePlan(id, event) {
-  event.stopPropagation();
-  
-  showPopup(
-    'Удалить план?',
-    'Это действие нельзя отменить.',
-    [
-      { text: 'Отмена', type: 'cancel', action: hidePopup },
-      { text: 'Удалить', type: 'danger', action: () => confirmQuickDelete(id) }
-    ]
-  );
-}
-
-function confirmQuickDelete(id) {
-  plans = plans.filter(p => p.id !== id);
   savePlans();
   hidePopup();
   render();
@@ -1616,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.3 Enhanced Progress загружен');
+  console.log('🚀 Планер v6.4 Enhanced Plan Menu загружен');
 });
 </script>
 </body>

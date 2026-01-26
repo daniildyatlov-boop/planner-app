@@ -3568,6 +3568,23 @@ function render() {
     console.log('Текущие планы в render:', plans);
     console.log('Количество планов в render:', plans.length);
     
+    // КРИТИЧЕСКИ ВАЖНО: Если планов нет, но они должны быть - перезагружаем из localStorage
+    if (plans.length === 0) {
+      console.log('Планов нет - пытаемся перезагрузить из localStorage');
+      const saved = localStorage.getItem('planner_plans');
+      if (saved) {
+        try {
+          const loadedPlans = JSON.parse(saved);
+          if (loadedPlans.length > 0) {
+            console.log('Найдены планы в localStorage, восстанавливаем:', loadedPlans);
+            plans = loadedPlans;
+          }
+        } catch (e) {
+          console.error('Ошибка при восстановлении планов:', e);
+        }
+      }
+    }
+    
     // Проверяем, что мы на вкладке задач
     if (currentTab !== 'tasks') {
       console.log('Не на вкладке задач, currentTab:', currentTab);
@@ -4858,6 +4875,16 @@ function switchTab(tabName) {
   // Показываем соответствующий контент
   showTabContent(tabName);
   
+  // ПРИНУДИТЕЛЬНЫЙ РЕНДЕРИНГ для вкладки задач
+  if (tabName === 'tasks') {
+    setTimeout(() => {
+      render();
+    }, 100);
+    setTimeout(() => {
+      render();
+    }, 500);
+  }
+  
   // Обновляем заголовок дня для питания
   if (tabName === 'nutrition') {
     updateNutritionDayTitle();
@@ -6000,6 +6027,47 @@ window.checkStorage = function() {
     console.log('Количество:', parsed.length);
   }
 };
+
+// Принудительный рендеринг при фокусе окна
+window.addEventListener('focus', () => {
+  console.log('Окно получило фокус - принудительный рендеринг');
+  if (currentTab === 'tasks') {
+    setTimeout(() => render(), 100);
+  }
+});
+
+// Принудительный рендеринг при изменении видимости страницы
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && currentTab === 'tasks') {
+    console.log('Страница стала видимой - принудительный рендеринг');
+    setTimeout(() => render(), 100);
+  }
+});
+
+// ПРИНУДИТЕЛЬНЫЙ РЕНДЕРИНГ ПРИ ЛЮБЫХ СОБЫТИЯХ
+function forceRenderAlways() {
+  if (currentTab === 'tasks') {
+    render();
+  }
+}
+
+// Вызываем рендеринг каждые 500ms для гарантии
+setInterval(() => {
+  if (currentTab === 'tasks' && plans.length > 0) {
+    const plansEl = document.getElementById('plans');
+    const empty = document.getElementById('empty');
+    const plansContainer = document.getElementById('plansContainer');
+    
+    // Если элементы есть, но задачи не отображаются - принудительно рендерим
+    if (plansEl && empty && plansContainer) {
+      const todayPlans = getPlansForDate(currentDate);
+      if (todayPlans.length > 0 && empty.style.display !== 'none') {
+        console.log('Принудительный рендеринг - задачи есть, но не отображаются');
+        render();
+      }
+    }
+  }
+}, 500);
 
 // INIT
 document.addEventListener('DOMContentLoaded', () => {

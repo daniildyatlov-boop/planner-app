@@ -1542,6 +1542,20 @@ body{
   color: var(--text-primary);
   min-width: 24px;
   text-align: center;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--spacing-xs);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+.water-current:hover{
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--accent-primary);
+  transform: scale(1.05);
+}
+.water-current:active{
+  transform: scale(0.95);
 }
 
 .day-nav{
@@ -3560,7 +3574,7 @@ function showNutritionTab() {
         </div>
         <div class="water-controls">
           <button class="water-btn minus" onclick="changeWater(-1)">-</button>
-          <span class="water-current" id="waterCurrent">0</span>
+          <span class="water-current" id="waterCurrent" onclick="editWaterAmount()">0</span>
           <button class="water-btn plus" onclick="changeWater(1)">+</button>
         </div>
       </div>
@@ -3743,9 +3757,59 @@ function changeWater(delta) {
     nutritionData.water.date = today;
   }
   
-  nutritionData.water.current = Math.max(0, Math.min(nutritionData.water.target, nutritionData.water.current + delta));
+  nutritionData.water.current = Math.max(0, nutritionData.water.current + delta);
   saveNutritionData();
   updateWaterTracker();
+}
+
+function editWaterAmount() {
+  const currentDay = currentNutritionDate.toDateString();
+  if (nutritionData.water.date !== currentDay) {
+    nutritionData.water.current = 0;
+    nutritionData.water.date = currentDay;
+  }
+  
+  showPopup(
+    '💧 Количество воды',
+    '',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Сохранить', type: 'confirm', action: saveWaterAmount }
+    ],
+    true,
+    nutritionData.water.current.toString()
+  );
+  
+  setTimeout(() => {
+    const input = document.querySelector('.popup-input');
+    if (input) {
+      input.type = 'number';
+      input.min = '0';
+      input.max = '50';
+      input.placeholder = 'Сколько стаканов выпили?';
+      input.select(); // Выделяем текст для быстрого редактирования
+    }
+  }, 100);
+}
+
+function saveWaterAmount() {
+  const input = document.querySelector('.popup-input');
+  const newAmount = parseInt(input.value.trim());
+  
+  if (isNaN(newAmount) || newAmount < 0) {
+    showPopup('Ошибка', 'Введите корректное количество стаканов (0 или больше)', [
+      { text: 'OK', type: 'confirm', action: hidePopup }
+    ]);
+    return;
+  }
+  
+  const currentDay = currentNutritionDate.toDateString();
+  nutritionData.water.current = newAmount;
+  nutritionData.water.date = currentDay;
+  
+  saveNutritionData();
+  updateWaterTracker();
+  hidePopup();
 }
 
 function updateWaterTracker() {

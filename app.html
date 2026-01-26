@@ -16,11 +16,13 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #1c1c1e;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
             line-height: 1.5;
             overflow-x: hidden;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
         
         .app {
@@ -30,18 +32,17 @@
         
         .header {
             padding: 60px 24px 24px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-bottom: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
             position: sticky;
             top: 0;
             z-index: 10;
         }
         
         .day-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
-            color: #1c1c1e;
+            color: var(--tg-theme-text-color, #000000);
             text-align: center;
         }
         
@@ -60,69 +61,67 @@
         .soft-entry-area {
             margin: 40px 24px;
             padding: 60px 32px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+            border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             user-select: none;
             max-width: 320px;
-            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.1);
         }
         
         .soft-entry-area:active {
-            transform: scale(0.96);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: scale(0.98);
+            background: var(--tg-theme-secondary-bg-color, #e8e8e8);
         }
         
         .empty-title {
-            font-size: 28px;
-            color: #1c1c1e;
+            font-size: 24px;
+            color: var(--tg-theme-text-color, #000000);
             margin-bottom: 20px;
-            font-weight: 700;
+            font-weight: 600;
         }
         
         .add-action {
-            font-size: 20px;
-            color: #007aff;
+            font-size: 18px;
+            color: var(--tg-theme-link-color, #007aff);
             margin-bottom: 16px;
             font-weight: 600;
         }
         
         .soft-hint {
-            font-size: 16px;
-            color: #8e8e93;
+            font-size: 15px;
+            color: var(--tg-theme-hint-color, #8e8e93);
             line-height: 1.4;
         }
         
         .time-section {
-            margin-bottom: 32px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.05));
         }
         
         .time-label {
-            font-size: 14px;
-            color: #8e8e93;
-            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             font-weight: 600;
         }
         
         .plan-item {
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: var(--tg-theme-bg-color, #ffffff);
             position: relative;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             cursor: pointer;
+            border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.05));
         }
         
         .plan-item:last-child {
@@ -131,31 +130,56 @@
         
         .plan-item:active {
             transform: scale(0.98);
-            background: rgba(0, 122, 255, 0.1);
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
         
         .plan-text {
-            font-size: 17px;
-            color: #1c1c1e;
-            margin-bottom: 6px;
+            font-size: 16px;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 4px;
             font-weight: 500;
         }
         
         .plan-time {
-            font-size: 15px;
-            color: #007aff;
-            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--tg-theme-link-color, #007aff);
+            margin-bottom: 6px;
             font-weight: 600;
         }
         
         .room-badge {
             display: inline-block;
-            padding: 6px 12px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 20px;
+            padding: 4px 8px;
+            background: var(--tg-theme-button-color, #007aff);
+            border-radius: 12px;
             font-size: 12px;
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-weight: 500;
+        }
+        
+        .delete-zone {
+            position: absolute;
+            right: -80px;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            background: #ff3b30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
+            font-size: 12px;
             font-weight: 600;
+            border-radius: 8px;
+            transition: right 0.2s ease;
+        }
+        
+        .plan-item.swiping {
+            transform: translateX(-80px);
+        }
+        
+        .plan-item.swiping .delete-zone {
+            right: 0;
         }
         
         .add-overlay {
@@ -164,10 +188,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--tg-theme-bg-color, #ffffff);
             z-index: 100;
             transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: transform 0.3s ease;
         }
         
         .add-overlay.show {
@@ -176,48 +200,48 @@
         
         .add-header {
             padding: 60px 24px 24px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-bottom: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
         }
         
         .add-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1c1c1e;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
             text-align: center;
         }
         
         .add-input {
-            padding: 40px 24px;
+            padding: 32px 24px;
         }
         
         .main-input {
             width: 100%;
-            border: none;
+            border: 1px solid var(--tg-theme-hint-color, #c6c6c8);
             outline: none;
-            font-size: 18px;
-            padding: 20px 24px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
+            font-size: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            background: var(--tg-theme-bg-color, #ffffff);
             font-family: inherit;
-            color: #1c1c1e;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            color: var(--tg-theme-text-color, #000000);
+            transition: border-color 0.2s ease;
         }
         
         .main-input:focus {
-            box-shadow: 0 8px 32px rgba(0, 122, 255, 0.2);
-            background: rgba(255, 255, 255, 1);
+            border-color: var(--tg-theme-link-color, #007aff);
+        }
+        
+        .main-input::placeholder {
+            color: var(--tg-theme-hint-color, #8e8e93);
         }
         
         .input-hint {
-            margin-top: 24px;
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.5;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            line-height: 1.4;
             text-align: center;
-            padding: 0 16px;
         }
     </style>
 </head>
@@ -229,20 +253,20 @@
         
         <div class="content" id="content">
             <div class="soft-entry-area" id="softEntryArea">
-                <div class="empty-title">📅 Планов нет</div>
-                <div class="add-action">✨ Добавить план</div>
+                <div class="empty-title">Планов нет</div>
+                <div class="add-action">Добавить план</div>
                 <div class="soft-hint">или потяните вниз</div>
             </div>
         </div>
         
         <div class="add-overlay" id="addOverlay">
             <div class="add-header">
-                <div class="add-title">✨ Новый план</div>
+                <div class="add-title">Новый план</div>
             </div>
             <div class="add-input">
-                <input type="text" class="main-input" id="planInput" placeholder="Что планируете? 🤔">
+                <input type="text" class="main-input" id="planInput" placeholder="Что планируете?">
                 <div class="input-hint">
-                    💡 Например: "Встреча 15:00" или "Тренировка завтра 18:00 зал"
+                    Например: "Встреча 15:00" или "Тренировка завтра 18:00 зал"
                 </div>
             </div>
         </div>

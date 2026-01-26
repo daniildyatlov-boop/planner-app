@@ -143,8 +143,8 @@ function renderPlans() {
     if (dayPlans.length === 0) {
         content.innerHTML = `
             <div class="soft-entry-area" id="softEntryArea">
-                <div class="empty-title">📅 Планов нет</div>
-                <div class="add-action">✨ Добавить план</div>
+                <div class="empty-title">Планов нет</div>
+                <div class="add-action">Добавить план</div>
                 <div class="soft-hint">или потяните вниз</div>
             </div>
         `;
@@ -168,14 +168,14 @@ function renderPlans() {
     let html = '';
     
     if (withTime.length > 0) {
-        html += '<div class="time-section"><div class="time-label">🕐 С временем</div>';
+        html += '<div class="time-section"><div class="time-label">С временем</div>';
         withTime.forEach((plan, index) => {
             html += `
-                <div class="plan-item" data-id="${plan.id}" style="animation-delay: ${index * 0.1}s">
+                <div class="plan-item" data-id="${plan.id}">
                     <div class="plan-time">${plan.time}</div>
                     <div class="plan-text">${plan.text}</div>
-                    ${plan.room ? `<div class="room-badge">📍 ${plan.room}</div>` : ''}
-                    <div class="delete-zone">🗑️ Удалить</div>
+                    ${plan.room ? `<div class="room-badge">${plan.room}</div>` : ''}
+                    <div class="delete-zone">Удалить</div>
                 </div>
             `;
         });
@@ -183,13 +183,13 @@ function renderPlans() {
     }
     
     if (withoutTime.length > 0) {
-        html += '<div class="time-section"><div class="time-label">📝 Без времени</div>';
+        html += '<div class="time-section"><div class="time-label">Без времени</div>';
         withoutTime.forEach((plan, index) => {
             html += `
-                <div class="plan-item" data-id="${plan.id}" style="animation-delay: ${(withTime.length + index) * 0.1}s">
+                <div class="plan-item" data-id="${plan.id}">
                     <div class="plan-text">${plan.text}</div>
-                    ${plan.room ? `<div class="room-badge">📍 ${plan.room}</div>` : ''}
-                    <div class="delete-zone">🗑️ Удалить</div>
+                    ${plan.room ? `<div class="room-badge">${plan.room}</div>` : ''}
+                    <div class="delete-zone">Удалить</div>
                 </div>
             `;
         });
@@ -257,9 +257,10 @@ function addPlan(text) {
 function showAddScreen() {
     isAddMode = true;
     addOverlay.classList.add('show');
-    setTimeout(() => {
-        planInput.focus();
-    }, 350);
+    // Убираем автофокус - пользователь сам нажмет на поле
+    // setTimeout(() => {
+    //     planInput.focus();
+    // }, 350);
 }
 
 // Скрыть экран добавления

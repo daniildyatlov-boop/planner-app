@@ -107,7 +107,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .rooms-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#f2f2f7;z-index:100;display:none;flex-direction:column;height:100vh;overflow:hidden}
 .rooms-screen.show{display:flex}
 .rooms-header{padding:12px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05);height:68px}
-.rooms-list{flex:1;padding:20px;overflow-y:auto}
+.rooms-list{flex:1;padding:20px 20px 100px;overflow-y:auto}
 .rooms-list::-webkit-scrollbar{display:none}
 .room-item{background:white;border-radius:16px;padding:20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04);transition:all 0.2s ease}
 .room-item:active{opacity:0.8;transform:scale(0.98)}
@@ -115,12 +115,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .room-icon{font-size:20px;margin-right:12px}
 .delete-room{background:none;border:none;color:#ff3b30;font-size:15px;cursor:pointer;padding:8px;border-radius:8px;font-weight:500}
 .delete-room:active{opacity:0.6;background:rgba(255,59,48,0.1)}
-.add-room-section{padding:20px;background:white;border-top:0.5px solid rgba(0,0,0,0.1)}
-.room-input{width:100%;background:#f8f9fa;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;margin-bottom:12px;box-sizing:border-box;transition:all 0.2s ease}
-.room-input:focus{outline:none;border-color:#007aff;background:white;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
-.room-input::placeholder{color:#8e8e93}
-.add-room-btn{width:100%;background:#007aff;color:white;border:none;border-radius:12px;padding:16px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,122,255,0.3);transition:all 0.2s ease}
-.add-room-btn:active{opacity:0.8;transform:translateY(1px)}
+.add-room-fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#007aff;border:none;border-radius:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 24px rgba(0,122,255,0.4);z-index:50;font-size:24px;color:white;transition:all 0.2s ease}
+.add-room-fab:active{opacity:0.8;transform:scale(0.95)}
+.add-room-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease}
+.add-room-modal.show{display:flex;opacity:1}
+.add-room-content{background:white;border-radius:16px;padding:24px;margin:20px;max-width:320px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.2);transform:scale(0.8);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
+.add-room-modal.show .add-room-content{transform:scale(1)}
+.add-room-title{font-size:18px;font-weight:600;color:#000;margin-bottom:20px;text-align:center}
+.room-input-modal{width:100%;background:#f8f9fa;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;margin-bottom:16px;box-sizing:border-box;transition:all 0.2s ease}
+.room-input-modal:focus{outline:none;border-color:#007aff;background:white;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
+.room-input-modal::placeholder{color:#8e8e93}
+.modal-buttons{display:flex;gap:12px}
+.modal-btn{flex:1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.2s ease}
+.modal-btn.cancel{background:#f0f0f0;color:#000}
+.modal-btn.cancel:active{opacity:0.8}
+.modal-btn.add{background:#007aff;color:white}
+.modal-btn.add:active{opacity:0.8;transform:translateY(1px)}
 .select-wrapper{position:relative}
 .select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;appearance:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box}
 .select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
@@ -222,9 +232,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <div class="rooms-list" id="roomsList">
 <!-- Комнаты будут добавлены динамически -->
 </div>
-<div class="add-room-section">
-<input class="room-input" id="newRoom" placeholder="Название новой комнаты">
-<button class="add-room-btn" onclick="addRoom()">Добавить комнату</button>
+<button class="add-room-fab" onclick="showAddRoomModal()">+</button>
+</div>
+
+<div class="add-room-modal" id="addRoomModal" onclick="hideAddRoomModal()">
+<div class="add-room-content" onclick="event.stopPropagation()">
+<div class="add-room-title">Новая комната</div>
+<input class="room-input-modal" id="newRoomModal" placeholder="Название комнаты" autofocus>
+<div class="modal-buttons">
+<button class="modal-btn cancel" onclick="hideAddRoomModal()">Отмена</button>
+<button class="modal-btn add" onclick="addRoomFromModal()">Добавить</button>
+</div>
 </div>
 </div>
 
@@ -377,15 +395,27 @@ html+=`<div class="room-item">
 roomsList.innerHTML=html;
 }
 
-function addRoom(){
-const input=document.getElementById('newRoom');
+function showAddRoomModal(){
+document.getElementById('addRoomModal').classList.add('show');
+setTimeout(()=>{
+document.getElementById('newRoomModal').focus();
+},300);
+}
+
+function hideAddRoomModal(){
+document.getElementById('addRoomModal').classList.remove('show');
+document.getElementById('newRoomModal').value='';
+}
+
+function addRoomFromModal(){
+const input=document.getElementById('newRoomModal');
 const roomName=input.value.trim();
 if(!roomName||teams.includes(roomName))return;
 
 teams.push(roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
-input.value='';
 renderRooms();
+hideAddRoomModal();
 }
 
 function deleteRoom(roomName){
@@ -584,8 +614,8 @@ else tg.close();
 
 // Обработка Enter для добавления комнаты
 document.addEventListener('keydown',e=>{
-if(e.key==='Enter'&&document.getElementById('newRoom')===document.activeElement){
-addRoom();
+if(e.key==='Enter'&&document.getElementById('newRoomModal')===document.activeElement){
+addRoomFromModal();
 }
 });
 

@@ -105,7 +105,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 
 <div class="add" id="add">
 <div class="add-header">
-<button class="header-btn" onclick="hideAdd()">Отмена</button>
+<button class="header-btn" onclick="cancelAdd()">Отмена</button>
 <div class="title">Новый план</div>
 <button class="header-btn" onclick="save()">Готово</button>
 </div>
@@ -325,7 +325,11 @@ renderTeams();
 function hideAdd(){
 document.getElementById('add').classList.remove('show');
 clearForm();
+}
+
+function cancelAdd(){
 selected=null;
+hideAdd();
 }
 
 function clearForm(){
@@ -375,7 +379,6 @@ document.getElementById('menu').classList.add('show');
 function hideMenu(){
 document.getElementById('overlay').classList.remove('show');
 document.getElementById('menu').classList.remove('show');
-selected=null;
 }
 
 function edit(){
@@ -419,7 +422,7 @@ if(e.changedTouches[0].clientY-startY>80&&window.scrollY===0)showAdd();
 // Telegram back button
 tg.onEvent('backButtonClicked',()=>{
 if(document.getElementById('teamsScreen').classList.contains('show'))hideTeams();
-else if(document.getElementById('add').classList.contains('show'))hideAdd();
+else if(document.getElementById('add').classList.contains('show'))cancelAdd();
 else if(document.getElementById('menu').classList.contains('show'))hideMenu();
 else tg.close();
 });

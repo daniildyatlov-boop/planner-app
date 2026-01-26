@@ -7,14 +7,24 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg-theme-bg-color,#fff);color:var(--tg-theme-text-color,#000);line-height:1.4;overflow-x:hidden;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;color:var(--tg-theme-text-color,#000);line-height:1.4;overflow-x:hidden;min-height:100vh}
 .app{min-height:100vh;display:flex;flex-direction:column}
-.header{padding:20px 20px 20px;background:var(--tg-theme-bg-color,#fff);border-bottom:0.5px solid var(--tg-theme-hint-color,rgba(0,0,0,0.1));display:flex;align-items:center;justify-content:space-between}
-.nav{background:none;border:none;font-size:17px;color:var(--tg-theme-link-color,#007aff);cursor:pointer;padding:8px 12px;border-radius:6px;min-width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.header{padding:20px;background:#f2f2f7;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.app-info{display:flex;align-items:center;gap:12px}
+.avatar{width:40px;height:40px;background:#007aff;border-radius:20px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:600}
+.app-title{display:flex;flex-direction:column}
+.app-name{font-size:20px;font-weight:700;color:#000;margin:0}
+.app-subtitle{font-size:13px;color:#8e8e93;margin:0}
+.date-nav{display:flex;align-items:center;gap:8px;background:white;border-radius:20px;padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.date-title{font-size:16px;font-weight:600;color:#000;margin:0 8px}
+.date-subtitle{font-size:12px;color:#8e8e93}
+.menu-btn{width:40px;height:40px;background:white;border:none;border-radius:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.menu-btn:active{opacity:0.8}
+.nav{background:white;border:none;font-size:18px;color:#000;cursor:pointer;width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
 .nav:active{opacity:0.6}
-.teams-btn{background:none;border:none;font-size:15px;color:var(--tg-theme-link-color,#007aff);cursor:pointer;padding:8px}
+.teams-btn{background:none;border:none;font-size:24px;cursor:pointer;padding:0}
 .teams-btn:active{opacity:0.6}
-.title{font-size:17px;font-weight:600;flex:1;text-align:center}
+.title{font-size:17px;font-weight:600;flex:1;text-align:center;display:none}
 .content{flex:1;padding:20px;display:flex;flex-direction:column;padding-bottom:20px}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:20px 20px 20px}
 .empty h2{font-size:20px;font-weight:500;margin-bottom:8px}
@@ -72,10 +82,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 <body>
 <div class="app">
 <div class="header">
+<div class="app-info">
+<div class="avatar">П</div>
+<div class="app-title">
+<h1 class="app-name">Планер</h1>
+<p class="app-subtitle">мини-приложение</p>
+</div>
+</div>
+<div class="date-nav">
 <button class="nav" onclick="changeDay(-1)">‹</button>
-<div class="title" id="dayTitle">Сегодня</div>
+<div>
+<div class="date-title" id="dayTitle">Сегодня</div>
+<div class="date-subtitle" id="daySubtitle">Пн, 27 янв.</div>
+</div>
 <button class="nav" onclick="changeDay(1)">›</button>
-<button class="teams-btn" onclick="showTeams()">Команды</button>
+</div>
+<button class="menu-btn teams-btn" onclick="showTeams()">📅</button>
 </div>
 <div class="content" id="content">
 <div class="empty" id="empty">
@@ -175,6 +197,7 @@ render();
 function render(){
 const today=getPlansForDate(date);
 document.getElementById('dayTitle').textContent=formatDate(date);
+document.getElementById('daySubtitle').textContent=formatDateSubtitle(date);
 
 const empty=document.getElementById('empty');
 const plansEl=document.getElementById('plans');
@@ -237,6 +260,12 @@ if(d.toDateString()===today.toDateString())return 'Сегодня';
 if(d.toDateString()===tomorrow.toDateString())return 'Завтра';
 if(d.toDateString()===yesterday.toDateString())return 'Вчера';
 return d.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+}
+
+function formatDateSubtitle(d){
+const days=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}.`;
 }
 
 function getPlansForDate(d){

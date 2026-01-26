@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.9-ENHANCED-VISUAL-DEPTH">
-<title>Планер v6.9 Enhanced Visual Depth</title>
+<meta name="version" content="v6.9.1-UNIQUE-PROGRESS-BAR">
+<title>Планер v6.9.1 Unique Progress Bar</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -253,57 +253,92 @@ body{
   margin:var(--spacing-xl) var(--spacing-xl) var(--spacing-2xl);
   flex-shrink:0;
   animation: fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
-  border: 1px solid var(--border-primary);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.1) 0%, 
+    rgba(139, 92, 246, 0.1) 50%,
+    rgba(168, 85, 247, 0.1) 100%);
+  backdrop-filter: blur(30px);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  border: 1px solid rgba(99, 102, 241, 0.2);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+    0 12px 40px rgba(99, 102, 241, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 0 0 1px rgba(99, 102, 241, 0.1) inset;
+  position: relative;
+  overflow: hidden;
 }
+.progress-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(99, 102, 241, 0.1), 
+    transparent);
+  animation: progress-shimmer 4s infinite;
+}
+@keyframes progress-shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
 .progress-info{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:var(--spacing-md);
+  margin-bottom:var(--spacing-lg);
+  position: relative;
+  z-index: 1;
 }
 .progress-label{
-  font-size:15px;
-  color:var(--text-secondary);
-  font-weight:600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-.progress-stats{
-  font-size:15px;
-  color:var(--accent-primary);
+  font-size:16px;
+  color:var(--text-primary);
   font-weight:700;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+  text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  letter-spacing: 0.5px;
+}
+.progress-stats{
+  font-size:18px;
+  color:var(--accent-primary);
+  font-weight:800;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .progress-bar{
-  height:12px;
-  background: var(--bg-tertiary);
+  height:16px;
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow:hidden;
-  border: 1px solid var(--border-secondary);
+  border: 2px solid rgba(99, 102, 241, 0.2);
   position:relative;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.4) inset,
-    0 1px 0 rgba(255, 255, 255, 0.05);
+    0 4px 16px rgba(0, 0, 0, 0.5) inset,
+    0 2px 0 rgba(255, 255, 255, 0.1);
 }
 .progress-fill{
   height:100%;
-  background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-soft));
-  border-radius: 8px;
-  transition:width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  background:linear-gradient(135deg, 
+    var(--accent-primary) 0%, 
+    var(--accent-secondary) 50%, 
+    var(--accent-soft) 100%);
+  border-radius: 10px;
+  transition:width 1s cubic-bezier(0.4, 0, 0.2, 1);
   width:0%;
   box-shadow:
-    0 0 20px rgba(99, 102, 241, 0.4),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    0 0 24px rgba(99, 102, 241, 0.6),
+    0 2px 0 rgba(255, 255, 255, 0.3) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   position:relative;
   transform: translateZ(0);
 }
@@ -314,8 +349,11 @@ body{
   left:0;
   right:0;
   bottom:0;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation:shimmer 3s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  background:linear-gradient(90deg, 
+    transparent, 
+    rgba(255,255,255,0.4), 
+    transparent);
+  animation:shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 @keyframes shimmer{
   0%{transform:translateX(-100%)}
@@ -2510,7 +2548,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.9 Enhanced Visual Depth загружен');
+  console.log('🚀 Планер v6.9.1 Unique Progress Bar загружен');
 });
 </script>
 </body>

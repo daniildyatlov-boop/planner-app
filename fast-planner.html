@@ -324,6 +324,7 @@ renderTeams();
 function hideAdd(){
 document.getElementById('add').classList.remove('show');
 clearForm();
+selected=null;
 }
 
 function clearForm(){
@@ -352,13 +353,13 @@ const index=plans.findIndex(p=>p.id===selected);
 if(index!==-1){
 plans[index]={...plan,id:selected};
 }
-selected=null;
 }else{
 plan.id=Date.now().toString();
 plans.push(plan);
 }
 
 localStorage.setItem('plans',JSON.stringify(plans));
+selected=null;
 hideAdd();
 date=new Date(plan.date);
 render();

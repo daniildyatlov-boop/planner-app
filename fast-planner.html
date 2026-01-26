@@ -132,15 +132,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <label class="label">Что планируете</label>
 <input class="input" id="title" placeholder="Что вы планируете сделать?" autofocus>
 </div>
-<div class="row">
 <div class="form-group">
 <label class="label">Дата</label>
 <input type="date" class="input" id="date">
-</div>
-<div class="form-group">
-<label class="label">Время</label>
-<input type="time" class="input" id="time">
-</div>
 </div>
 <div class="form-group">
 <label class="label">Команда</label>
@@ -233,28 +227,9 @@ empty.style.display='none';
 plansEl.style.display='block';
 fixedBtn.style.display='block';
 
-const withTime=today.filter(p=>p.time).sort((a,b)=>a.time.localeCompare(b.time));
-const withoutTime=today.filter(p=>!p.time);
-
 let html='';
 
-if(withTime.length>0){
-html+='<div class="group"><div class="group-title">С временем</div>';
-withTime.forEach(p=>{
-html+=`<div class="plan ${p.completed?'completed':''}" onclick="showMenu('${p.id}')">
-<div class="checkbox ${p.completed?'checked':''}" onclick="toggleComplete('${p.id}',event)"></div>
-<div class="time">${p.time}</div>
-<div class="plan-content">
-<div class="plan-title">${escapeHtml(p.title)}</div>
-${p.room?`<div class="room">${escapeHtml(p.room)}</div>`:''}
-</div>
-</div>`;
-});
-html+='</div>';
-}
-
-if(withoutTime.length>0){
-withoutTime.forEach(p=>{
+today.forEach(p=>{
 html+=`<div class="plan ${p.completed?'completed':''}" onclick="showMenu('${p.id}')">
 <div class="checkbox ${p.completed?'checked':''}" onclick="toggleComplete('${p.id}',event)"></div>
 <div class="plan-content">
@@ -263,7 +238,6 @@ ${p.room?`<div class="room">${escapeHtml(p.room)}</div>`:''}
 </div>
 </div>`;
 });
-}
 
 plansEl.innerHTML=html;
 }
@@ -376,7 +350,6 @@ hideAdd();
 function clearForm(){
 document.getElementById('title').value='';
 document.getElementById('date').value='';
-document.getElementById('time').value='';
 document.getElementById('room').value='';
 }
 
@@ -390,7 +363,7 @@ const roomValue=roomSelect.value;
 const plan={
 title:title,
 date:document.getElementById('date').value||date.toISOString().split('T')[0],
-time:document.getElementById('time').value||null,
+time:null,
 room:roomValue||null
 };
 
@@ -436,7 +409,6 @@ if(!plan)return;
 
 document.getElementById('title').value=plan.title;
 document.getElementById('date').value=plan.date;
-document.getElementById('time').value=plan.time||'';
 document.getElementById('room').value=plan.room||'';
 
 hideMenu();

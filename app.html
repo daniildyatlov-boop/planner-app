@@ -7,8 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="cache-buster" content="<?php echo time(); ?>">
-<meta name="version" content="v6.24.0-FORCE-LOAD-BUTTON">
-<title>Планер v6.24 FORCE LOAD BUTTON</title>
+<meta name="version" content="v6.25.0-STARTUP-FIX">
+<title>Планер v6.25 STARTUP FIX</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -3594,23 +3594,6 @@ function render() {
     console.log('Текущие планы в render:', plans);
     console.log('Количество планов в render:', plans.length);
     
-    // КРИТИЧЕСКИ ВАЖНО: Если планов нет, но они должны быть - перезагружаем из localStorage
-    if (plans.length === 0) {
-      console.log('Планов нет - пытаемся перезагрузить из localStorage');
-      const saved = localStorage.getItem('planner_plans');
-      if (saved) {
-        try {
-          const loadedPlans = JSON.parse(saved);
-          if (loadedPlans.length > 0) {
-            console.log('Найдены планы в localStorage, восстанавливаем:', loadedPlans);
-            plans = loadedPlans;
-          }
-        } catch (e) {
-          console.error('Ошибка при восстановлении планов:', e);
-        }
-      }
-    }
-    
     // Проверяем, что мы на вкладке задач
     if (currentTab !== 'tasks') {
       console.log('Не на вкладке задач, currentTab:', currentTab);
@@ -3638,15 +3621,7 @@ function render() {
     const plansContainer = document.getElementById('plansContainer');
     
     if (!empty || !plansContainer) {
-      console.log('Элементы empty или plansContainer не найдены');
-      console.log('empty:', empty);
-      console.log('plansContainer:', plansContainer);
-      
-      // Попробуем еще раз через небольшую задержку
-      setTimeout(() => {
-        console.log('Повторная попытка render через 200ms');
-        render();
-      }, 200);
+      console.log('Элементы empty или plansContainer не найдены - DOM не готов');
       return;
     }
     
@@ -6208,17 +6183,12 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('DOMContentLoaded - начинаем инициализацию приложения');
     
+    // КРИТИЧЕСКИ ВАЖНО: Сначала загружаем данные
     loadData();
     console.log('После loadData - планы:', plans);
     console.log('После loadData - количество планов:', plans.length);
     
     loadProfileData();
-    
-    // Инициализируем прогресс-бар
-    const progressCircle = document.getElementById('progressCircle');
-    if (progressCircle) {
-      progressCircle.dataset.currentAngle = '0';
-    }
     
     // Убеждаемся что мы на вкладке задач
     currentTab = 'tasks';
@@ -6234,115 +6204,21 @@ document.addEventListener('DOMContentLoaded', () => {
       tasksTab.classList.add('active');
     }
     
-    console.log('Перед render - планы:', plans);
-    
-    // КРИТИЧЕСКИ ВАЖНО: Принудительно вызываем render много раз с разными задержками
-    render(); // Сразу
-    
-    // РАДИКАЛЬНОЕ РЕШЕНИЕ: Если render не работает, вставляем HTML напрямую
+    // КРИТИЧЕСКИ ВАЖНО: Ждем пока DOM полностью готов, ЗАТЕМ рендерим
     setTimeout(() => {
-      console.log('Радикальная проверка через 200ms');
+      console.log('DOM готов, начинаем рендеринг с данными:', plans.length, 'планов');
       
-      // Проверяем есть ли задачи в localStorage
-      const saved = localStorage.getItem('planner_plans');
-      if (saved) {
-        const savedPlans = JSON.parse(saved);
-        console.log('Найдены задачи в localStorage:', savedPlans);
-        
-        if (savedPlans.length > 0) {
-          // Проверяем отображаются ли они
-          const empty = document.getElementById('empty');
-          const plansContainer = document.getElementById('plansContainer');
-          
-          if (empty && plansContainer && empty.style.display !== 'none') {
-            console.log('ПРИНУДИТЕЛЬНАЯ ВСТАВКА HTML');
-            
-            // Принудительно показываем задачи
-            empty.style.display = 'none';
-            plansContainer.style.display = 'flex';
-            
-            const plansEl = document.getElementById('plans');
-            if (plansEl) {
-              let html = '';
-              const today = new Date().toDateString();
-              
-              savedPlans.forEach(plan => {
-                if (new Date(plan.date).toDateString() === today) {
-                  html += `
-                    <div class="plan ${plan.completed ? 'completed' : ''}">
-                      <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
-                      <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
-                        <div class="plan-title">
-                          ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${plan.title}
-                        </div>
-                        ${plan.room ? `<div class="room">🏠 ${plan.room}</div>` : ''}
-                      </div>
-                    </div>
-                  `;
-                }
-              });
-              
-              if (html) {
-                html += `
-                  <button class="add-task-btn" onclick="showAdd()">
-                    <span class="add-icon">+</span>
-                    Добавить задачу
-                  </button>
-                `;
-                plansEl.innerHTML = html;
-                console.log('HTML вставлен принудительно!');
-              }
-            }
-          }
-        }
-      }
-    }, 200);
-    
-    setTimeout(() => {
-      console.log('Render через 50ms');
-      render();
-    }, 50);
-    
-    setTimeout(() => {
-      console.log('Render через 100ms');
-      render();
-    }, 100);
-    
-    setTimeout(() => {
-      console.log('Render через 300ms');
-      render();
-    }, 300);
-    
-    setTimeout(() => {
-      console.log('Render через 500ms');
-      render();
-    }, 500);
-    
-    setTimeout(() => {
-      console.log('Render через 1000ms');
-      render();
-    }, 1000);
-    
-    // ДОПОЛНИТЕЛЬНО: Проверяем каждые 2 секунды первые 10 секунд
-    let checkCount = 0;
-    const checkInterval = setInterval(() => {
-      checkCount++;
-      console.log(`Проверка ${checkCount}: планы есть, но не отображаются?`);
-      
-      if (plans.length > 0 && currentTab === 'tasks') {
-        const empty = document.getElementById('empty');
-        if (empty && empty.style.display !== 'none') {
-          console.log('Принудительный render - задачи есть но не показаны');
-          render();
-        }
+      // Инициализируем прогресс-бар
+      const progressCircle = document.getElementById('progressCircle');
+      if (progressCircle) {
+        progressCircle.dataset.currentAngle = '0';
       }
       
-      if (checkCount >= 5) { // 5 проверок = 10 секунд
-        clearInterval(checkInterval);
-      }
-    }, 2000);
-    
-    console.log('DOMContentLoaded - инициализация завершена');
+      // Теперь рендерим с уже загруженными данными
+      render();
+      
+      console.log('Инициализация завершена успешно');
+    }, 100); // Даем DOM время инициализироваться
     
   } catch (e) {
     console.error('Ошибка при инициализации приложения:', e);

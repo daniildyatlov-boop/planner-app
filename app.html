@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.2-CONSISTENT-SPACING">
-<title>Планер v6.2 Consistent Spacing</title>
+<meta name="version" content="v6.3-ENHANCED-PROGRESS">
+<title>Планер v6.3 Enhanced Progress</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -141,21 +141,56 @@ body{
 .rooms-btn:active{opacity:0.8;transform:scale(0.95)}
 
 /* PROGRESS BAR */
-.progress-bar{
-  height:6px;
-  background:#1c1c1e;
+.progress-container{
   margin:0 var(--spacing-xl) var(--spacing-lg);
-  border-radius:3px;
-  overflow:hidden;
   flex-shrink:0;
+}
+.progress-info{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:var(--spacing-xs);
+}
+.progress-label{
+  font-size:var(--spacing-md);
+  color:#8e8e93;
+  font-weight:500;
+}
+.progress-stats{
+  font-size:var(--spacing-md);
+  color:#6366f1;
+  font-weight:600;
+}
+.progress-bar{
+  height:var(--spacing-sm);
+  background:#1c1c1e;
+  border-radius:var(--spacing-xs);
+  overflow:hidden;
+  border:1px solid #2c2c2e;
+  position:relative;
 }
 .progress-fill{
   height:100%;
   background:linear-gradient(90deg, #6366f1, #8b5cf6);
-  border-radius:3px;
-  transition:width 0.3s ease;
+  border-radius:var(--spacing-xs);
+  transition:width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   width:0%;
-  box-shadow:0 0 var(--spacing-sm) rgba(99,102,241,0.4);
+  box-shadow:0 0 var(--spacing-md) rgba(99,102,241,0.5);
+  position:relative;
+}
+.progress-fill::after{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation:shimmer 2s infinite;
+}
+@keyframes shimmer{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
 }
 
 /* EMPTY STATE */
@@ -828,8 +863,14 @@ body{
   </div>
   
   <div class="content">
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill"></div>
+    <div class="progress-container">
+      <div class="progress-info">
+        <div class="progress-label">Прогресс дня</div>
+        <div class="progress-stats" id="progressStats">0/0</div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
     </div>
     
     <div class="empty" id="empty">
@@ -1058,6 +1099,17 @@ function render() {
   const totalCount = todayPlans.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   document.getElementById('progressFill').style.width = `${progressPercent}%`;
+  document.getElementById('progressStats').textContent = `${completedCount}/${totalCount}`;
+  
+  // Update progress label based on completion
+  const progressLabel = document.querySelector('.progress-label');
+  if (totalCount === 0) {
+    progressLabel.textContent = 'Планов нет';
+  } else if (completedCount === totalCount) {
+    progressLabel.textContent = 'День завершён! 🎉';
+  } else {
+    progressLabel.textContent = 'Прогресс дня';
+  }
   
   // Show/hide elements
   const empty = document.getElementById('empty');
@@ -1564,7 +1616,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.2 Consistent Spacing загружен');
+  console.log('🚀 Планер v6.3 Enhanced Progress загружен');
 });
 </script>
 </body>

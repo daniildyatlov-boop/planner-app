@@ -293,9 +293,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <div class="add-room-content" onclick="event.stopPropagation()">
 <div class="add-room-title">Новая комната</div>
 <input class="room-input-modal" id="newRoomModal" placeholder="Название комнаты" autofocus>
-<div class="modal-buttons">
-<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()">Добавить</button>
-<button class="modal-btn cancel" onclick="hideAddRoomModal()">Отмена</button>
+<div class="modal-buttons" style="display:flex !important;">
+<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()" style="display:block !important; background:#007aff !important; color:white !important;">Добавить</button>
+<button class="modal-btn cancel" onclick="hideAddRoomModal()" style="display:block !important;">Отмена</button>
 </div>
 </div>
 </div>

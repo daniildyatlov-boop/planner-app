@@ -145,16 +145,18 @@ function renderPlans() {
     
     if (dayPlans.length === 0) {
         content.innerHTML = `
-            <div class="empty-state">
+            <div class="empty-container">
                 <div class="empty-title">Планов нет</div>
-                <div class="empty-hint">Нажмите кнопку ниже, чтобы добавить план</div>
+                <div class="empty-subtitle">Добавьте свой первый план</div>
+                <button class="add-plan-button" onclick="showAddScreen()">Добавить план</button>
+                <div class="pull-hint">Можно также потянуть вниз</div>
             </div>
         `;
-        content.classList.add('empty');
         return;
     }
     
-    content.classList.remove('empty');
+    // Показываем планы
+    content.innerHTML = `<div class="plans-container">${html}</div>`;
     
     const withTime = dayPlans.filter(p => p.time).sort((a, b) => a.time.localeCompare(b.time));
     const withoutTime = dayPlans.filter(p => !p.time);
@@ -195,6 +197,12 @@ function renderPlans() {
     }
     
     content.innerHTML = html;
+}
+
+// Сохранить план
+function savePlan() {
+    addPlan(planInput.value);
+    hideAddScreen();
 }
 
 // Навигация по дням
@@ -248,24 +256,9 @@ function hideAddScreen() {
 
 // Обработчики кнопок
 document.addEventListener('DOMContentLoaded', () => {
-    addButton.addEventListener('click', () => {
-        showAddScreen();
-        tg.HapticFeedback.impactOccurred('light');
-    });
-
-    cancelButton.addEventListener('click', () => {
-        hideAddScreen();
-    });
-
-    saveButton.addEventListener('click', () => {
-        addPlan(planInput.value);
-        hideAddScreen();
-    });
-
     planInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            addPlan(planInput.value);
-            hideAddScreen();
+            savePlan();
         }
     });
 

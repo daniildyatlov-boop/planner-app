@@ -54,13 +54,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .add-header{padding:16px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
 .header-btn{background:none;border:none;font-size:17px;color:#007aff;cursor:pointer;padding:8px 12px;border-radius:8px;font-weight:500}
 .header-btn:active{opacity:0.6;background:rgba(0,122,255,0.1)}
-.add-content{flex:1;padding:24px;overflow-y:auto}
+.add-content{flex:1;padding:0;overflow-y:auto;display:flex;flex-direction:column}
+.form-section{padding:24px;flex:1}
 .form-group{margin-bottom:24px}
 .add-title{font-size:17px;font-weight:600;color:#000}
-.label{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block;padding-left:4px}
-.input{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box}
-.input:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
+.label{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block;margin-left:0;padding:0}
+.input,.select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box;margin:0;display:block}
+.input:focus,.select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
 .input::placeholder{color:#c7c7cc}
+.select{appearance:none;cursor:pointer}
+.select-wrapper{position:relative;width:100%;display:block}
+.select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#c7c7cc;font-size:18px;pointer-events:none}
 .row{display:flex;gap:12px}
 .row .form-group{flex:1}
 .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:150;display:none;opacity:0;transition:opacity 0.3s ease}
@@ -128,6 +132,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <button class="header-btn" onclick="save()">Готово</button>
 </div>
 <div class="add-content">
+<div class="form-section">
 <div class="form-group">
 <label class="label">Что планируете</label>
 <input class="input" id="title" placeholder="Что вы планируете сделать?" autofocus>
@@ -142,6 +147,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <select class="select" id="room">
 <option value="">Без команды</option>
 </select>
+</div>
 </div>
 </div>
 </div>

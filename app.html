@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.4-ENHANCED-PLAN-MENU">
-<title>Планер v6.4 Enhanced Plan Menu</title>
+<meta name="version" content="v6.5-FULLSCREEN-EDIT">
+<title>Планер v6.5 Fullscreen Edit</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -504,7 +504,129 @@ body{
 .calendar-day.selected{background:#8b5cf6;color:white;box-shadow:0 0 var(--spacing-sm) rgba(139,92,246,0.4)}
 .calendar-day.other-month{color:#6b7280}
 
-/* PLAN MENU */
+/* EDIT PLAN SCREEN */
+.edit-plan-input{
+  font-size:18px;
+  font-weight:500;
+  background:#2c2c2e;
+  border:none;
+  border-radius:var(--spacing-md);
+  padding:var(--spacing-lg);
+  color:#ffffff;
+  margin-bottom:var(--spacing-xl);
+}
+.edit-plan-input:focus{
+  outline:none;
+  background:#3c3c3e;
+}
+
+.form-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#2c2c2e;
+  border-radius:var(--spacing-md);
+  padding:var(--spacing-lg);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.form-row:active{
+  background:#3c3c3e;
+}
+.form-row span{
+  color:#ffffff;
+  font-size:var(--spacing-lg);
+}
+
+.toggle{
+  width:50px;
+  height:30px;
+  background:#3c3c3e;
+  border-radius:15px;
+  position:relative;
+  cursor:pointer;
+  transition:all 0.3s ease;
+}
+.toggle.active{
+  background:#6366f1;
+}
+.toggle-slider{
+  width:26px;
+  height:26px;
+  background:#ffffff;
+  border-radius:13px;
+  position:absolute;
+  top:2px;
+  left:2px;
+  transition:all 0.3s ease;
+  box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+.toggle.active .toggle-slider{
+  transform:translateX(20px);
+}
+
+.premium-notice{
+  display:flex;
+  align-items:center;
+  background:#2c2c2e;
+  border-radius:var(--spacing-md);
+  padding:var(--spacing-lg);
+  margin:var(--spacing-xl) 0;
+  font-size:var(--spacing-md);
+  color:#8e8e93;
+  line-height:1.4;
+}
+.premium-icon{
+  font-size:var(--spacing-lg);
+  margin-right:var(--spacing-sm);
+  flex-shrink:0;
+}
+.premium-link{
+  color:#6366f1;
+  font-weight:500;
+}
+
+.delete-btn{
+  width:100%;
+  background:none;
+  border:none;
+  color:#ef4444;
+  font-size:var(--spacing-lg);
+  font-weight:500;
+  padding:var(--spacing-lg);
+  text-align:center;
+  cursor:pointer;
+  border-radius:var(--spacing-md);
+  transition:all 0.2s ease;
+  margin-top:var(--spacing-xl);
+}
+.delete-btn:active{
+  background:rgba(239,68,68,0.1);
+}
+
+.screen-footer{
+  padding:var(--spacing-lg) var(--spacing-xl) var(--spacing-3xl);
+  background:#0a0a0a;
+  border-top:1px solid #2c2c2e;
+}
+.save-btn{
+  width:100%;
+  background:#6366f1;
+  color:white;
+  border:none;
+  border-radius:var(--spacing-md);
+  padding:var(--spacing-lg);
+  font-size:var(--spacing-lg);
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.save-btn:active{
+  opacity:0.8;
+  transform:scale(0.98);
+}
+
+/* SIMPLE MENU */
 .overlay{
   position:fixed;
   top:0;
@@ -516,108 +638,38 @@ body{
   display:none;
   opacity:0;
   transition:opacity 0.3s ease;
-  align-items:flex-end;
+  align-items:center;
   justify-content:center;
 }
 .overlay.show{
   display:flex;
   opacity:1;
 }
-.plan-menu{
+.menu{
   background:#1c1c1e;
   border:1px solid #2c2c2e;
-  border-radius:var(--spacing-lg) var(--spacing-lg) 0 0;
+  border-radius:var(--border-radius);
+  min-width:250px;
+  box-shadow:0 var(--spacing-sm) var(--spacing-3xl) rgba(0,0,0,0.6);
+  overflow:hidden;
+}
+.menu-btn{
   width:100%;
-  max-width:500px;
-  box-shadow:0 -var(--spacing-xs) var(--spacing-3xl) rgba(0,0,0,0.6);
-  transform:translateY(100%);
-  transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.overlay.show .plan-menu{
-  transform:translateY(0);
-}
-
-.plan-menu-header{
-  padding:var(--spacing-lg) var(--spacing-xl);
-  border-bottom:1px solid #2c2c2e;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-.plan-menu-title{
-  font-size:18px;
-  font-weight:600;
-  color:#ffffff;
-}
-.plan-menu-close{
   background:none;
   border:none;
-  color:#8e8e93;
-  font-size:var(--spacing-2xl);
-  cursor:pointer;
-  width:var(--spacing-3xl);
-  height:var(--spacing-3xl);
-  border-radius:var(--spacing-lg);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:all 0.2s ease;
-}
-.plan-menu-close:active{
-  background:#2c2c2e;
-  opacity:0.7;
-}
-
-.plan-menu-content{
-  padding:var(--spacing-lg) 0 var(--spacing-3xl);
-}
-.plan-menu-section{
-  margin-bottom:var(--spacing-lg);
-}
-.plan-menu-section:last-child{
-  margin-bottom:0;
-}
-
-.plan-menu-item{
-  display:flex;
-  align-items:center;
   padding:var(--spacing-lg) var(--spacing-xl);
+  font-size:var(--spacing-lg);
+  text-align:center;
   cursor:pointer;
+  color:#6366f1;
+  font-weight:500;
   transition:all 0.2s ease;
 }
-.plan-menu-item:active{
-  background:#2c2c2e;
+.menu-btn:not(:last-child){
+  border-bottom:1px solid #2c2c2e;
 }
-.plan-menu-item.danger{
-  color:#ef4444;
-}
-.plan-menu-item.danger .menu-item-title{
-  color:#ef4444;
-}
-
-.menu-item-icon{
-  font-size:var(--spacing-xl);
-  width:var(--spacing-3xl);
-  height:var(--spacing-3xl);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-right:var(--spacing-md);
-  flex-shrink:0;
-}
-.menu-item-text{
-  flex:1;
-}
-.menu-item-title{
-  font-size:var(--spacing-lg);
-  font-weight:500;
-  color:#ffffff;
-  margin-bottom:2px;
-}
-.menu-item-desc{
-  font-size:var(--spacing-md);
-  color:#8e8e93;
-}
+.menu-btn:active{background:#2c2c2e}
+.menu-btn.del{color:#ef4444}
 
 /* FIXED BUTTON */
 .add-btn-fixed{
@@ -978,59 +1030,66 @@ body{
   </div>
 </div>
 
-<!-- MENU OVERLAY -->
-<div class="overlay" id="overlay" onclick="hideMenu()">
-  <div class="plan-menu" id="menu" onclick="event.stopPropagation()">
-    <div class="plan-menu-header">
-      <div class="plan-menu-title" id="menuPlanTitle">План</div>
-      <button class="plan-menu-close" onclick="hideMenu()">×</button>
+<!-- EDIT PLAN SCREEN -->
+<div class="screen" id="editPlanScreen">
+  <div class="screen-header">
+    <button class="header-btn" onclick="hideEditPlan()">Назад</button>
+    <div class="modal-title">Изменить задачу</div>
+    <div></div>
+  </div>
+  <div class="screen-content">
+    <div class="form-group">
+      <input class="input edit-plan-input" id="editPlanTitle" placeholder="Название задачи">
     </div>
     
-    <div class="plan-menu-content">
-      <div class="plan-menu-section">
-        <div class="plan-menu-item" onclick="togglePlanComplete()">
-          <div class="menu-item-icon" id="completeIcon">✓</div>
-          <div class="menu-item-text">
-            <div class="menu-item-title" id="completeText">Отметить выполненным</div>
-            <div class="menu-item-desc">Изменить статус задачи</div>
-          </div>
-        </div>
-        
-        <div class="plan-menu-item" onclick="editPlan()">
-          <div class="menu-item-icon">✏️</div>
-          <div class="menu-item-text">
-            <div class="menu-item-title">Редактировать</div>
-            <div class="menu-item-desc">Изменить название или комнату</div>
-          </div>
-        </div>
-        
-        <div class="plan-menu-item" onclick="duplicatePlan()">
-          <div class="menu-item-icon">📋</div>
-          <div class="menu-item-text">
-            <div class="menu-item-title">Дублировать</div>
-            <div class="menu-item-desc">Создать копию плана</div>
-          </div>
-        </div>
-        
-        <div class="plan-menu-item" onclick="movePlanDate()">
-          <div class="menu-item-icon">📅</div>
-          <div class="menu-item-text">
-            <div class="menu-item-title">Перенести</div>
-            <div class="menu-item-desc">Изменить дату выполнения</div>
-          </div>
-        </div>
+    <div class="form-group">
+      <label class="label">Дата</label>
+      <div class="form-row" onclick="showEditDatePicker()">
+        <span id="editPlanDate">26 янв. 2026г.</span>
       </div>
-      
-      <div class="plan-menu-section">
-        <div class="plan-menu-item danger" onclick="deletePlan()">
-          <div class="menu-item-icon">🗑️</div>
-          <div class="menu-item-text">
-            <div class="menu-item-title">Удалить план</div>
-            <div class="menu-item-desc">Это действие нельзя отменить</div>
-          </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="label">Уведомление</label>
+      <div class="form-row">
+        <span>Уведомление</span>
+        <div class="toggle" id="notificationToggle" onclick="toggleNotification()">
+          <div class="toggle-slider"></div>
         </div>
       </div>
     </div>
+    
+    <div class="form-group">
+      <label class="label">Важная</label>
+      <div class="form-row">
+        <span>Важная</span>
+        <div class="toggle" id="importantToggle" onclick="toggleImportant()">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="premium-notice">
+      <div class="premium-icon">⭐</div>
+      <span>Уведомления и пометка «Важная» доступны только с подпиской </span>
+      <span class="premium-link">Премиум Трекер</span>
+    </div>
+    
+    <button class="delete-btn" onclick="deletePlanFromEdit()">
+      Удалить задачу
+    </button>
+  </div>
+  
+  <div class="screen-footer">
+    <button class="save-btn" onclick="savePlanEdit()">Сохранить</button>
+  </div>
+</div>
+
+<!-- MENU OVERLAY (simplified) -->
+<div class="overlay" id="overlay" onclick="hideMenu()">
+  <div class="menu" id="menu" onclick="event.stopPropagation()">
+    <button class="menu-btn" onclick="editPlan()">Редактировать</button>
+    <button class="menu-btn del" onclick="deletePlan()">Удалить</button>
   </div>
 </div>
 
@@ -1349,102 +1408,122 @@ function clearForm() {
 
 function showPlanMenu(id) {
   selectedPlanId = id;
-  const plan = plans.find(p => p.id === id);
-  if (!plan) return;
-  
-  // Update menu title
-  document.getElementById('menuPlanTitle').textContent = plan.title;
-  
-  // Update complete/incomplete button
-  const completeIcon = document.getElementById('completeIcon');
-  const completeText = document.getElementById('completeText');
-  
-  if (plan.completed) {
-    completeIcon.textContent = '↩️';
-    completeText.textContent = 'Отметить невыполненным';
-  } else {
-    completeIcon.textContent = '✓';
-    completeText.textContent = 'Отметить выполненным';
-  }
-  
   document.getElementById('overlay').classList.add('show');
 }
 
-function togglePlanComplete() {
-  if (!selectedPlanId) return;
-  
-  const plan = plans.find(p => p.id === selectedPlanId);
-  if (plan) {
-    plan.completed = !plan.completed;
-    savePlans();
-    render();
-  }
-  
-  hideMenu();
-}
-
-function duplicatePlan() {
-  if (!selectedPlanId) return;
-  
+function editPlan() {
   const plan = plans.find(p => p.id === selectedPlanId);
   if (!plan) return;
   
-  const newPlan = {
-    id: Date.now().toString(),
-    title: plan.title + ' (копия)',
-    date: plan.date,
-    room: plan.room,
-    completed: false
-  };
+  // Fill edit form
+  document.getElementById('editPlanTitle').value = plan.title;
   
-  plans.push(newPlan);
-  savePlans();
-  render();
+  // Format date
+  const date = new Date(plan.date);
+  const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const formattedDate = `${date.getDate()} ${months[date.getMonth()]}. ${date.getFullYear()}г.`;
+  document.getElementById('editPlanDate').textContent = formattedDate;
+  
+  // Reset toggles (premium features disabled)
+  document.getElementById('notificationToggle').classList.remove('active');
+  document.getElementById('importantToggle').classList.remove('active');
+  
   hideMenu();
-  
+  showEditPlan();
+}
+
+function showEditPlan() {
+  document.getElementById('editPlanScreen').classList.add('show');
+  document.querySelector('.header').style.display = 'none';
+}
+
+function hideEditPlan() {
+  document.getElementById('editPlanScreen').classList.remove('show');
+  document.querySelector('.header').style.display = 'flex';
+}
+
+function toggleNotification() {
+  // Premium feature - show popup
   showPopup(
-    'План дублирован',
-    `Создана копия плана "${plan.title}"`,
+    'Премиум функция',
+    'Уведомления доступны только с подпиской Премиум Трекер',
     [{ text: 'OK', type: 'confirm', action: hidePopup }]
   );
 }
 
-function movePlanDate() {
-  if (!selectedPlanId) return;
-  
-  hideMenu();
-  
+function toggleImportant() {
+  // Premium feature - show popup
   showPopup(
-    'Перенести план',
-    'Выберите новую дату для выполнения плана',
+    'Премиум функция', 
+    'Пометка «Важная» доступна только с подпиской Премиум Трекер',
+    [{ text: 'OK', type: 'confirm', action: hidePopup }]
+  );
+}
+
+function showEditDatePicker() {
+  showPopup(
+    'Изменить дату',
+    'Выберите новую дату для задачи',
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
-      { text: 'Завтра', type: 'confirm', action: () => movePlanToDate(1) },
-      { text: 'Послезавтра', type: 'confirm', action: () => movePlanToDate(2) }
+      { text: 'Сегодня', type: 'confirm', action: () => setEditDate(0) },
+      { text: 'Завтра', type: 'confirm', action: () => setEditDate(1) }
     ]
   );
 }
 
-function movePlanToDate(daysOffset) {
-  if (!selectedPlanId) return;
-  
-  const plan = plans.find(p => p.id === selectedPlanId);
-  if (!plan) return;
-  
+function setEditDate(daysOffset) {
   const newDate = new Date();
   newDate.setDate(newDate.getDate() + daysOffset);
   
-  plan.date = newDate.toISOString().split('T')[0];
+  const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const formattedDate = `${newDate.getDate()} ${months[newDate.getMonth()]}. ${newDate.getFullYear()}г.`;
+  document.getElementById('editPlanDate').textContent = formattedDate;
+  
+  hidePopup();
+}
+
+function savePlanEdit() {
+  const plan = plans.find(p => p.id === selectedPlanId);
+  if (!plan) return;
+  
+  const newTitle = document.getElementById('editPlanTitle').value.trim();
+  if (!newTitle) return;
+  
+  // Parse date back
+  const dateText = document.getElementById('editPlanDate').textContent;
+  const today = new Date();
+  if (dateText.includes('сегодня') || dateText.includes(today.getDate().toString())) {
+    plan.date = today.toISOString().split('T')[0];
+  } else {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    plan.date = tomorrow.toISOString().split('T')[0];
+  }
+  
+  plan.title = newTitle;
   savePlans();
   render();
-  hidePopup();
-  
-  const dateText = daysOffset === 1 ? 'завтра' : 'послезавтра';
+  hideEditPlan();
+}
+
+function deletePlanFromEdit() {
   showPopup(
-    'План перенесён',
-    `План "${plan.title}" перенесён на ${dateText}`,
-    [{ text: 'OK', type: 'confirm', action: hidePopup }]
+    'Удалить задачу?',
+    'Это действие нельзя отменить.',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Удалить', type: 'danger', action: confirmDeleteFromEdit }
+    ]
   );
+}
+
+function confirmDeleteFromEdit() {
+  plans = plans.filter(p => p.id !== selectedPlanId);
+  savePlans();
+  hidePopup();
+  hideEditPlan();
+  render();
 }
 
 function hideMenu() {
@@ -1481,6 +1560,7 @@ function confirmDeletePlan() {
   plans = plans.filter(p => p.id !== selectedPlanId);
   savePlans();
   hidePopup();
+  hideMenu();
   render();
 }
 
@@ -1723,7 +1803,9 @@ function hidePopup() {
 // TELEGRAM INTEGRATION
 if (tg) {
   tg.onEvent('backButtonClicked', () => {
-    if (document.getElementById('roomsScreen').classList.contains('show')) {
+    if (document.getElementById('editPlanScreen').classList.contains('show')) {
+      hideEditPlan();
+    } else if (document.getElementById('roomsScreen').classList.contains('show')) {
       hideRooms();
     } else if (document.getElementById('profileScreen').classList.contains('show')) {
       hideProfile();
@@ -1784,7 +1866,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.4 Enhanced Plan Menu загружен');
+  console.log('🚀 Планер v6.5 Fullscreen Edit загружен');
 });
 </script>
 </body>

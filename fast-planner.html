@@ -10,11 +10,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;color:var(--tg-theme-text-color,#000);line-height:1.4;overflow-x:hidden;min-height:100vh}
 .app{min-height:100vh;display:flex;flex-direction:column}
 .header{padding:20px;background:#f2f2f7;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.app-info{display:flex;align-items:center;gap:12px}
 .avatar{width:40px;height:40px;background:#007aff;border-radius:20px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:600}
-.app-title{display:flex;flex-direction:column}
-.app-name{font-size:20px;font-weight:700;color:#000;margin:0}
-.app-subtitle{font-size:13px;color:#8e8e93;margin:0}
 .date-nav{display:flex;align-items:center;gap:8px;background:white;border-radius:20px;padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
 .date-title{font-size:16px;font-weight:600;color:#000;margin:0 8px}
 .date-subtitle{font-size:12px;color:#8e8e93}
@@ -82,13 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <body>
 <div class="app">
 <div class="header">
-<div class="app-info">
 <div class="avatar">П</div>
-<div class="app-title">
-<h1 class="app-name">Планер</h1>
-<p class="app-subtitle">мини-приложение</p>
-</div>
-</div>
 <div class="date-nav">
 <button class="nav" onclick="changeDay(-1)">‹</button>
 <div>
@@ -97,7 +87,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 <button class="nav" onclick="changeDay(1)">›</button>
 </div>
-<button class="menu-btn teams-btn" onclick="showTeams()">📅</button>
+<button class="menu-btn teams-btn" onclick="showProfile()">👤</button>
 </div>
 <div class="content" id="content">
 <div class="empty" id="empty">
@@ -288,6 +278,11 @@ setTimeout(()=>document.getElementById('title').focus(),50);
 function showTeams(){
 document.getElementById('teamsScreen').classList.add('show');
 renderTeams();
+}
+
+function showProfile(){
+// Пока что просто показываем команды, позже настроим профиль
+showTeams();
 }
 
 function hideTeams(){

@@ -31,19 +31,47 @@
         }
         
         .header {
-            padding: 60px 24px 24px;
+            padding: 20px 16px;
             background: var(--tg-theme-bg-color, #ffffff);
-            border-bottom: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
-            position: sticky;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 10;
         }
         
         .day-title {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 20px;
+            font-weight: 600;
             color: var(--tg-theme-text-color, #000000);
             text-align: center;
+        }
+        
+        .content {
+            padding: 16px;
+            margin-top: 80px;
+            margin-bottom: 80px;
+        }
+        
+        .add-button {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            background: var(--tg-theme-button-color, #007aff);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 20;
+        }
+        
+        .add-button:active {
+            opacity: 0.8;
         }
         
         .content {
@@ -52,62 +80,40 @@
         }
         
         .content.empty {
-            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: calc(100vh - 160px);
         }
         
-        .soft-entry-area {
-            margin: 40px 24px;
-            padding: 60px 32px;
-            border-radius: 16px;
-            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-            border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+        .empty-state {
             text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            max-width: 320px;
-        }
-        
-        .soft-entry-area:active {
-            transform: scale(0.98);
-            background: var(--tg-theme-secondary-bg-color, #e8e8e8);
+            padding: 40px 20px;
         }
         
         .empty-title {
-            font-size: 24px;
-            color: var(--tg-theme-text-color, #000000);
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        
-        .add-action {
             font-size: 18px;
-            color: var(--tg-theme-link-color, #007aff);
-            margin-bottom: 16px;
-            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 8px;
+            font-weight: 500;
         }
         
-        .soft-hint {
-            font-size: 15px;
+        .empty-hint {
+            font-size: 14px;
             color: var(--tg-theme-hint-color, #8e8e93);
-            line-height: 1.4;
         }
         
         .time-section {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.05));
+            border-radius: 8px;
+            padding: 12px;
         }
         
         .time-label {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--tg-theme-hint-color, #8e8e93);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
@@ -115,71 +121,61 @@
         
         .plan-item {
             padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
             background: var(--tg-theme-bg-color, #ffffff);
-            position: relative;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.05));
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .plan-item:last-child {
             margin-bottom: 0;
         }
         
-        .plan-item:active {
-            transform: scale(0.98);
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+        .plan-content {
+            flex: 1;
         }
         
         .plan-text {
-            font-size: 16px;
+            font-size: 15px;
             color: var(--tg-theme-text-color, #000000);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             font-weight: 500;
         }
         
         .plan-time {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--tg-theme-link-color, #007aff);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: 600;
         }
         
         .room-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 2px 6px;
             background: var(--tg-theme-button-color, #007aff);
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 8px;
+            font-size: 11px;
             color: var(--tg-theme-button-text-color, #ffffff);
             font-weight: 500;
         }
         
-        .delete-zone {
-            position: absolute;
-            right: -80px;
-            top: 0;
-            bottom: 0;
-            width: 80px;
+        .delete-button {
             background: #ff3b30;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
             font-size: 12px;
             font-weight: 600;
-            border-radius: 8px;
-            transition: right 0.2s ease;
+            cursor: pointer;
+            margin-left: 8px;
         }
         
-        .plan-item.swiping {
-            transform: translateX(-80px);
-        }
-        
-        .plan-item.swiping .delete-zone {
-            right: 0;
+        .delete-button:active {
+            opacity: 0.8;
         }
         
         .add-overlay {
@@ -190,29 +186,34 @@
             bottom: 0;
             background: var(--tg-theme-bg-color, #ffffff);
             z-index: 100;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
+            display: none;
         }
         
         .add-overlay.show {
-            transform: translateY(0);
+            display: block;
         }
         
         .add-header {
-            padding: 60px 24px 24px;
+            padding: 20px 16px;
             background: var(--tg-theme-bg-color, #ffffff);
-            border-bottom: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 101;
         }
         
         .add-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--tg-theme-text-color, #000000);
             text-align: center;
         }
         
         .add-input {
-            padding: 32px 24px;
+            padding: 20px 16px;
+            margin-top: 80px;
         }
         
         .main-input {
@@ -220,28 +221,61 @@
             border: 1px solid var(--tg-theme-hint-color, #c6c6c8);
             outline: none;
             font-size: 16px;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 8px;
             background: var(--tg-theme-bg-color, #ffffff);
             font-family: inherit;
             color: var(--tg-theme-text-color, #000000);
-            transition: border-color 0.2s ease;
         }
         
         .main-input:focus {
             border-color: var(--tg-theme-link-color, #007aff);
         }
         
-        .main-input::placeholder {
-            color: var(--tg-theme-hint-color, #8e8e93);
-        }
-        
         .input-hint {
-            margin-top: 16px;
-            font-size: 14px;
+            margin-top: 12px;
+            font-size: 13px;
             color: var(--tg-theme-hint-color, #8e8e93);
             line-height: 1.4;
-            text-align: center;
+        }
+        
+        .add-buttons {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 102;
+        }
+        
+        .cancel-button {
+            flex: 1;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .save-button {
+            flex: 2;
+            background: var(--tg-theme-button-color, #007aff);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .cancel-button:active,
+        .save-button:active {
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -252,12 +286,13 @@
         </div>
         
         <div class="content" id="content">
-            <div class="soft-entry-area" id="softEntryArea">
+            <div class="empty-state" id="emptyState">
                 <div class="empty-title">Планов нет</div>
-                <div class="add-action">Добавить план</div>
-                <div class="soft-hint">или потяните вниз</div>
+                <div class="empty-hint">Нажмите кнопку ниже, чтобы добавить план</div>
             </div>
         </div>
+        
+        <button class="add-button" id="addButton">Добавить план</button>
         
         <div class="add-overlay" id="addOverlay">
             <div class="add-header">
@@ -268,6 +303,10 @@
                 <div class="input-hint">
                     Например: "Встреча 15:00" или "Тренировка завтра 18:00 зал"
                 </div>
+            </div>
+            <div class="add-buttons">
+                <button class="cancel-button" id="cancelButton">Отмена</button>
+                <button class="save-button" id="saveButton">Сохранить</button>
             </div>
         </div>
     </div>

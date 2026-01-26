@@ -50,8 +50,9 @@ const dayTitle = document.getElementById('dayTitle');
 const content = document.getElementById('content');
 const addOverlay = document.getElementById('addOverlay');
 const planInput = document.getElementById('planInput');
-const pullIndicator = document.getElementById('pullIndicator');
-const softEntryArea = document.getElementById('softEntryArea');
+const addButton = document.getElementById('addButton');
+const cancelButton = document.getElementById('cancelButton');
+const saveButton = document.getElementById('saveButton');
 
 // Форматирование даты
 function formatDate(date) {
@@ -142,21 +143,12 @@ function renderPlans() {
     
     if (dayPlans.length === 0) {
         content.innerHTML = `
-            <div class="soft-entry-area" id="softEntryArea">
+            <div class="empty-state">
                 <div class="empty-title">Планов нет</div>
-                <div class="add-action">Добавить план</div>
-                <div class="soft-hint">или потяните вниз</div>
+                <div class="empty-hint">Нажмите кнопку ниже, чтобы добавить план</div>
             </div>
         `;
         content.classList.add('empty');
-        
-        // Добавляем мягкий обработчик для зоны
-        const newSoftArea = document.getElementById('softEntryArea');
-        newSoftArea.addEventListener('click', () => {
-            showAddScreen();
-            tg.HapticFeedback.impactOccurred('light');
-        });
-        
         return;
     }
     
@@ -172,10 +164,12 @@ function renderPlans() {
         withTime.forEach((plan, index) => {
             html += `
                 <div class="plan-item" data-id="${plan.id}">
-                    <div class="plan-time">${plan.time}</div>
-                    <div class="plan-text">${plan.text}</div>
-                    ${plan.room ? `<div class="room-badge">${plan.room}</div>` : ''}
-                    <div class="delete-zone">Удалить</div>
+                    <div class="plan-content">
+                        <div class="plan-time">${plan.time}</div>
+                        <div class="plan-text">${plan.text}</div>
+                        ${plan.room ? `<div class="room-badge">${plan.room}</div>` : ''}
+                    </div>
+                    <button class="delete-button" onclick="deletePlan('${plan.id}')">Удалить</button>
                 </div>
             `;
         });
@@ -187,9 +181,11 @@ function renderPlans() {
         withoutTime.forEach((plan, index) => {
             html += `
                 <div class="plan-item" data-id="${plan.id}">
-                    <div class="plan-text">${plan.text}</div>
-                    ${plan.room ? `<div class="room-badge">${plan.room}</div>` : ''}
-                    <div class="delete-zone">Удалить</div>
+                    <div class="plan-content">
+                        <div class="plan-text">${plan.text}</div>
+                        ${plan.room ? `<div class="room-badge">${plan.room}</div>` : ''}
+                    </div>
+                    <button class="delete-button" onclick="deletePlan('${plan.id}')">Удалить</button>
                 </div>
             `;
         });
@@ -197,46 +193,14 @@ function renderPlans() {
     }
     
     content.innerHTML = html;
-    
-    // Добавляем обработчики для планов
-    document.querySelectorAll('.plan-item').forEach(item => {
-        let startX = 0;
-        let currentX = 0;
-        let isSwiping = false;
-        
-        item.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            isSwiping = false;
-        });
-        
-        item.addEventListener('touchmove', (e) => {
-            currentX = e.touches[0].clientX;
-            const diffX = startX - currentX;
-            
-            if (diffX > 10) {
-                isSwiping = true;
-                item.classList.add('swiping');
-            } else if (diffX < -10) {
-                item.classList.remove('swiping');
-            }
-        });
-        
-        item.addEventListener('touchend', () => {
-            if (!isSwiping) {
-                item.classList.remove('swiping');
-            }
-        });
-        
-        // Удаление по клику на зону удаления
-        const deleteZone = item.querySelector('.delete-zone');
-        deleteZone.addEventListener('click', () => {
-            const planId = item.dataset.id;
-            plans = plans.filter(p => p.id !== planId);
-            savePlans();
-            renderPlans();
-            tg.HapticFeedback.impactOccurred('light');
-        });
-    });
+}
+
+// Удаление плана
+function deletePlan(planId) {
+    plans = plans.filter(p => p.id !== planId);
+    savePlans();
+    renderPlans();
+    tg.HapticFeedback.impactOccurred('light');
 }
 
 // Добавление плана
@@ -257,10 +221,7 @@ function addPlan(text) {
 function showAddScreen() {
     isAddMode = true;
     addOverlay.classList.add('show');
-    // Убираем автофокус - пользователь сам нажмет на поле
-    // setTimeout(() => {
-    //     planInput.focus();
-    // }, 350);
+    planInput.focus();
 }
 
 // Скрыть экран добавления
@@ -270,99 +231,27 @@ function hideAddScreen() {
     planInput.value = '';
 }
 
-// Обработчики жестов
-let startY = 0;
-let currentY = 0;
-
-app.addEventListener('touchstart', (e) => {
-    if (isAddMode) return;
-    startY = e.touches[0].clientY;
-    pullStartY = startY;
+// Обработчики кнопок
+addButton.addEventListener('click', () => {
+    showAddScreen();
+    tg.HapticFeedback.impactOccurred('light');
 });
 
-app.addEventListener('touchmove', (e) => {
-    if (isAddMode) return;
-    
-    currentY = e.touches[0].clientY;
-    const diffY = currentY - startY;
-    
-    // Pull to add
-    if (diffY > 50 && window.scrollY === 0) {
-        isPulling = true;
-        pullIndicator.classList.add('show');
-        e.preventDefault();
-    } else {
-        isPulling = false;
-        pullIndicator.classList.remove('show');
-    }
+cancelButton.addEventListener('click', () => {
+    hideAddScreen();
 });
 
-app.addEventListener('touchend', (e) => {
-    if (isAddMode) return;
-    
-    if (isPulling) {
-        showAddScreen();
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-    
-    isPulling = false;
-    pullIndicator.classList.remove('show');
+saveButton.addEventListener('click', () => {
+    addPlan(planInput.value);
+    hideAddScreen();
 });
 
-// Свайпы для смены дня
-let startX = 0;
-app.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-});
-
-app.addEventListener('touchend', (e) => {
-    if (isAddMode) return;
-    
-    const endX = e.changedTouches[0].clientX;
-    const diffX = startX - endX;
-    
-    if (Math.abs(diffX) > 100) {
-        if (diffX > 0) {
-            // Swipe left - следующий день
-            currentDate.setDate(currentDate.getDate() + 1);
-        } else {
-            // Swipe right - предыдущий день
-            currentDate.setDate(currentDate.getDate() - 1);
-        }
-        renderPlans();
-        tg.HapticFeedback.impactOccurred('light');
-    }
-});
-
-// Обработчики для экрана добавления
 planInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         addPlan(planInput.value);
         hideAddScreen();
     }
 });
-
-// Закрытие экрана добавления свайпом вниз
-addOverlay.addEventListener('touchstart', (e) => {
-    startY = e.touches[0].clientY;
-});
-
-addOverlay.addEventListener('touchend', (e) => {
-    const endY = e.changedTouches[0].clientY;
-    const diffY = endY - startY;
-    
-    if (diffY > 100) {
-        hideAddScreen();
-    }
-});
-
-// Обработчик для начальной мягкой зоны
-if (softEntryArea) {
-    softEntryArea.addEventListener('click', () => {
-        showAddScreen();
-        tg.HapticFeedback.impactOccurred('light');
-    });
-}
 
 // Инициализация
 renderPlans();

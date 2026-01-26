@@ -2538,11 +2538,23 @@ function changeDay(direction) {
 
 // MODALS & SCREENS
 function showAdd() {
-  document.getElementById('addModal').classList.add('show');
+  console.log('showAdd вызвана');
+  const addModal = document.getElementById('addModal');
+  console.log('addModal найден:', addModal);
+  
+  if (!addModal) {
+    console.error('Элемент addModal не найден!');
+    return;
+  }
+  
+  addModal.classList.add('show');
   document.getElementById('planDate').value = currentDate.toISOString().split('T')[0];
   updateRoomsSelect();
   setTimeout(() => {
-    document.getElementById('planTitle').focus();
+    const planTitle = document.getElementById('planTitle');
+    if (planTitle) {
+      planTitle.focus();
+    }
   }, 300);
 }
 
@@ -2580,12 +2592,20 @@ function hideProfile() {
 
 // PLANS
 function savePlan() {
+  console.log('savePlan вызвана');
   const title = document.getElementById('planTitle').value.trim();
-  if (!title) return;
+  console.log('Заголовок задачи:', title);
+  
+  if (!title) {
+    console.log('Заголовок пустой, выходим');
+    return;
+  }
   
   const room = document.getElementById('planRoom').value;
   const date = document.getElementById('planDate').value || currentDate.toISOString().split('T')[0];
   const time = document.getElementById('planTime').value; // Получаем время
+  
+  console.log('Данные задачи:', { title, room, date, time });
   
   const plan = {
     id: selectedPlanId || Date.now().toString(),
@@ -2596,19 +2616,24 @@ function savePlan() {
     completed: false
   };
   
+  console.log('Создана задача:', plan);
+  
   if (selectedPlanId) {
     const index = plans.findIndex(p => p.id === selectedPlanId);
     if (index !== -1) {
       plans[index] = plan;
+      console.log('Задача обновлена');
     }
   } else {
     plans.push(plan);
+    console.log('Задача добавлена, всего задач:', plans.length);
   }
   
   savePlans();
   hideAdd();
   currentDate = new Date(date);
   render();
+  console.log('savePlan завершена');
 }
 
 function clearForm() {
@@ -3213,11 +3238,23 @@ function confirmDeleteRoom(roomName) {
 // PROFILE
 function loadProfileData() {
   const userName = localStorage.getItem('planner_userName') || 'Пользователь';
-  document.getElementById('profileName').textContent = userName;
-  
   const firstLetter = userName.charAt(0).toUpperCase();
-  document.querySelector('.avatar-circle').textContent = firstLetter;
-  document.querySelector('.profile-btn').textContent = firstLetter;
+  
+  // Безопасно обновляем элементы профиля
+  const profileNameEl = document.getElementById('profileName');
+  if (profileNameEl) {
+    profileNameEl.textContent = userName;
+  }
+  
+  const avatarCircle = document.querySelector('.avatar-circle');
+  if (avatarCircle) {
+    avatarCircle.textContent = firstLetter;
+  }
+  
+  const profileBtn = document.querySelector('.profile-btn');
+  if (profileBtn) {
+    profileBtn.textContent = firstLetter;
+  }
 }
 
 function editName() {
@@ -3426,6 +3463,13 @@ function showTabContent(tabName) {
           <div class="plans" id="plans"></div>
         </div>
       `;
+      
+      // Инициализируем прогресс-бар заново
+      const progressCircle = document.getElementById('progressCircle');
+      if (progressCircle) {
+        progressCircle.dataset.currentAngle = '0';
+      }
+      
       // Перерендериваем задачи
       render();
       break;
@@ -3554,10 +3598,10 @@ function renderWeek() {
   
   const formatDate = (date) => {
     const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-    return \`\${date.getDate()} \${months[date.getMonth()]}\`;
+    return `${date.getDate()} ${months[date.getMonth()]}`;
   };
   
-  weekTitle.textContent = \`\${formatDate(currentWeekStart)} - \${formatDate(weekEnd)}\`;
+  weekTitle.textContent = `${formatDate(currentWeekStart)} - ${formatDate(weekEnd)}`;
   
   // Рендерим дни недели
   const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -3571,32 +3615,32 @@ function renderWeek() {
     
     const isToday = date.toDateString() === new Date().toDateString();
     
-    html += \`
-      <div class="day-card \${isToday ? 'today' : ''}" data-date="\${dateStr}">
+    html += `
+      <div class="day-card ${isToday ? 'today' : ''}" data-date="${dateStr}">
         <div class="day-header">
-          <div class="day-name">\${dayNames[i]}</div>
-          <div class="day-date">\${date.getDate()}</div>
+          <div class="day-name">${dayNames[i]}</div>
+          <div class="day-date">${date.getDate()}</div>
         </div>
         <div class="meals">
-          <div class="meal" onclick="editMeal('\${dateStr}', 'breakfast')">
+          <div class="meal" onclick="editMeal('${dateStr}', 'breakfast')">
             <div class="meal-label">🌅 Завтрак</div>
-            <div class="meal-content">\${dayMeals.breakfast || 'Не запланировано'}</div>
+            <div class="meal-content">${dayMeals.breakfast || 'Не запланировано'}</div>
           </div>
-          <div class="meal" onclick="editMeal('\${dateStr}', 'lunch')">
+          <div class="meal" onclick="editMeal('${dateStr}', 'lunch')">
             <div class="meal-label">☀️ Обед</div>
-            <div class="meal-content">\${dayMeals.lunch || 'Не запланировано'}</div>
+            <div class="meal-content">${dayMeals.lunch || 'Не запланировано'}</div>
           </div>
-          <div class="meal" onclick="editMeal('\${dateStr}', 'dinner')">
+          <div class="meal" onclick="editMeal('${dateStr}', 'dinner')">
             <div class="meal-label">🌙 Ужин</div>
-            <div class="meal-content">\${dayMeals.dinner || 'Не запланировано'}</div>
+            <div class="meal-content">${dayMeals.dinner || 'Не запланировано'}</div>
           </div>
-          <div class="meal" onclick="editMeal('\${dateStr}', 'snack')">
+          <div class="meal" onclick="editMeal('${dateStr}', 'snack')">
             <div class="meal-label">🍎 Перекус</div>
-            <div class="meal-content">\${dayMeals.snack || 'Не запланировано'}</div>
+            <div class="meal-content">${dayMeals.snack || 'Не запланировано'}</div>
           </div>
         </div>
       </div>
-    \`;
+    `;
   }
   
   daysGrid.innerHTML = html;
@@ -3626,8 +3670,8 @@ function updateWaterTracker() {
   const target = nutritionData.water.target;
   const percentage = (current / target) * 100;
   
-  waterStats.textContent = \`\${current}/\${target} стаканов\`;
-  waterProgressFill.style.width = \`\${Math.min(100, percentage)}%\`;
+  waterStats.textContent = `${current}/${target} стаканов`;
+  waterProgressFill.style.width = `${Math.min(100, percentage)}%`;
   waterCurrent.textContent = current;
   
   // Добавляем класс completed если цель достигнута
@@ -3673,7 +3717,7 @@ function editMeal(dateStr, mealType) {
   const currentMeal = nutritionData.meals[dateStr]?.[mealType] || '';
   
   showPopup(
-    \`🍽️ \${mealNames[mealType]}\`,
+    `🍽️ ${mealNames[mealType]}`,
     '',
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
@@ -3724,7 +3768,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Инициализируем прогресс-бар
   const progressCircle = document.getElementById('progressCircle');
-  progressCircle.dataset.currentAngle = '0';
+  if (progressCircle) {
+    progressCircle.dataset.currentAngle = '0';
+  }
+  
+  // Убеждаемся что мы на вкладке задач
+  currentTab = 'tasks';
   
   render();
   

@@ -7,8 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="cache-buster" content="<?php echo time(); ?>">
-<meta name="version" content="v6.21.0-REFRESH-BUTTON">
-<title>Планер v6.21 REFRESH BUTTON</title>
+<meta name="version" content="v6.22.0-AGGRESSIVE-RENDER">
+<title>Планер v6.22 AGGRESSIVE RENDER</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -6160,24 +6160,52 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Перед render - планы:', plans);
     
-    // Пробуем рендерить сразу
-    render();
+    // КРИТИЧЕСКИ ВАЖНО: Принудительно вызываем render много раз с разными задержками
+    render(); // Сразу
     
-    // КРИТИЧЕСКИ ВАЖНО: Добавляем несколько попыток рендеринга с разными задержками
     setTimeout(() => {
-      console.log('Вызываем render через 100ms');
+      console.log('Render через 50ms');
+      render();
+    }, 50);
+    
+    setTimeout(() => {
+      console.log('Render через 100ms');
       render();
     }, 100);
     
     setTimeout(() => {
-      console.log('Вызываем render через 500ms');
+      console.log('Render через 300ms');
+      render();
+    }, 300);
+    
+    setTimeout(() => {
+      console.log('Render через 500ms');
       render();
     }, 500);
     
     setTimeout(() => {
-      console.log('Вызываем render через 1000ms');
+      console.log('Render через 1000ms');
       render();
     }, 1000);
+    
+    // ДОПОЛНИТЕЛЬНО: Проверяем каждые 2 секунды первые 10 секунд
+    let checkCount = 0;
+    const checkInterval = setInterval(() => {
+      checkCount++;
+      console.log(`Проверка ${checkCount}: планы есть, но не отображаются?`);
+      
+      if (plans.length > 0 && currentTab === 'tasks') {
+        const empty = document.getElementById('empty');
+        if (empty && empty.style.display !== 'none') {
+          console.log('Принудительный render - задачи есть но не показаны');
+          render();
+        }
+      }
+      
+      if (checkCount >= 5) { // 5 проверок = 10 секунд
+        clearInterval(checkInterval);
+      }
+    }, 2000);
     
     console.log('DOMContentLoaded - инициализация завершена');
     

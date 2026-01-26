@@ -1706,9 +1706,50 @@ body{
   color: var(--text-primary);
   font-weight: 500;
 }
-.meal.add-meal .meal-content{
-  color: var(--accent-secondary);
-  font-style: italic;
+.meal-time-badge{
+  font-size: 10px;
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+/* MEAL TYPE SELECTOR */
+.meal-type-selector{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-lg) 0;
+}
+.meal-type-option{
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--spacing-sm);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-type-option:hover{
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+.meal-type-option:active{
+  transform: scale(0.98);
+}
+.meal-type-icon{
+  font-size: 20px;
+  margin-right: var(--spacing-md);
+}
+.meal-type-name{
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 /* BOTTOM NAVIGATION */
@@ -3627,9 +3668,9 @@ let nutritionData = {
     current: 0,
     date: new Date().toDateString()
   },
-  meals: {}, // {date: {mealId: content}}
+  meals: {}, // {date: {mealId: {content: '', time: ''}}}
   mealTypes: { // Типы приемов пищи по дням
-    // date: [{id: 'breakfast', name: '🌅 Завтрак', icon: '🌅'}]
+    // date: [{id: 'breakfast', name: '🌅 Завтрак', icon: '🌅', time: '08:00'}]
   }
 };
 
@@ -3718,12 +3759,17 @@ function renderNutritionDay() {
   
   // Рендерим существующие приемы пищи
   dayMealTypes.forEach(mealType => {
-    const mealContent = dayMeals[mealType.id] || 'Не запланировано';
+    const mealData = dayMeals[mealType.id] || {};
+    const mealContent = mealData.content || 'Не запланировано';
+    const mealTime = mealData.time || mealType.time || '';
     
     html += `
       <div class="meal" onclick="editMeal('${dateStr}', '${mealType.id}')">
         <div class="meal-header">
-          <div class="meal-label">${mealType.icon} ${mealType.name}</div>
+          <div class="meal-label">
+            ${mealType.icon} ${mealType.name}
+            ${mealTime ? `<span class="meal-time-badge">${mealTime}</span>` : ''}
+          </div>
           <button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>
         </div>
         <div class="meal-content">${mealContent}</div>
@@ -3741,12 +3787,23 @@ function formatNutritionDate(date) {
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  if (date.toDateString() === today.toDateString()) return 'Сегодня';
-  if (date.toDateString() === tomorrow.toDateString()) return 'Завтра';
-  if (date.toDateString() === yesterday.toDateString()) return 'Вчера';
-  
+  const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
   const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-  return `${date.getDate()} ${months[date.getMonth()]}`;
+  
+  const dayName = dayNames[date.getDay()];
+  const dateStr = `${date.getDate()} ${months[date.getMonth()]}`;
+
+  if (date.toDateString() === today.toDateString()) {
+    return `Сегодня, ${dateStr}`;
+  }
+  if (date.toDateString() === tomorrow.toDateString()) {
+    return `Завтра, ${dateStr}`;
+  }
+  if (date.toDateString() === yesterday.toDateString()) {
+    return `Вчера, ${dateStr}`;
+  }
+  
+  return `${dayName}, ${dateStr}`;
 }
 
 // Трекер воды
@@ -3890,12 +3947,61 @@ function saveWaterSettings() {
 function addNewMealType() {
   const dateStr = currentNutritionDate.toDateString();
   
+  // Предустановленные типы приемов пищи
+  const mealTypeOptions = [
+    {id: 'breakfast', name: 'Завтрак', icon: '🌅', defaultTime: '08:00'},
+    {id: 'lunch', name: 'Обед', icon: '☀️', defaultTime: '13:00'},
+    {id: 'dinner', name: 'Ужин', icon: '🌙', defaultTime: '19:00'},
+    {id: 'snack', name: 'Перекус', icon: '🍎', defaultTime: ''},
+    {id: 'custom', name: 'Свой вариант', icon: '🍽️', defaultTime: ''}
+  ];
+  
+  // Создаем HTML для выбора типа
+  let optionsHTML = '<div class="meal-type-selector">';
+  mealTypeOptions.forEach(option => {
+    optionsHTML += `
+      <div class="meal-type-option" onclick="selectMealType('${option.id}', '${option.name}', '${option.icon}', '${option.defaultTime}')">
+        <span class="meal-type-icon">${option.icon}</span>
+        <span class="meal-type-name">${option.name}</span>
+      </div>
+    `;
+  });
+  optionsHTML += '</div>';
+  
   showPopup(
-    '🍽️ Новый прием пищи',
+    '🍽️ Выберите тип приема пищи',
+    optionsHTML,
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup }
+    ]
+  );
+}
+
+function selectMealType(typeId, typeName, typeIcon, defaultTime) {
+  const dateStr = currentNutritionDate.toDateString();
+  
+  if (typeId === 'custom') {
+    // Для кастомного типа показываем ввод названия
+    hidePopup();
+    setTimeout(() => {
+      showCustomMealTypeInput(dateStr);
+    }, 100);
+  } else {
+    // Для предустановленных типов показываем настройку времени
+    hidePopup();
+    setTimeout(() => {
+      showMealTimeInput(dateStr, typeId, typeName, typeIcon, defaultTime);
+    }, 100);
+  }
+}
+
+function showCustomMealTypeInput(dateStr) {
+  showPopup(
+    '🍽️ Свой прием пищи',
     '',
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
-      { text: 'Добавить', type: 'confirm', action: () => saveNewMealType(dateStr) }
+      { text: 'Далее', type: 'confirm', action: () => saveCustomMealType(dateStr) }
     ],
     true,
     ''
@@ -3904,12 +4010,12 @@ function addNewMealType() {
   setTimeout(() => {
     const input = document.querySelector('.popup-input');
     if (input) {
-      input.placeholder = 'Название приема пищи (например: Завтрак)';
+      input.placeholder = 'Название приема пищи';
     }
   }, 100);
 }
 
-function saveNewMealType(dateStr) {
+function saveCustomMealType(dateStr) {
   const input = document.querySelector('.popup-input');
   const mealName = input.value.trim();
   
@@ -3920,19 +4026,62 @@ function saveNewMealType(dateStr) {
     return;
   }
   
+  hidePopup();
+  setTimeout(() => {
+    showMealTimeInput(dateStr, 'meal_' + Date.now(), mealName, '🍽️', '');
+  }, 100);
+}
+
+function showMealTimeInput(dateStr, mealId, mealName, mealIcon, defaultTime) {
+  showPopup(
+    `${mealIcon} ${mealName}`,
+    'Укажите время приема пищи (необязательно)',
+    [
+      { text: 'Пропустить', type: 'cancel', action: () => saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon, '') },
+      { text: 'Сохранить', type: 'confirm', action: () => saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon) }
+    ],
+    true,
+    defaultTime
+  );
+  
+  setTimeout(() => {
+    const input = document.querySelector('.popup-input');
+    if (input) {
+      input.type = 'time';
+      input.placeholder = 'Время приема пищи';
+    }
+  }, 100);
+}
+
+function saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon, timeOverride) {
+  let mealTime = timeOverride;
+  
+  if (timeOverride === undefined) {
+    const input = document.querySelector('.popup-input');
+    mealTime = input.value.trim();
+  }
+  
   // Создаем новый тип приема пищи
-  const mealId = 'meal_' + Date.now();
   const newMealType = {
     id: mealId,
     name: mealName,
-    icon: '🍽️' // Можно будет добавить выбор иконки позже
+    icon: mealIcon,
+    time: mealTime
   };
   
   // Добавляем к типам приемов пищи для этого дня
   if (!nutritionData.mealTypes[dateStr]) {
-    nutritionData.mealTypes[dateStr] = []; // Начинаем с пустого списка
+    nutritionData.mealTypes[dateStr] = [];
   }
   nutritionData.mealTypes[dateStr].push(newMealType);
+  
+  // Сортируем по времени
+  nutritionData.mealTypes[dateStr].sort((a, b) => {
+    if (!a.time && !b.time) return 0;
+    if (!a.time) return 1;
+    if (!b.time) return -1;
+    return a.time.localeCompare(b.time);
+  });
   
   saveNutritionData();
   renderNutritionDay();
@@ -3979,7 +4128,8 @@ function editMeal(dateStr, mealType) {
   const mealTypeObj = dayMealTypes.find(m => m.id === mealType);
   const mealName = mealTypeObj ? mealTypeObj.name : 'Прием пищи';
   
-  const currentMeal = nutritionData.meals[dateStr]?.[mealType] || '';
+  const currentMealData = nutritionData.meals[dateStr]?.[mealType] || {};
+  const currentMeal = currentMealData.content || '';
   
   showPopup(
     `🍽️ ${mealName}`,
@@ -4002,7 +4152,11 @@ function saveMeal(dateStr, mealType) {
   }
   
   if (mealContent) {
-    nutritionData.meals[dateStr][mealType] = mealContent;
+    // Сохраняем как объект с контентом
+    if (!nutritionData.meals[dateStr][mealType]) {
+      nutritionData.meals[dateStr][mealType] = {};
+    }
+    nutritionData.meals[dateStr][mealType].content = mealContent;
   } else {
     delete nutritionData.meals[dateStr][mealType];
   }

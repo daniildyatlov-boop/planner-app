@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.11-SMOOTH-PROGRESS-ANIMATIONS">
-<title>Планер v6.11 Smooth Progress Animations</title>
+<meta name="version" content="v6.12.0-JS-SMOOTH-CIRCLE">
+<title>Планер v6.12 JS Smooth Circle Animation</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -337,28 +337,8 @@ body{
   box-shadow: 
     0 8px 32px rgba(99, 102, 241, 0.3),
     0 0 0 2px rgba(99, 102, 241, 0.2) inset;
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-}
-.progress-circle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    var(--accent-primary) 0deg,
-    var(--accent-secondary) 120deg,
-    var(--accent-soft) 240deg,
-    var(--accent-primary) 360deg
-  );
-  transform: scale(0);
-  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
 }
 .progress-circle-inner {
   width: 100%;
@@ -379,38 +359,6 @@ body{
   color: var(--text-primary);
   text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* АНИМИРОВАННОЕ ЗАПОЛНЕНИЕ */
-.progress-circle[data-progress] {
-  background: conic-gradient(
-    from 0deg,
-    var(--accent-primary) 0deg,
-    var(--accent-secondary) calc(var(--progress-angle) * 0.33),
-    var(--accent-soft) calc(var(--progress-angle) * 0.66),
-    var(--accent-primary) var(--progress-angle),
-    rgba(0, 0, 0, 0.2) var(--progress-angle)
-  );
-  animation: progress-fill 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes progress-fill {
-  0% {
-    background: conic-gradient(
-      from 0deg,
-      rgba(0, 0, 0, 0.2) 0deg
-    );
-  }
-  100% {
-    background: conic-gradient(
-      from 0deg,
-      var(--accent-primary) 0deg,
-      var(--accent-secondary) calc(var(--progress-angle) * 0.33),
-      var(--accent-soft) calc(var(--progress-angle) * 0.66),
-      var(--accent-primary) var(--progress-angle),
-      rgba(0, 0, 0, 0.2) var(--progress-angle)
-    );
-  }
 }
 
 /* АНИМАЦИЯ ЗАВЕРШЕНИЯ */
@@ -2377,38 +2325,62 @@ function updateProgress() {
 }
 
 function animateCircleProgress(circleElement, targetPercent) {
-  const angle = (targetPercent / 100) * 360;
+  // Убираем класс анимации завершения если есть
+  circleElement.classList.remove('completed');
   
-  // Устанавливаем CSS переменную для анимации
-  circleElement.style.setProperty('--progress-angle', angle + 'deg');
+  // Получаем текущий прогресс из элемента
+  const currentAngle = parseFloat(circleElement.dataset.currentAngle || '0');
+  const targetAngle = (targetPercent / 100) * 360;
   
-  // Запускаем анимацию заполнения
-  if (targetPercent > 0) {
-    // Убираем старую анимацию
-    circleElement.style.animation = 'none';
-    circleElement.offsetHeight; // Принудительный reflow
+  // Если значения одинаковые, не анимируем
+  if (Math.abs(currentAngle - targetAngle) < 1) {
+    return;
+  }
+  
+  // Сохраняем целевой угол
+  circleElement.dataset.currentAngle = targetAngle;
+  
+  // Анимируем плавно через JavaScript
+  const duration = 1500; // 1.5 секунды
+  const startTime = performance.now();
+  const startAngle = currentAngle;
+  const angleChange = targetAngle - startAngle;
+  
+  function updateProgress(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
     
-    // Устанавливаем финальный градиент
-    setTimeout(() => {
+    // Используем easing функцию cubic-bezier(0.4, 0, 0.2, 1)
+    const easedProgress = progress < 0.5 
+      ? 2 * progress * progress 
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    
+    const currentProgressAngle = startAngle + (angleChange * easedProgress);
+    
+    // Обновляем фон круга
+    if (currentProgressAngle <= 0) {
+      circleElement.style.background = `conic-gradient(
+        from 0deg,
+        rgba(0, 0, 0, 0.2) 0deg
+      )`;
+    } else {
       circleElement.style.background = `conic-gradient(
         from 0deg,
         var(--accent-primary) 0deg,
-        var(--accent-secondary) ${angle * 0.33}deg,
-        var(--accent-soft) ${angle * 0.66}deg,
-        var(--accent-primary) ${angle}deg,
-        rgba(0, 0, 0, 0.2) ${angle}deg
+        var(--accent-secondary) ${currentProgressAngle * 0.33}deg,
+        var(--accent-soft) ${currentProgressAngle * 0.66}deg,
+        var(--accent-primary) ${currentProgressAngle}deg,
+        rgba(0, 0, 0, 0.2) ${currentProgressAngle}deg
       )`;
-    }, 50);
+    }
     
-    // Добавляем анимацию заполнения
-    circleElement.style.animation = 'progress-fill 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards';
-  } else {
-    // Если прогресс 0%, показываем пустой круг
-    circleElement.style.background = `conic-gradient(
-      from 0deg,
-      rgba(0, 0, 0, 0.2) 0deg
-    )`;
+    // Продолжаем анимацию если не закончена
+    if (progress < 1) {
+      requestAnimationFrame(updateProgress);
+    }
   }
+  
+  requestAnimationFrame(updateProgress);
 }
 
 function animatePercentage(element, from, to) {
@@ -2787,6 +2759,11 @@ document.addEventListener('touchend', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   loadProfileData();
+  
+  // Инициализируем прогресс-бар
+  const progressCircle = document.getElementById('progressCircle');
+  progressCircle.dataset.currentAngle = '0';
+  
   render();
   
   // Добавляем CSS для конфетти
@@ -2805,7 +2782,7 @@ document.addEventListener('DOMContentLoaded', () => {
   `;
   document.head.appendChild(confettiStyle);
   
-  console.log('🚀 Планер v6.11 Smooth Progress Animations загружен');
+  console.log('🚀 Планер v6.12 JS Smooth Circle Animation загружен');
 });
 </script>
 </body>

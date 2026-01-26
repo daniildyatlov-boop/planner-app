@@ -1629,16 +1629,32 @@ body{
   border-color: var(--accent-primary);
   transform: translateY(-1px);
 }
+.meal.add-meal{
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px dashed var(--accent-primary);
+  color: var(--accent-primary);
+}
+.meal.add-meal:hover{
+  background: rgba(99, 102, 241, 0.2);
+  border-style: solid;
+}
 .meal-label{
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 4px;
 }
+.meal.add-meal .meal-label{
+  color: var(--accent-primary);
+}
 .meal-content{
   font-size: 14px;
   color: var(--text-primary);
   font-weight: 500;
+}
+.meal.add-meal .meal-content{
+  color: var(--accent-secondary);
+  font-style: italic;
 }
 
 /* BOTTOM NAVIGATION */
@@ -3545,7 +3561,10 @@ let nutritionData = {
     current: 0,
     date: new Date().toDateString()
   },
-  meals: {} // {date: {breakfast: '', lunch: '', dinner: '', snack: ''}}
+  meals: {}, // {date: {mealId: {name: '', content: ''}}}
+  mealTypes: { // Типы приемов пищи по дням
+    // date: [{id: 'breakfast', name: '🌅 Завтрак', icon: '🌅'}]
+  }
 };
 
 let currentWeekStart = getWeekStart(new Date());
@@ -3561,7 +3580,29 @@ function loadNutritionData() {
   try {
     const saved = localStorage.getItem('planner_nutrition');
     if (saved) {
-      nutritionData = JSON.parse(saved);
+      const loadedData = JSON.parse(saved);
+      
+      // Миграция старых данных
+      if (loadedData.meals) {
+        // Проверяем, есть ли старый формат данных (строки вместо объектов)
+        for (const dateStr in loadedData.meals) {
+          const dayMeals = loadedData.meals[dateStr];
+          if (typeof dayMeals === 'object' && dayMeals !== null) {
+            // Проверяем, есть ли старые ключи (breakfast, lunch, etc.)
+            if (dayMeals.breakfast !== undefined || dayMeals.lunch !== undefined) {
+              // Это старый формат, оставляем как есть
+              continue;
+            }
+          }
+        }
+      }
+      
+      // Инициализируем mealTypes если его нет
+      if (!loadedData.mealTypes) {
+        loadedData.mealTypes = {};
+      }
+      
+      nutritionData = loadedData;
     }
     
     // Проверяем, что данные воды за сегодня
@@ -3611,6 +3652,9 @@ function renderWeek() {
     const date = new Date(currentWeekStart);
     date.setDate(date.getDate() + i);
     const dateStr = date.toDateString();
+    
+    // Получаем приемы пищи для этого дня
+    const dayMealTypes = nutritionData.mealTypes[dateStr] || getDefaultMealTypes();
     const dayMeals = nutritionData.meals[dateStr] || {};
     
     const isToday = date.toDateString() === new Date().toDateString();
@@ -3622,21 +3666,24 @@ function renderWeek() {
           <div class="day-date">${date.getDate()}</div>
         </div>
         <div class="meals">
-          <div class="meal" onclick="editMeal('${dateStr}', 'breakfast')">
-            <div class="meal-label">🌅 Завтрак</div>
-            <div class="meal-content">${dayMeals.breakfast || 'Не запланировано'}</div>
-          </div>
-          <div class="meal" onclick="editMeal('${dateStr}', 'lunch')">
-            <div class="meal-label">☀️ Обед</div>
-            <div class="meal-content">${dayMeals.lunch || 'Не запланировано'}</div>
-          </div>
-          <div class="meal" onclick="editMeal('${dateStr}', 'dinner')">
-            <div class="meal-label">🌙 Ужин</div>
-            <div class="meal-content">${dayMeals.dinner || 'Не запланировано'}</div>
-          </div>
-          <div class="meal" onclick="editMeal('${dateStr}', 'snack')">
-            <div class="meal-label">🍎 Перекус</div>
-            <div class="meal-content">${dayMeals.snack || 'Не запланировано'}</div>
+    `;
+    
+    // Рендерим существующие приемы пищи
+    dayMealTypes.forEach(mealType => {
+      const mealContent = dayMeals[mealType.id] || 'Не запланировано';
+      html += `
+        <div class="meal" onclick="editMeal('${dateStr}', '${mealType.id}')">
+          <div class="meal-label">${mealType.icon} ${mealType.name}</div>
+          <div class="meal-content">${mealContent}</div>
+        </div>
+      `;
+    });
+    
+    // Кнопка добавления нового приема пищи
+    html += `
+          <div class="meal add-meal" onclick="addNewMealType('${dateStr}')">
+            <div class="meal-label">➕ Добавить прием пищи</div>
+            <div class="meal-content">Новый прием пищи</div>
           </div>
         </div>
       </div>
@@ -3644,6 +3691,16 @@ function renderWeek() {
   }
   
   daysGrid.innerHTML = html;
+}
+
+// Получаем стандартные типы приемов пищи
+function getDefaultMealTypes() {
+  return [
+    {id: 'breakfast', name: 'Завтрак', icon: '🌅'},
+    {id: 'lunch', name: 'Обед', icon: '☀️'},
+    {id: 'dinner', name: 'Ужин', icon: '🌙'},
+    {id: 'snack', name: 'Перекус', icon: '🍎'}
+  ];
 }
 
 // Трекер воды
@@ -3688,36 +3745,106 @@ function updateWaterTracker() {
 function showWaterSettings() {
   showPopup(
     '💧 Настройки воды',
-    'Сколько стаканов воды в день вы хотите выпивать?',
+    '',
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
-      { text: '6 стаканов', type: 'confirm', action: () => setWaterTarget(6) },
-      { text: '8 стаканов', type: 'confirm', action: () => setWaterTarget(8) },
-      { text: '10 стаканов', type: 'confirm', action: () => setWaterTarget(10) }
-    ]
+      { text: 'Сохранить', type: 'confirm', action: saveWaterSettings }
+    ],
+    true,
+    nutritionData.water.target.toString()
   );
+  
+  // Меняем placeholder для ввода числа
+  setTimeout(() => {
+    const input = document.querySelector('.popup-input');
+    if (input) {
+      input.type = 'number';
+      input.min = '1';
+      input.max = '20';
+      input.placeholder = 'Сколько стаканов в день?';
+    }
+  }, 100);
 }
 
-function setWaterTarget(target) {
-  nutritionData.water.target = target;
+function saveWaterSettings() {
+  const input = document.querySelector('.popup-input');
+  const newTarget = parseInt(input.value.trim());
+  
+  if (!newTarget || newTarget < 1 || newTarget > 20) {
+    showPopup('Ошибка', 'Введите число от 1 до 20', [
+      { text: 'OK', type: 'confirm', action: hidePopup }
+    ]);
+    return;
+  }
+  
+  nutritionData.water.target = newTarget;
   saveNutritionData();
   updateWaterTracker();
   hidePopup();
 }
 
+// Добавление нового типа приема пищи
+function addNewMealType(dateStr) {
+  showPopup(
+    '🍽️ Новый прием пищи',
+    '',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Добавить', type: 'confirm', action: () => saveNewMealType(dateStr) }
+    ],
+    true,
+    ''
+  );
+  
+  setTimeout(() => {
+    const input = document.querySelector('.popup-input');
+    if (input) {
+      input.placeholder = 'Название приема пищи (например: Второй завтрак)';
+    }
+  }, 100);
+}
+
+function saveNewMealType(dateStr) {
+  const input = document.querySelector('.popup-input');
+  const mealName = input.value.trim();
+  
+  if (!mealName) {
+    showPopup('Ошибка', 'Введите название приема пищи', [
+      { text: 'OK', type: 'confirm', action: hidePopup }
+    ]);
+    return;
+  }
+  
+  // Создаем новый тип приема пищи
+  const mealId = 'meal_' + Date.now();
+  const newMealType = {
+    id: mealId,
+    name: mealName,
+    icon: '🍽️' // Можно будет добавить выбор иконки позже
+  };
+  
+  // Добавляем к типам приемов пищи для этого дня
+  if (!nutritionData.mealTypes[dateStr]) {
+    nutritionData.mealTypes[dateStr] = getDefaultMealTypes();
+  }
+  nutritionData.mealTypes[dateStr].push(newMealType);
+  
+  saveNutritionData();
+  renderWeek();
+  hidePopup();
+}
+
 // Редактирование приемов пищи
 function editMeal(dateStr, mealType) {
-  const mealNames = {
-    breakfast: 'Завтрак',
-    lunch: 'Обед', 
-    dinner: 'Ужин',
-    snack: 'Перекус'
-  };
+  // Получаем название приема пищи
+  const dayMealTypes = nutritionData.mealTypes[dateStr] || getDefaultMealTypes();
+  const mealTypeObj = dayMealTypes.find(m => m.id === mealType);
+  const mealName = mealTypeObj ? mealTypeObj.name : 'Прием пищи';
   
   const currentMeal = nutritionData.meals[dateStr]?.[mealType] || '';
   
   showPopup(
-    `🍽️ ${mealNames[mealType]}`,
+    `🍽️ ${mealName}`,
     '',
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },

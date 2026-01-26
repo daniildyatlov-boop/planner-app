@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.14.1-TIME-BADGE-STYLE">
+<meta name="version" content="v6.14.2-UNIFORM-INPUT-HEIGHT">
 <title>Планер v6.14 Time Support</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
@@ -961,6 +961,13 @@ body{
   line-height: normal;
   /* Убираем стандартный календарь браузера */
   position: relative;
+  /* Принудительно задаем минимальную высоту как у других полей */
+  min-height: 48px;
+  /* Убираем внутренние отступы браузера */
+  padding: var(--spacing-md) !important;
+  /* Выравниваем по вертикали */
+  display: flex;
+  align-items: center;
 }
 .input[type="date"]::-webkit-calendar-picker-indicator {
   /* Скрываем стандартную иконку календаря */
@@ -980,6 +987,13 @@ body{
   height: auto;
   line-height: normal;
   position: relative;
+  /* Принудительно задаем минимальную высоту как у других полей */
+  min-height: 48px;
+  /* Убираем внутренние отступы браузера */
+  padding: var(--spacing-md) !important;
+  /* Выравниваем по вертикали */
+  display: flex;
+  align-items: center;
 }
 .input[type="time"]::-webkit-calendar-picker-indicator {
   /* Скрываем стандартную иконку часов */

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="ngrok-skip-browser-warning" content="true">
+    <title>Планер</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+        
+        .error-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        .error-content {
+            text-align: center;
+            max-width: 280px;
+        }
+        
+        .error-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 24px;
+        }
+        
+        .error-message {
+            font-size: 16px;
+            color: var(--tg-theme-text-color, #000000);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .error-hint {
+            font-size: 15px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 40px;
+        }
+        
+        .refresh-action {
+            font-size: 17px;
+            color: var(--tg-theme-link-color, #007aff);
+            cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: var(--tg-theme-secondary-bg-color, rgba(0, 122, 255, 0.08));
+            border: none;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .refresh-action:active {
+            transform: scale(0.96);
+            background: var(--tg-theme-secondary-bg-color, rgba(0, 122, 255, 0.12));
+        }
+        
+        .auto-retry {
+            margin-top: 32px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+        
+        .retry-dots {
+            display: inline-block;
+            margin-left: 4px;
+        }
+        
+        .retry-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ЭКРАН ОШИБКИ: СПОКОЙНЫЙ И ПОНЯТНЫЙ -->
+    <div class="error-screen">
+        <div class="error-content">
+            <div class="error-title">Временно недоступно</div>
+            
+            <div class="error-message">
+                Планер сейчас обновляется или недоступен.<br>
+                Попробуйте открыть его чуть позже.
+            </div>
+            
+            <div class="error-hint">
+                Обычно это занимает пару минут.
+            </div>
+            
+            <button class="refresh-action" onclick="refreshApp()">
+                Обновить
+            </button>
+            
+            <div class="auto-retry">
+                Автоматическая попытка через 30 сек<span class="retry-dots"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        
+        // Функция обновления
+        function refreshApp() {
+            tg.HapticFeedback.impactOccurred('light');
+            window.location.reload();
+        }
+        
+        // Автоматическая попытка переподключения через 30 секунд
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+        
+        // Обработка кнопки "Назад" Telegram
+        tg.onEvent('backButtonClicked', () => {
+            tg.close();
+        });
+    </script>
+</body>
+</html>

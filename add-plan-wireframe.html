@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление плана - Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .screen {
+            max-width: 375px;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid #ddd;
+            min-height: 667px;
+            position: relative;
+        }
+        
+        .gesture-zone {
+            border: 1px dashed #999;
+            background: rgba(200, 200, 200, 0.1);
+            position: absolute;
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .header {
+            padding: 60px 20px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .screen-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .input-area {
+            padding: 40px 20px;
+        }
+        
+        .main-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            padding: 20px 0;
+            border-bottom: 2px solid #ddd;
+            background: transparent;
+            font-family: inherit;
+        }
+        
+        .main-input:focus {
+            border-bottom-color: #333;
+        }
+        
+        .input-hint {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .examples {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+        }
+        
+        .examples-title {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .example-item {
+            padding: 8px 0;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .example-item:last-child {
+            border-bottom: none;
+        }
+        
+        .state-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            border-radius: 2px;
+        }
+        
+        .cancel-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(200, 0, 0, 0.05);
+            border: 1px dashed #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .side-zones {
+            position: absolute;
+            top: 120px;
+            bottom: 80px;
+            left: 0;
+            width: 40px;
+            background: rgba(0, 0, 200, 0.05);
+            border: 1px dashed #999;
+        }
+        
+        .side-zones.right {
+            left: auto;
+            right: 0;
+            background: rgba(200, 100, 0, 0.05);
+        }
+        
+        .side-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            font-size: 10px;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .keyboard-hint {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ЭКРАН ДОБАВЛЕНИЯ ПЛАНА -->
+<div class="screen">
+    <div class="state-label">Добавление</div>
+    
+    <!-- Зона отмены (swipe down) -->
+    <div class="cancel-zone">
+        SWIPE DOWN<br>отмена
+    </div>
+    
+    <!-- Зоны выбора даты/времени и комнаты -->
+    <div class="side-zones">
+        <div class="side-label">SWIPE<br>дата/время</div>
+    </div>
+    <div class="side-zones right">
+        <div class="side-label">SWIPE<br>комната</div>
+    </div>
+    
+    <div class="header">
+        <div class="screen-title">Новый план</div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" class="main-input" placeholder="Что планируете?" autofocus>
+        
+        <div class="input-hint">
+            Напишите план свободным текстом.<br>
+            Система автоматически распознает время и комнату.
+        </div>
+        
+        <div class="examples">
+            <div class="examples-title">Примеры</div>
+            <div class="example-item">Силовая вторник 18:00 зал</div>
+            <div class="example-item">Встреча 15:00</div>
+            <div class="example-item">Скраб вечером</div>
+            <div class="example-item">Купить продукты</div>
+            <div class="example-item">Звонок маме завтра утром дом</div>
+        </div>
+    </div>
+    
+    <div class="keyboard-hint">
+        ENTER — сохранить план
+    </div>
+</div>
+
+<!-- ЭКРАН С ЗАПОЛНЕННЫМ ТЕКСТОМ -->
+<div class="screen" style="margin-top: 40px;">
+    <div class="state-label">Ввод текста</div>
+    
+    <div class="cancel-zone">
+        SWIPE DOWN<br>отмена
+    </div>
+    
+    <div class="side-zones">
+        <div class="side-label">SWIPE<br>дата/время</div>
+    </div>
+    <div class="side-zones right">
+        <div class="side-label">SWIPE<br>комната</div>
+    </div>
+    
+    <div class="header">
+        <div class="screen-title">Новый план</div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" class="main-input" value="Силовая тренировка 18:00 зал" style="border-bottom-color: #333;">
+        
+        <div class="input-hint">
+            <strong>Распознано:</strong><br>
+            • Время: 18:00<br>
+            • Комната: зал<br>
+            • Дата: сегодня
+        </div>
+        
+        <div class="examples">
+            <div class="examples-title">Что можно изменить</div>
+            <div class="example-item">Свайп влево — выбрать другую дату</div>
+            <div class="example-item">Свайп вправо — выбрать комнату</div>
+            <div class="example-item">Enter — сохранить как есть</div>
+        </div>
+    </div>
+    
+    <div class="keyboard-hint">
+        ENTER — сохранить план
+    </div>
+</div>
+
+</body>
+</html>

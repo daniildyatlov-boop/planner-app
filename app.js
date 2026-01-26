@@ -3,6 +3,40 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
+// Обработка ошибок загрузки
+window.addEventListener('error', (e) => {
+    console.error('App error:', e);
+    showErrorScreen();
+});
+
+// Обработка ошибок сети
+window.addEventListener('offline', () => {
+    showErrorScreen();
+});
+
+// Показать экран ошибки
+function showErrorScreen() {
+    document.body.innerHTML = `
+        <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+            <div style="text-align: center; max-width: 280px;">
+                <div style="font-size: 22px; font-weight: 600; margin-bottom: 24px; color: var(--tg-theme-text-color, #000000);">
+                    Временно недоступно
+                </div>
+                <div style="font-size: 16px; line-height: 1.5; margin-bottom: 16px; color: var(--tg-theme-text-color, #000000);">
+                    Планер сейчас обновляется или недоступен.<br>
+                    Попробуйте открыть его чуть позже.
+                </div>
+                <div style="font-size: 15px; margin-bottom: 40px; color: var(--tg-theme-hint-color, #8e8e93);">
+                    Обычно это занимает пару минут.
+                </div>
+                <button onclick="window.location.reload()" style="font-size: 17px; color: var(--tg-theme-link-color, #007aff); cursor: pointer; padding: 12px 20px; border-radius: 12px; background: rgba(0, 122, 255, 0.08); border: none; font-family: inherit; font-weight: 500;">
+                    Обновить
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 // Состояние приложения
 let currentDate = new Date();
 let plans = JSON.parse(localStorage.getItem('plans') || '[]');
@@ -14,10 +48,10 @@ let isPulling = false;
 const app = document.getElementById('app');
 const dayTitle = document.getElementById('dayTitle');
 const content = document.getElementById('content');
-const emptyState = document.getElementById('emptyState');
 const addOverlay = document.getElementById('addOverlay');
 const planInput = document.getElementById('planInput');
 const pullIndicator = document.getElementById('pullIndicator');
+const softEntryArea = document.getElementById('softEntryArea');
 
 // Форматирование даты
 function formatDate(date) {
@@ -108,13 +142,25 @@ function renderPlans() {
     
     if (dayPlans.length === 0) {
         content.innerHTML = `
-            <div class="empty-state">
-                <div style="font-size: 18px; margin-bottom: 8px;">Планов нет</div>
-                <div style="font-size: 14px;">Потяните вниз, чтобы добавить</div>
+            <div class="soft-entry-area" id="softEntryArea">
+                <div class="empty-title">Планов нет</div>
+                <div class="add-action">Добавить план</div>
+                <div class="soft-hint">или потяните вниз</div>
             </div>
         `;
+        content.classList.add('empty');
+        
+        // Добавляем мягкий обработчик для зоны
+        const newSoftArea = document.getElementById('softEntryArea');
+        newSoftArea.addEventListener('click', () => {
+            showAddScreen();
+            tg.HapticFeedback.impactOccurred('light');
+        });
+        
         return;
     }
+    
+    content.classList.remove('empty');
     
     const withTime = dayPlans.filter(p => p.time).sort((a, b) => a.time.localeCompare(b.time));
     const withoutTime = dayPlans.filter(p => !p.time);
@@ -213,7 +259,7 @@ function showAddScreen() {
     addOverlay.classList.add('show');
     setTimeout(() => {
         planInput.focus();
-    }, 300);
+    }, 350);
 }
 
 // Скрыть экран добавления
@@ -308,6 +354,14 @@ addOverlay.addEventListener('touchend', (e) => {
         hideAddScreen();
     }
 });
+
+// Обработчик для начальной мягкой зоны
+if (softEntryArea) {
+    softEntryArea.addEventListener('click', () => {
+        showAddScreen();
+        tg.HapticFeedback.impactOccurred('light');
+    });
+}
 
 // Инициализация
 renderPlans();

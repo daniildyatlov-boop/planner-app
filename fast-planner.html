@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Планы v2.0</title>
+<title>Планы v2.1 - iOS 26</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=5"></script>
 <style>
 /* iOS 26 System-Level Design */
@@ -409,12 +409,12 @@ transition:opacity 120ms ease-in-out
 }
 </style>
 </head>
-<body>
+<body data-version="ios26-v2.1" data-timestamp="1738000000">
 <div class="app">
 <!-- Main Screen -->
 <div class="header">
 <button class="header-btn left" onclick="showRooms()" style="display:none" id="roomsBtn">Комнаты</button>
-<div class="header-title">Планы</div>
+<div class="header-title">🍎 Планы</div>
 <button class="header-btn right" onclick="showAdd()" id="addBtn">Добавить</button>
 </div>
 
@@ -492,8 +492,8 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// Force cache refresh - iOS 26 Design v2.0
-console.log('iOS 26 Design v2.0 loaded');
+// Force cache refresh - iOS 26 Design v2.1
+console.log('🍎 iOS 26 Design v2.1 loaded - ' + new Date().toISOString());
 
 // App state
 let currentDate = new Date();

@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.12.0-JS-SMOOTH-CIRCLE">
+<meta name="version" content="v6.12.1-FIXED-DATE-INPUT">
 <title>Планер v6.12 JS Smooth Circle Animation</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
@@ -897,6 +897,26 @@ body{
   transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   transform: translateZ(0);
+}
+.input[type="date"]{
+  /* Убираем встроенные стили браузера для поля даты */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* Обеспечиваем одинаковую высоту с другими полями */
+  height: auto;
+  line-height: normal;
+  /* Убираем стандартный календарь браузера */
+  position: relative;
+}
+.input[type="date"]::-webkit-calendar-picker-indicator {
+  /* Скрываем стандартную иконку календаря */
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 .input:focus,.select:focus{
   outline:none;

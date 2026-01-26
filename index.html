@@ -19,12 +19,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-g
 .date-content{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0 8px}
 .date-title{font-size:13px;font-weight:600;color:#000000;line-height:1.1;margin:0}
 .date-subtitle{font-size:10px;color:#666666;line-height:1.1;margin:0}
-.nav-arrow{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.1);font-size:16px;color:#007aff;cursor:pointer;width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.nav-arrow:active{opacity:0.6;background:rgba(255,255,255,1)}
-.profile-btn{width:50px;height:50px;background:rgba(0,122,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,122,255,0.3);border-radius:25px;display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:18px;font-weight:600;cursor:pointer;flex-shrink:0;line-height:1;z-index:1000;position:relative;margin:4px;box-shadow:0 4px 16px rgba(0,122,255,0.3)}
-.profile-btn:active{opacity:0.8}
-.rooms-btn{width:36px;height:36px;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,0.1);border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-size:18px;flex-shrink:0;line-height:1}
-.rooms-btn:active{opacity:0.8}
+.nav-arrow{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.1);font-size:16px;color:#007aff;cursor:pointer;width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transform:translateY(0)}
+.nav-arrow:active{opacity:0.7;background:rgba(255,255,255,1);transform:translateY(1px) scale(0.95)}
+.profile-btn{width:50px;height:50px;background:rgba(0,122,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,122,255,0.3);border-radius:25px;display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:18px;font-weight:600;cursor:pointer;flex-shrink:0;line-height:1;z-index:1000;position:relative;margin:4px;box-shadow:0 4px 16px rgba(0,122,255,0.3);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);transform:translateY(0)}
+.profile-btn:active{opacity:0.8;transform:translateY(2px) scale(0.95);box-shadow:0 2px 8px rgba(0,122,255,0.4)}
+.rooms-btn{width:36px;height:36px;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,0.1);border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-size:18px;flex-shrink:0;line-height:1;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);transform:translateY(0)}
+.rooms-btn:active{opacity:0.8;transform:translateY(2px) scale(0.95);box-shadow:0 2px 8px rgba(0,0,0,0.2)}
 .nav{display:none}
 .nav:active{opacity:0.6}
 .teams-btn{background:none;border:none;font-size:24px;cursor:pointer;padding:0}
@@ -36,16 +36,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-g
 .plans::-webkit-scrollbar{display:none}
 .empty h2{font-size:20px;font-weight:500;margin-bottom:8px;color:#000000}
 .empty p{font-size:15px;color:#666666;margin-bottom:32px}
-.btn{background:rgba(0,122,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#ffffff;border:1px solid rgba(0,122,255,0.3);border-radius:12px;padding:14px 28px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,122,255,0.3);transition:all 0.2s ease}
-.btn:active{opacity:0.8;transform:translateY(1px)}
+.btn{background:rgba(0,122,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#ffffff;border:1px solid rgba(0,122,255,0.3);border-radius:12px;padding:14px 28px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,122,255,0.3);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);transform:translateY(0)}
+.btn:active{opacity:0.8;transform:translateY(2px) scale(0.98);box-shadow:0 2px 8px rgba(0,122,255,0.4)}
 
 .group{margin-bottom:16px}
-.group-title{font-size:13px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;padding:0 4px}
-.progress-bar{height:8px;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:4px;margin:0 24px 16px;overflow:hidden;border:1px solid rgba(255,255,255,0.2);flex-shrink:0}
+.group-title{font-size:13px;color:#333333;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;padding:0 4px}
+.progress-bar{height:8px;background:rgba(0,0,0,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:4px;margin:0 24px 16px;overflow:hidden;border:1px solid rgba(0,0,0,0.1);flex-shrink:0}
 .progress-fill{height:100%;background:linear-gradient(90deg,#00d4ff 0%,#5b73ff 100%);border-radius:4px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);width:0%;position:relative}
 .progress-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,0.3) 0%,transparent 50%,rgba(255,255,255,0.3) 100%);border-radius:4px}
-.plan{background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,0.1);border-radius:16px;padding:20px;margin:0 24px 16px;display:flex;align-items:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.1);transition:all 0.2s ease;min-height:60px;flex-shrink:0}
-.plan:active{opacity:0.8;transform:scale(0.98)}
+.plan{background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,0.1);border-radius:16px;padding:20px;margin:0 24px 16px;display:flex;align-items:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.1);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);min-height:60px;flex-shrink:0;transform:translateY(0)}
+.plan:active{opacity:0.9;transform:translateY(2px) scale(0.98);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
 .plan.completed{opacity:0.6;background:rgba(255,255,255,0.05)}
 .plan.completed .plan-title{text-decoration:line-through;color:rgba(255,255,255,0.5)}
 .plan.completed .time{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)}
@@ -55,26 +55,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-g
 .time{font-size:15px;color:#ffffff;font-weight:600;min-width:50px;margin-right:12px;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.2)}
 .plan-content{flex:1;display:flex;flex-direction:column;justify-content:center}
 .plan-title{font-size:17px;margin-bottom:0;color:#000000;font-weight:500;line-height:1.3}
-.room{font-size:12px;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:8px;line-height:1;font-weight:500}
-.add{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);z-index:100;display:none;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);height:100vh;overflow:hidden}
+.room{font-size:12px;color:#666666;background:rgba(0,122,255,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(0,122,255,0.2);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:8px;line-height:1;font-weight:500}
+.add{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);z-index:100;display:none;flex-direction:column;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);height:100vh;overflow:hidden}
 .add.show{display:flex;transform:translateY(0)}
-.add-header{padding:16px 20px;background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 32px rgba(0,0,0,0.1)}
-.header-btn{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);font-size:17px;color:#ffffff;cursor:pointer;padding:8px 12px;border-radius:8px;font-weight:500}
-.header-btn:active{opacity:0.6;background:rgba(255,255,255,0.2)}
+.add-header{padding:16px 20px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.header-btn{background:rgba(0,122,255,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(0,122,255,0.2);font-size:17px;color:#007aff;cursor:pointer;padding:8px 12px;border-radius:8px;font-weight:500;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);transform:translateY(0)}
+.header-btn:active{opacity:0.7;background:rgba(0,122,255,0.2);transform:translateY(1px) scale(0.98)}
 .add-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .form-section{padding:24px;flex:1;overflow-y:auto}
 .form-section::-webkit-scrollbar{display:none}
 .form-group{margin-bottom:24px}
-.add-title{font-size:17px;font-weight:600;color:#ffffff}
-.label{font-size:13px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block;margin-left:0;padding:0}
-.input,.select{width:100%;background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#ffffff;box-shadow:0 8px 32px rgba(0,0,0,0.1);transition:all 0.2s ease;box-sizing:border-box;margin:0;display:block;-webkit-appearance:none;appearance:none}
-.input:focus,.select:focus{outline:none;border-color:rgba(255,255,255,0.4);box-shadow:0 8px 32px rgba(0,0,0,0.2)}
-.input::placeholder{color:rgba(255,255,255,0.5)}
+.add-title{font-size:17px;font-weight:600;color:#000000}
+.label{font-size:13px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block;margin-left:0;padding:0}
+.input,.select{width:100%;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,0.1);border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000000;box-shadow:0 4px 16px rgba(0,0,0,0.1);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);box-sizing:border-box;margin:0;display:block;-webkit-appearance:none;appearance:none}
+.input:focus,.select:focus{outline:none;border-color:#007aff;box-shadow:0 6px 20px rgba(0,122,255,0.2);transform:translateY(-2px)}
+.input::placeholder{color:#999999}
 .input[type="date"]{position:relative;cursor:pointer}
 .input[type="date"]::-webkit-calendar-picker-indicator{position:absolute;right:16px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.6;filter:invert(1)}
 .select{cursor:pointer}
 .select-wrapper{position:relative;width:100%;display:block}
-.select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:rgba(255,255,255,0.5);font-size:18px;pointer-events:none}
+.select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#666666;font-size:18px;pointer-events:none}
 .row{display:flex;gap:12px}
 .row .form-group{flex:1}
 .calendar{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease}
@@ -103,8 +103,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-g
 .menu-btn:not(:last-child){border-bottom:0.5px solid rgba(0,0,0,0.1)}
 .menu-btn:active{background:#f0f0f0}
 .menu-btn.del{color:#ff3b30}
-.add-btn-fixed{position:fixed;bottom:20px;left:20px;right:20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#ffffff;border:1px solid rgba(255,255,255,0.3);border-radius:16px;padding:18px;font-size:17px;font-weight:600;cursor:pointer;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,0.2);display:none;text-align:center}
-.add-btn-fixed:active{opacity:0.8;transform:translateY(1px)}
+.add-btn-fixed{position:fixed;bottom:20px;left:20px;right:20px;background:rgba(0,122,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#ffffff;border:1px solid rgba(0,122,255,0.3);border-radius:16px;padding:18px;font-size:17px;font-weight:600;cursor:pointer;z-index:50;box-shadow:0 8px 24px rgba(0,122,255,0.4);display:none;text-align:center;transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+.add-btn-fixed:active{opacity:0.8;transform:translateY(2px) scale(0.98)}
 .rooms-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);z-index:100;display:none;flex-direction:column;height:100vh;overflow:hidden}
 .rooms-screen.show{display:flex}
 .rooms-header{padding:12px 20px;background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 32px rgba(0,0,0,0.1);height:68px}
@@ -295,8 +295,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-g
 <div class="add-room-title">Новая комната</div>
 <input class="room-input-modal" id="newRoomModal" placeholder="Название комнаты" autofocus>
 <div style="display:flex; gap:12px; margin-top:20px;">
-<button onclick="addRoomFromModal()" style="flex:1; background:rgba(255,255,255,0.2); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#ffffff; border:1px solid rgba(255,255,255,0.3); padding:16px; border-radius:12px; font-size:16px; font-weight:600;">Добавить</button>
-<button onclick="hideAddRoomModal()" style="flex:1; background:rgba(255,255,255,0.1); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.2); padding:16px; border-radius:12px; font-size:16px; font-weight:600;">Отмена</button>
+<button onclick="addRoomFromModal()" style="flex:1; background:rgba(0,122,255,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#ffffff; border:1px solid rgba(0,122,255,0.3); padding:16px; border-radius:12px; font-size:16px; font-weight:600; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow:0 4px 16px rgba(0,122,255,0.3);">Добавить</button>
+<button onclick="hideAddRoomModal()" style="flex:1; background:rgba(255,255,255,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#666666; border:1px solid rgba(0,0,0,0.1); padding:16px; border-radius:12px; font-size:16px; font-weight:600; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow:0 4px 16px rgba(0,0,0,0.1);">Отмена</button>
 </div>
 </div>
 </div>

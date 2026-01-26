@@ -402,6 +402,32 @@ transition:opacity 120ms ease-in-out
 }
 .room-delete:active{opacity:0.6}
 
+/* Support Screen */
+.support-info{
+padding:24px 0;
+}
+.info-section{
+background:#FFFFFF;
+border-radius:12px;
+padding:16px;
+margin-bottom:8px;
+box-shadow:0 2px 16px rgba(0,0,0,0.06);
+display:flex;
+justify-content:space-between;
+align-items:center;
+min-height:56px
+}
+.info-title{
+font-size:17px;
+font-weight:400;
+color:#0A0A0A;
+}
+.info-value{
+font-size:17px;
+font-weight:600;
+color:#007AFF;
+}
+
 /* Responsive Adjustments */
 @media (max-height: 600px) {
 .empty-state{padding:32px 24px}
@@ -416,6 +442,7 @@ transition:opacity 120ms ease-in-out
 <button class="header-btn left" onclick="showRooms()" style="display:none" id="roomsBtn">Комнаты</button>
 <div class="header-title">🍎 Планы</div>
 <button class="header-btn right" onclick="showAdd()" id="addBtn">Добавить</button>
+<button class="header-btn right" onclick="showSupport()" id="supportBtn" style="right:80px;display:block">ℹ️</button>
 </div>
 
 <div class="content">
@@ -475,6 +502,31 @@ transition:opacity 120ms ease-in-out
 </div>
 <div class="content">
 <div class="rooms-list" id="roomsList"></div>
+</div>
+</div>
+
+<!-- Support Screen -->
+<div class="modal-screen" id="supportScreen">
+<div class="header">
+<button class="header-btn left" onclick="hideSupport()">Назад</button>
+<div class="header-title">Поддержка</div>
+<button class="header-btn right" onclick="showAbout()">О приложении</button>
+</div>
+<div class="content">
+<div class="support-info">
+<div class="info-section">
+<div class="info-title">Версия приложения</div>
+<div class="info-value">v2.1 - iOS 26 Design</div>
+</div>
+<div class="info-section">
+<div class="info-title">Последнее обновление</div>
+<div class="info-value">27 января 2025</div>
+</div>
+<div class="info-section">
+<div class="info-title">Статус</div>
+<div class="info-value">🍎 Активна</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -751,6 +803,31 @@ option.value = room;
 option.textContent = room;
 select.appendChild(option);
 });
+}
+
+// Support functions
+function showSupport() {
+document.getElementById('supportScreen').classList.add('show');
+}
+
+function hideSupport() {
+document.getElementById('supportScreen').classList.remove('show');
+}
+
+function showAbout() {
+const buildDate = new Date().toLocaleDateString('ru-RU');
+alert(`🍎 Планы v2.1 - iOS 26 Design
+
+📅 Последнее обновление: 27 января 2025
+🔧 Сборка: ${buildDate}
+💻 Платформа: Telegram Mini App
+🎨 Дизайн: iOS 26 System Level
+
+✨ Особенности:
+• Системный дизайн iOS 26
+• 8pt Grid System
+• Мягкие тени и анимации
+• Минимальный интерфейс`);
 }
 
 // Initialize app

@@ -5981,6 +5981,26 @@ function showHabitsTab() {
   `;
 }
 
+// ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ ОТЛАДКИ
+window.forceRender = function() {
+  console.log('=== ПРИНУДИТЕЛЬНЫЙ РЕНДЕРИНГ ===');
+  console.log('plans:', plans);
+  console.log('currentTab:', currentTab);
+  console.log('currentDate:', currentDate);
+  render();
+};
+
+window.checkStorage = function() {
+  console.log('=== ПРОВЕРКА LOCALSTORAGE ===');
+  const saved = localStorage.getItem('planner_plans');
+  console.log('Данные в localStorage:', saved);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    console.log('Распарсенные данные:', parsed);
+    console.log('Количество:', parsed.length);
+  }
+};
+
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
   try {
@@ -6014,12 +6034,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Перед render - планы:', plans);
     
-    // КРИТИЧЕСКИ ВАЖНО: Добавляем небольшую задержку чтобы DOM успел инициализироваться
+    // Пробуем рендерить сразу
+    render();
+    
+    // КРИТИЧЕСКИ ВАЖНО: Добавляем несколько попыток рендеринга с разными задержками
     setTimeout(() => {
-      console.log('Вызываем render через setTimeout');
+      console.log('Вызываем render через 100ms');
       render();
-      console.log('DOMContentLoaded - инициализация завершена');
     }, 100);
+    
+    setTimeout(() => {
+      console.log('Вызываем render через 500ms');
+      render();
+    }, 500);
+    
+    setTimeout(() => {
+      console.log('Вызываем render через 1000ms');
+      render();
+    }, 1000);
+    
+    console.log('DOMContentLoaded - инициализация завершена');
     
   } catch (e) {
     console.error('Ошибка при инициализации приложения:', e);

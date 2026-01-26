@@ -1581,6 +1581,8 @@ body{
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--spacing-lg);
   padding: 0 var(--spacing-xl) var(--spacing-xl);
+  overflow: visible;
+  min-height: auto;
 }
 .day-card{
   background: var(--bg-card);
@@ -1643,6 +1645,36 @@ body{
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 4px;
+}
+.meal-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.delete-meal-btn{
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+.delete-meal-btn:hover{
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: scale(1.1);
+}
+.delete-meal-btn:active{
+  transform: scale(0.9);
 }
 .meal.add-meal .meal-label{
   color: var(--accent-primary);
@@ -3539,6 +3571,10 @@ function showNutritionTab() {
     </div>
   `;
   
+  // Убеждаемся что контент может скроллиться
+  content.style.overflow = 'auto';
+  content.style.height = 'auto';
+  
   // Инициализируем питание
   initNutrition();
 }
@@ -3671,9 +3707,14 @@ function renderWeek() {
     // Рендерим существующие приемы пищи
     dayMealTypes.forEach(mealType => {
       const mealContent = dayMeals[mealType.id] || 'Не запланировано';
+      const isCustomMeal = !['breakfast', 'lunch', 'dinner', 'snack'].includes(mealType.id);
+      
       html += `
         <div class="meal" onclick="editMeal('${dateStr}', '${mealType.id}')">
-          <div class="meal-label">${mealType.icon} ${mealType.name}</div>
+          <div class="meal-header">
+            <div class="meal-label">${mealType.icon} ${mealType.name}</div>
+            ${isCustomMeal ? `<button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>` : ''}
+          </div>
           <div class="meal-content">${mealContent}</div>
         </div>
       `;
@@ -3828,6 +3869,39 @@ function saveNewMealType(dateStr) {
     nutritionData.mealTypes[dateStr] = getDefaultMealTypes();
   }
   nutritionData.mealTypes[dateStr].push(newMealType);
+  
+  saveNutritionData();
+  renderWeek();
+  hidePopup();
+}
+
+// Удаление типа приема пищи
+function deleteMealType(dateStr, mealTypeId) {
+  // Получаем название приема пищи для подтверждения
+  const dayMealTypes = nutritionData.mealTypes[dateStr] || getDefaultMealTypes();
+  const mealType = dayMealTypes.find(m => m.id === mealTypeId);
+  const mealName = mealType ? mealType.name : 'Прием пищи';
+  
+  showPopup(
+    'Удалить прием пищи?',
+    `Прием пищи "${mealName}" будет удален из этого дня.`,
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Удалить', type: 'danger', action: () => confirmDeleteMealType(dateStr, mealTypeId) }
+    ]
+  );
+}
+
+function confirmDeleteMealType(dateStr, mealTypeId) {
+  // Удаляем тип приема пищи
+  if (nutritionData.mealTypes[dateStr]) {
+    nutritionData.mealTypes[dateStr] = nutritionData.mealTypes[dateStr].filter(m => m.id !== mealTypeId);
+  }
+  
+  // Удаляем данные о еде для этого типа
+  if (nutritionData.meals[dateStr] && nutritionData.meals[dateStr][mealTypeId]) {
+    delete nutritionData.meals[dateStr][mealTypeId];
+  }
   
   saveNutritionData();
   renderWeek();

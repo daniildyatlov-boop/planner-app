@@ -2014,6 +2014,7 @@ textarea.input {
 .meal.completed .meal-label {
   color: var(--text-muted);
   position: relative;
+  display: inline-block; /* Важно для точного зачеркивания */
 }
 .meal.completed .meal-label::after {
   content: '';
@@ -2021,6 +2022,7 @@ textarea.input {
   top: 50%;
   left: 0;
   width: 0;
+  max-width: 100%;
   height: 2px;
   background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
   border-radius: 1px;
@@ -2031,6 +2033,8 @@ textarea.input {
 .meal.completed .meal-content {
   color: var(--text-muted);
   position: relative;
+  display: inline-block; /* Важно для точного зачеркивания */
+  width: 100%; /* Занимает всю ширину, но зачеркивание только по тексту */
 }
 .meal.completed .meal-content::after {
   content: '';
@@ -2038,6 +2042,7 @@ textarea.input {
   top: 50%;
   left: 0;
   width: 0;
+  max-width: 100%;
   height: 2px;
   background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
   border-radius: 1px;
@@ -2222,33 +2227,53 @@ textarea.input {
   font-size: 14px;
 }
 
-/* DELETE MEAL BUTTON */
+/* DELETE MEAL BUTTON - УЛУЧШЕННАЯ КНОПКА УДАЛЕНИЯ */
 .delete-meal-btn{
   background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   color: #ef4444;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   backdrop-filter: blur(10px);
+  opacity: 0.7;
+  transform: scale(0.9);
 }
 .delete-meal-btn:hover{
   background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
-  transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+  opacity: 1;
 }
 .delete-meal-btn:active{
   transform: scale(1.05);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Показываем кнопку удаления только при ховере на прием пищи */
+.meal .delete-meal-btn {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+.meal:hover .delete-meal-btn {
+  opacity: 0.7;
+  transform: scale(0.9);
+  pointer-events: auto;
+}
+.meal:hover .delete-meal-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 /* MEAL TIME BADGE */
@@ -4523,8 +4548,7 @@ function initNutrition() {
 let nutritionData = {
   water: {
     target: 8,
-    current: 0,
-    date: new Date().toDateString()
+    daily: {} // Изменяем структуру: {date: amount}
   },
   meals: {}, // {date: {mealId: {content: '', time: ''}}}
   mealTypes: { // Типы приемов пищи по дням
@@ -4549,9 +4573,22 @@ function loadNutritionData() {
     if (saved) {
       const loadedData = JSON.parse(saved);
       
-      // Миграция старых данных
+      // Миграция старой структуры воды
+      if (loadedData.water && typeof loadedData.water.current !== 'undefined') {
+        // Старая структура - мигрируем
+        const oldDate = loadedData.water.date || new Date().toDateString();
+        const oldAmount = loadedData.water.current || 0;
+        
+        nutritionData.water.target = loadedData.water.target || 8;
+        nutritionData.water.daily = {};
+        nutritionData.water.daily[oldDate] = oldAmount;
+      } else if (loadedData.water && loadedData.water.daily) {
+        // Новая структура
+        nutritionData.water = loadedData.water;
+      }
+      
+      // Миграция старых данных приемов пищи
       if (loadedData.meals) {
-        // Проверяем, есть ли старый формат данных (строки вместо объектов)
         for (const dateStr in loadedData.meals) {
           const dayMeals = loadedData.meals[dateStr];
           if (typeof dayMeals === 'object' && dayMeals !== null) {
@@ -4562,21 +4599,18 @@ function loadNutritionData() {
             }
           }
         }
+        nutritionData.meals = loadedData.meals;
       }
       
       // Инициализируем mealTypes если его нет
-      if (!loadedData.mealTypes) {
-        loadedData.mealTypes = {};
+      if (loadedData.mealTypes) {
+        nutritionData.mealTypes = loadedData.mealTypes;
       }
-      
-      nutritionData = loadedData;
     }
     
-    // Проверяем, что данные воды за сегодня
-    const today = new Date().toDateString();
-    if (nutritionData.water.date !== today) {
-      nutritionData.water.current = 0;
-      nutritionData.water.date = today;
+    // Инициализируем daily если его нет
+    if (!nutritionData.water.daily) {
+      nutritionData.water.daily = {};
     }
   } catch (e) {
     console.error('Error loading nutrition data:', e);
@@ -4674,12 +4708,45 @@ function renderNutritionDay() {
           const mealContent = meal.querySelector('.meal-content');
           
           if (mealLabel) {
-            const labelWidth = getTextWidth(mealLabel.textContent, mealLabel);
+            // Создаем временный элемент для измерения только текста
+            const tempLabel = document.createElement('span');
+            tempLabel.style.cssText = `
+              position: absolute;
+              visibility: hidden;
+              white-space: nowrap;
+              font-family: ${window.getComputedStyle(mealLabel).fontFamily};
+              font-size: ${window.getComputedStyle(mealLabel).fontSize};
+              font-weight: ${window.getComputedStyle(mealLabel).fontWeight};
+            `;
+            
+            // Получаем только текст без HTML тегов и значков времени
+            const labelTextOnly = mealLabel.textContent.replace(/\s*\d{2}:\d{2}\s*$/, '').trim();
+            tempLabel.textContent = labelTextOnly;
+            
+            document.body.appendChild(tempLabel);
+            const labelWidth = tempLabel.offsetWidth;
+            document.body.removeChild(tempLabel);
+            
             mealLabel.style.setProperty('--text-width', labelWidth + 'px');
           }
           
           if (mealContent) {
-            const contentWidth = getTextWidth(mealContent.textContent, mealContent);
+            // Создаем временный элемент для измерения текста контента
+            const tempContent = document.createElement('span');
+            tempContent.style.cssText = `
+              position: absolute;
+              visibility: hidden;
+              white-space: nowrap;
+              font-family: ${window.getComputedStyle(mealContent).fontFamily};
+              font-size: ${window.getComputedStyle(mealContent).fontSize};
+              font-weight: ${window.getComputedStyle(mealContent).fontWeight};
+            `;
+            tempContent.textContent = mealContent.textContent;
+            
+            document.body.appendChild(tempContent);
+            const contentWidth = tempContent.offsetWidth;
+            document.body.removeChild(tempContent);
+            
             mealContent.style.setProperty('--text-width', contentWidth + 'px');
           }
         }
@@ -4717,23 +4784,21 @@ function formatNutritionDate(date) {
 
 // Трекер воды
 function changeWater(delta) {
-  const today = currentNutritionDate.toDateString();
-  if (nutritionData.water.date !== today) {
-    nutritionData.water.current = 0;
-    nutritionData.water.date = today;
-  }
+  const dateStr = currentNutritionDate.toDateString();
   
-  nutritionData.water.current = Math.max(0, nutritionData.water.current + delta);
+  // Получаем текущее количество воды для этого дня
+  const currentAmount = nutritionData.water.daily[dateStr] || 0;
+  
+  // Обновляем количество
+  nutritionData.water.daily[dateStr] = Math.max(0, currentAmount + delta);
+  
   saveNutritionData();
   updateWaterTracker();
 }
 
 function editWaterAmount() {
-  const currentDay = currentNutritionDate.toDateString();
-  if (nutritionData.water.date !== currentDay) {
-    nutritionData.water.current = 0;
-    nutritionData.water.date = currentDay;
-  }
+  const dateStr = currentNutritionDate.toDateString();
+  const currentAmount = nutritionData.water.daily[dateStr] || 0;
   
   showPopup(
     '💧 Количество воды',
@@ -4743,7 +4808,7 @@ function editWaterAmount() {
       { text: 'Сохранить', type: 'confirm', action: saveWaterAmount }
     ],
     true,
-    nutritionData.water.current.toString()
+    currentAmount.toString()
   );
   
   setTimeout(() => {
@@ -4768,9 +4833,8 @@ function saveWaterAmount() {
     return;
   }
   
-  const currentDay = currentNutritionDate.toDateString();
-  nutritionData.water.current = newAmount;
-  nutritionData.water.date = currentDay;
+  const dateStr = currentNutritionDate.toDateString();
+  nutritionData.water.daily[dateStr] = newAmount;
   
   saveNutritionData();
   updateWaterTracker();
@@ -4784,14 +4848,9 @@ function updateWaterTracker() {
   
   if (!waterStats || !waterProgressFill || !waterCurrent) return;
   
-  // Проверяем воду для текущего дня питания
-  const currentDay = currentNutritionDate.toDateString();
-  if (nutritionData.water.date !== currentDay) {
-    nutritionData.water.current = 0;
-    nutritionData.water.date = currentDay;
-  }
-  
-  const current = nutritionData.water.current;
+  // Получаем воду для текущего дня питания
+  const dateStr = currentNutritionDate.toDateString();
+  const current = nutritionData.water.daily[dateStr] || 0;
   const target = nutritionData.water.target;
   const percentage = (current / target) * 100;
   
@@ -5268,12 +5327,45 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
     
     // Измеряем точную ширину текста для красивого зачеркивания
     if (mealLabel) {
-      const labelWidth = getTextWidth(mealLabel.textContent, mealLabel);
+      // Создаем временный элемент для измерения только текста (без значков времени)
+      const tempLabel = document.createElement('span');
+      tempLabel.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        white-space: nowrap;
+        font-family: ${window.getComputedStyle(mealLabel).fontFamily};
+        font-size: ${window.getComputedStyle(mealLabel).fontSize};
+        font-weight: ${window.getComputedStyle(mealLabel).fontWeight};
+      `;
+      
+      // Получаем только текст без HTML тегов
+      const labelTextOnly = mealLabel.textContent.replace(/\s*\d{2}:\d{2}\s*$/, '').trim();
+      tempLabel.textContent = labelTextOnly;
+      
+      document.body.appendChild(tempLabel);
+      const labelWidth = tempLabel.offsetWidth;
+      document.body.removeChild(tempLabel);
+      
       mealLabel.style.setProperty('--text-width', labelWidth + 'px');
     }
     
     if (mealContent) {
-      const contentWidth = getTextWidth(mealContent.textContent, mealContent);
+      // Создаем временный элемент для измерения текста контента
+      const tempContent = document.createElement('span');
+      tempContent.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        white-space: nowrap;
+        font-family: ${window.getComputedStyle(mealContent).fontFamily};
+        font-size: ${window.getComputedStyle(mealContent).fontSize};
+        font-weight: ${window.getComputedStyle(mealContent).fontWeight};
+      `;
+      tempContent.textContent = mealContent.textContent;
+      
+      document.body.appendChild(tempContent);
+      const contentWidth = tempContent.offsetWidth;
+      document.body.removeChild(tempContent);
+      
       mealContent.style.setProperty('--text-width', contentWidth + 'px');
     }
     

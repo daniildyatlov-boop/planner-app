@@ -48,7 +48,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 .menu-btn.del{color:var(--tg-theme-destructive-text-color,#ff3b30)}
 .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:150;display:none}
 .overlay.show{display:block}
-.add-btn-fixed{position:fixed;bottom:20px;left:20px;right:20px;background:var(--tg-theme-button-color,#007aff);color:var(--tg-theme-button-text-color,#fff);border:none;border-radius:8px;padding:16px;font-size:17px;font-weight:600;cursor:pointer;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+.add-btn-fixed{position:fixed;bottom:20px;left:20px;right:20px;background:var(--tg-theme-button-color,#007aff);color:var(--tg-theme-button-text-color,#fff);border:none;border-radius:8px;padding:16px;font-size:17px;font-weight:600;cursor:pointer;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,0.1);display:none}
 .add-btn-fixed:active{opacity:0.8}
 </style>
 </head>
@@ -131,15 +131,18 @@ document.getElementById('dayTitle').textContent=formatDate(date);
 
 const empty=document.getElementById('empty');
 const plansEl=document.getElementById('plans');
+const fixedBtn=document.querySelector('.add-btn-fixed');
 
 if(today.length===0){
 empty.style.display='flex';
 plansEl.style.display='none';
+fixedBtn.style.display='none';
 return;
 }
 
 empty.style.display='none';
 plansEl.style.display='block';
+fixedBtn.style.display='block';
 
 const withTime=today.filter(p=>p.time).sort((a,b)=>a.time.localeCompare(b.time));
 const withoutTime=today.filter(p=>!p.time);

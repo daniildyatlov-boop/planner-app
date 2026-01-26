@@ -396,9 +396,18 @@ roomsList.innerHTML=html;
 }
 
 function showAddRoomModal(){
-document.getElementById('addRoomModal').classList.add('show');
+console.log('Показываем модальное окно добавления комнаты');
+const modal=document.getElementById('addRoomModal');
+modal.classList.add('show');
+console.log('Модальное окно показано');
 setTimeout(()=>{
-document.getElementById('newRoomModal').focus();
+const input=document.getElementById('newRoomModal');
+if(input){
+input.focus();
+console.log('Фокус установлен на поле ввода');
+}else{
+console.log('Поле ввода не найдено!');
+}
 },300);
 }
 

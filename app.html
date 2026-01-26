@@ -468,6 +468,7 @@ document.getElementById('title').focus();
 
 function showRooms(){
 document.getElementById('roomsScreen').classList.add('show');
+document.querySelector('.header').style.display='none';
 renderRooms();
 }
 
@@ -516,6 +517,7 @@ window.open(telegramUrl,'_blank');
 
 function hideRooms(){
 document.getElementById('roomsScreen').classList.remove('show');
+document.querySelector('.header').style.display='flex';
 }
 
 function renderRooms(){

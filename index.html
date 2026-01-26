@@ -11,8 +11,8 @@
 <meta name="pragma" content="no-cache">
 <meta name="last-modified" content="Mon, 27 Jan 2025 12:00:00 GMT">
 <meta name="etag" content="v5-mega-update-1738000006">
-<meta name="version" content="v5.0-FINAL-FAST-FORCE-UPDATE-MEGA-1738000006">
-<title>Планер v5.0 FINAL + Back Buttons</title>
+<meta name="version" content="v5.1-STORAGE-FIXED-1738000012">
+<title>Планер v5.1 STORAGE FIXED</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7&cache=bust"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -351,11 +351,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 
 <script>
-console.log('🚀 Планер v5.0 FINAL + Back Buttons загружен - ' + new Date().toISOString());
+console.log('🚀 Планер v5.1 STORAGE FIXED загружен - ' + new Date().toISOString());
 
-const tg=window.Telegram.WebApp;
-tg.expand();
-tg.ready();
+const tg=window.Telegram?.WebApp;
+let currentModal = null;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.enableClosingConfirmation();
+  
+  // Настройка темы
+  if (tg.themeParams) {
+    document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#f2f2f7');
+    document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+    document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#8e8e93');
+    document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color || '#007aff');
+    document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#007aff');
+    document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+  }
+  
+  // Обработка кнопки "Назад"
+  tg.BackButton.onClick(() => {
+    if (currentModal) {
+      hideCurrentModal();
+    } else {
+      tg.close();
+    }
+  });
+  
+  console.log('Telegram WebApp инициализирован');
+} else {
+  console.log('Telegram WebApp API недоступен - работаем в браузере');
+}
 
 let date=new Date();
 let plans=[];
@@ -370,8 +398,20 @@ return div.innerHTML;
 
 function loadPlans(){
 try{
-plans=JSON.parse(localStorage.getItem('plans')||'[]');
-teams=JSON.parse(localStorage.getItem('teams')||'[]');
+// Миграция старых данных
+const oldPlans = localStorage.getItem('plans');
+const oldTeams = localStorage.getItem('teams');
+if (oldPlans && !localStorage.getItem('planner_plans')) {
+  localStorage.setItem('planner_plans', oldPlans);
+  localStorage.removeItem('plans');
+}
+if (oldTeams && !localStorage.getItem('planner_teams')) {
+  localStorage.setItem('planner_teams', oldTeams);
+  localStorage.removeItem('teams');
+}
+
+plans=JSON.parse(localStorage.getItem('planner_plans')||'[]');
+teams=JSON.parse(localStorage.getItem('planner_teams')||'[]');
 }catch(e){
 plans=[];
 teams=[];
@@ -459,6 +499,8 @@ render();
 function showAdd(){
 const addScreen=document.getElementById('add');
 addScreen.classList.add('show');
+currentModal = 'add';
+if (tg) tg.BackButton.show();
 document.getElementById('date').value=date.toISOString().split('T')[0];
 updateRoomsSelect();
 setTimeout(()=>{
@@ -481,7 +523,14 @@ document.getElementById('profileScreen').classList.remove('show');
 }
 
 function loadProfileData(){
-const userName=localStorage.getItem('userName')||'Пользователь';
+// Миграция старого имени пользователя
+const oldUserName = localStorage.getItem('userName');
+if (oldUserName && !localStorage.getItem('planner_userName')) {
+  localStorage.setItem('planner_userName', oldUserName);
+  localStorage.removeItem('userName');
+}
+
+const userName=localStorage.getItem('planner_userName')||'Пользователь';
 document.getElementById('profileName').textContent=userName;
 }
 
@@ -491,7 +540,7 @@ const newName=prompt('Введите ваше имя:',currentName);
 if(newName&&newName.trim()){
 const trimmedName=newName.trim();
 document.getElementById('profileName').textContent=trimmedName;
-localStorage.setItem('userName',trimmedName);
+localStorage.setItem('planner_userName',trimmedName);
 const firstLetter=trimmedName.charAt(0).toUpperCase();
 document.querySelector('.avatar-circle').textContent=firstLetter;
 document.querySelector('.profile-btn').textContent=firstLetter;
@@ -559,7 +608,7 @@ return;
 }
 
 teams.push(roomName);
-localStorage.setItem('teams',JSON.stringify(teams));
+localStorage.setItem('planner_teams',JSON.stringify(teams));
 renderRooms();
 updateRoomsSelect();
 hideAddRoomModal();
@@ -567,7 +616,7 @@ hideAddRoomModal();
 
 function deleteRoom(roomName){
 teams=teams.filter(t=>t!==roomName);
-localStorage.setItem('teams',JSON.stringify(teams));
+localStorage.setItem('planner_teams',JSON.stringify(teams));
 renderRooms();
 }
 
@@ -614,7 +663,7 @@ plan.id=Date.now().toString();
 plans.push(plan);
 }
 
-localStorage.setItem('plans',JSON.stringify(plans));
+localStorage.setItem('planner_plans',JSON.stringify(plans));
 selected=null;
 hideAdd();
 date=new Date(plan.date);
@@ -665,7 +714,7 @@ select.appendChild(option);
 
 function del(){
 plans=plans.filter(p=>p.id!==selected);
-localStorage.setItem('plans',JSON.stringify(plans));
+localStorage.setItem('planner_plans',JSON.stringify(plans));
 hideMenu();
 render();
 }
@@ -675,7 +724,7 @@ event.stopPropagation();
 const plan=plans.find(p=>p.id===id);
 if(plan){
 plan.completed=!plan.completed;
-localStorage.setItem('plans',JSON.stringify(plans));
+localStorage.setItem('planner_plans',JSON.stringify(plans));
 render();
 }
 }

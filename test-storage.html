@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тест localStorage</title>
+</head>
+<body>
+<h1>Тест localStorage для планера</h1>
+<div id="results"></div>
+
+<script>
+// Проверяем, какие данные есть в localStorage
+const results = document.getElementById('results');
+let html = '<h2>Данные в localStorage:</h2>';
+
+// Проверяем все ключи планера
+const keys = ['planner_plans', 'planner_teams', 'planner_userName', 'plans', 'teams', 'userName'];
+keys.forEach(key => {
+  const value = localStorage.getItem(key);
+  html += `<p><strong>${key}:</strong> ${value ? JSON.stringify(JSON.parse(value), null, 2) : 'не найдено'}</p>`;
+});
+
+// Добавляем тестовые данные
+html += '<h2>Добавляем тестовые данные:</h2>';
+const testPlan = {
+  id: Date.now().toString(),
+  title: 'Тестовый план',
+  date: new Date().toISOString().split('T')[0],
+  completed: false,
+  room: 'Тестовая комната'
+};
+
+localStorage.setItem('planner_plans', JSON.stringify([testPlan]));
+localStorage.setItem('planner_teams', JSON.stringify(['Тестовая комната']));
+localStorage.setItem('planner_userName', 'Тестовый пользователь');
+
+html += '<p>✅ Тестовые данные добавлены!</p>';
+html += '<p><a href="index.html">Перейти к планеру</a></p>';
+
+results.innerHTML = html;
+</script>
+</body>
+</html>

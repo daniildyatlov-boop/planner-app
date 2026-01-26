@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.17.0-NUTRITION-TAB">
-<title>Планер v6.17 Nutrition Tab</title>
+<meta name="version" content="v6.18.0-STORAGE-FIXED">
+<title>Планер v6.18 Storage Fixed</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -3335,9 +3335,35 @@ textarea.input {
 
 // TELEGRAM WEB APP INIT
 const tg = window.Telegram?.WebApp;
+let currentModal = null;
+
 if (tg) {
   tg.ready();
   tg.expand();
+  tg.enableClosingConfirmation();
+  
+  // Настройка темы
+  if (tg.themeParams) {
+    document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#f2f2f7');
+    document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+    document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#8e8e93');
+    document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color || '#007aff');
+    document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#007aff');
+    document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+  }
+  
+  // Обработка кнопки "Назад"
+  tg.BackButton.onClick(() => {
+    if (currentModal) {
+      hideCurrentModal();
+    } else {
+      tg.close();
+    }
+  });
+  
+  console.log('Telegram WebApp инициализирован');
+} else {
+  console.log('Telegram WebApp API недоступен - работаем в браузере');
 }
 
 // STATE
@@ -3391,11 +3417,22 @@ function getRoomIcon(roomName) {
 }
 
 function getPlansForDate(date) {
+  console.log('getPlansForDate вызвана для даты:', date);
+  console.log('Все планы в getPlansForDate:', plans);
+  
   const dateStr = date.toDateString();
-  const dayPlans = plans.filter(p => new Date(p.date).toDateString() === dateStr);
+  console.log('Строка даты для фильтрации:', dateStr);
+  
+  const dayPlans = plans.filter(p => {
+    const planDateStr = new Date(p.date).toDateString();
+    console.log(`Сравниваем план "${p.title}": ${planDateStr} === ${dateStr}?`, planDateStr === dateStr);
+    return planDateStr === dateStr;
+  });
+  
+  console.log('Отфильтрованные планы на день:', dayPlans);
   
   // Сортируем по времени: сначала задачи с временем (по времени), потом без времени
-  return dayPlans.sort((a, b) => {
+  const sortedPlans = dayPlans.sort((a, b) => {
     // Если у обеих задач есть время - сортируем по времени
     if (a.time && b.time) {
       return a.time.localeCompare(b.time);
@@ -3406,155 +3443,301 @@ function getPlansForDate(date) {
     // Если у обеих нет времени - оставляем исходный порядок
     return 0;
   });
+  
+  console.log('Отсортированные планы на день:', sortedPlans);
+  return sortedPlans;
 }
 
 // STORAGE
 function loadData() {
   try {
+    console.log('Загружаем данные приложения...');
+    
+    // Проверяем, что есть в localStorage
+    const savedPlans = localStorage.getItem('planner_plans');
+    const savedRooms = localStorage.getItem('planner_teams');
+    console.log('Данные в localStorage - планы:', savedPlans);
+    console.log('Данные в localStorage - разделы:', savedRooms);
+    
+    // Миграция старых данных
+    const oldPlans = localStorage.getItem('plans');
+    const oldTeams = localStorage.getItem('teams');
+    const oldRooms = localStorage.getItem('planner_rooms');
+    
+    if (oldPlans && !localStorage.getItem('planner_plans')) {
+      localStorage.setItem('planner_plans', oldPlans);
+      localStorage.removeItem('plans');
+      console.log('Мигрированы старые планы');
+    }
+    if (oldTeams && !localStorage.getItem('planner_teams')) {
+      localStorage.setItem('planner_teams', oldTeams);
+      localStorage.removeItem('teams');
+      console.log('Мигрированы старые команды');
+    }
+    if (oldRooms && !localStorage.getItem('planner_teams')) {
+      localStorage.setItem('planner_teams', oldRooms);
+      localStorage.removeItem('planner_rooms');
+      console.log('Мигрированы старые разделы');
+    }
+
     plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
-    rooms = JSON.parse(localStorage.getItem('planner_rooms') || '[]');
+    rooms = JSON.parse(localStorage.getItem('planner_teams') || '[]');
+    
+    console.log(`Загружено планов: ${plans.length}, разделов: ${rooms.length}`);
+    console.log('Загруженные планы:', plans);
     
     // Миграция старых разделов (строки) в новый формат (объекты)
     if (rooms.length > 0 && typeof rooms[0] === 'string') {
+      console.log('Мигрируем разделы в новый формат...');
       const defaultIcons = ['🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧'];
       rooms = rooms.map((roomName, index) => ({
         name: roomName,
         icon: defaultIcons[index % defaultIcons.length]
       }));
       saveRooms(); // Сохраняем в новом формате
+      console.log('Миграция разделов завершена');
     }
   } catch (e) {
-    console.error('Error loading data:', e);
+    console.error('Ошибка при загрузке данных:', e);
+    // Инициализируем пустыми данными в случае ошибки
     plans = [];
     rooms = [];
+    
+    // Показываем уведомление пользователю
+    if (typeof showPopup === 'function') {
+      showPopup('Ошибка загрузки', 'Не удалось загрузить сохраненные данные. Приложение запущено с пустыми данными.', [
+        { text: 'OK', type: 'confirm', action: hidePopup }
+      ]);
+    }
   }
 }
 
 function savePlans() {
   try {
-    localStorage.setItem('planner_plans', JSON.stringify(plans));
+    console.log('Сохраняем планы:', plans);
+    console.log('Количество планов для сохранения:', plans.length);
+    
+    const dataToSave = JSON.stringify(plans);
+    console.log('JSON для сохранения:', dataToSave);
+    
+    localStorage.setItem('planner_plans', dataToSave);
+    console.log('Планы успешно сохранены в localStorage');
+    
+    // Проверяем, что данные действительно сохранились
+    const saved = localStorage.getItem('planner_plans');
+    console.log('Проверка сохранения - данные в localStorage:', saved);
+    
+    // Дополнительная проверка - парсим обратно
+    const parsedBack = JSON.parse(saved || '[]');
+    console.log('Проверка парсинга - количество планов:', parsedBack.length);
+    
+    if (parsedBack.length !== plans.length) {
+      console.error('КРИТИЧЕСКАЯ ОШИБКА: Количество сохраненных планов не совпадает!');
+      console.error('Ожидалось:', plans.length, 'Сохранено:', parsedBack.length);
+    }
   } catch (e) {
-    console.error('Error saving plans:', e);
+    console.error('Ошибка при сохранении планов:', e);
+    // Показываем уведомление пользователю
+    if (typeof showPopup === 'function') {
+      showPopup('Ошибка сохранения', 'Не удалось сохранить данные. Проверьте свободное место на устройстве.', [
+        { text: 'OK', type: 'confirm', action: hidePopup }
+      ]);
+    }
   }
 }
 
 function saveRooms() {
   try {
-    localStorage.setItem('planner_rooms', JSON.stringify(rooms));
+    localStorage.setItem('planner_teams', JSON.stringify(rooms));
+    console.log('Разделы успешно сохранены');
   } catch (e) {
-    console.error('Error saving rooms:', e);
+    console.error('Ошибка при сохранении разделов:', e);
+    // Показываем уведомление пользователю
+    if (typeof showPopup === 'function') {
+      showPopup('Ошибка сохранения', 'Не удалось сохранить разделы. Проверьте свободное место на устройстве.', [
+        { text: 'OK', type: 'confirm', action: hidePopup }
+      ]);
+    }
   }
 }
 
 // RENDER
 function render() {
-  // Проверяем, что мы на вкладке задач
-  if (currentTab !== 'tasks') return;
-  
-  const todayPlans = getPlansForDate(currentDate);
-  
-  // Update date display
-  const dayTitle = document.getElementById('dayTitle');
-  const daySubtitle = document.getElementById('daySubtitle');
-  if (dayTitle) dayTitle.textContent = formatDate(currentDate);
-  if (daySubtitle) daySubtitle.textContent = formatDateSubtitle(currentDate);
-  
-  // Update progress
-  const completedCount = todayPlans.filter(p => p.completed).length;
-  const totalCount = todayPlans.length;
-  updateProgress();
-  
-  // Show/hide elements
-  const empty = document.getElementById('empty');
-  const plansContainer = document.getElementById('plansContainer');
-  
-  if (!empty || !plansContainer) return; // Элементы не найдены
-  
-  if (todayPlans.length === 0) {
-    empty.style.display = 'flex';
-    plansContainer.style.display = 'none';
-  } else {
-    empty.style.display = 'none';
-    plansContainer.style.display = 'flex';
+  try {
+    console.log('Функция render вызвана');
+    console.log('Текущие планы в render:', plans);
+    console.log('Количество планов в render:', plans.length);
     
-    // Render plans
-    const plansEl = document.getElementById('plans');
-    let html = '';
-    todayPlans.forEach(plan => {
-      html += `
-        <div class="plan ${plan.completed ? 'completed' : ''}">
-          <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
-          <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
-            <div class="plan-title">
-              ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
-            </div>
-            ${plan.room ? `<div class="room">${getRoomIcon(plan.room)} ${escapeHtml(plan.room)}</div>` : ''}
-          </div>
-        </div>
-      `;
-    });
+    // Проверяем, что мы на вкладке задач
+    if (currentTab !== 'tasks') {
+      console.log('Не на вкладке задач, currentTab:', currentTab);
+      return;
+    }
     
-    // Добавляем кнопку "Добавить задачу" в конец списка
-    html += `
-      <button class="add-task-btn" onclick="showAdd()">
-        <span class="add-icon">+</span>
-        Добавить задачу
-      </button>
-    `;
+    const todayPlans = getPlansForDate(currentDate);
+    console.log('Планы на сегодня:', todayPlans);
+    console.log('Количество планов на сегодня:', todayPlans.length);
     
-    plansEl.innerHTML = html;
+    // Update date display
+    const dayTitle = document.getElementById('dayTitle');
+    const daySubtitle = document.getElementById('daySubtitle');
+    if (dayTitle) dayTitle.textContent = formatDate(currentDate);
+    if (daySubtitle) daySubtitle.textContent = formatDateSubtitle(currentDate);
     
-    // Устанавливаем ширину текста для уже выполненных задач
-    setTimeout(() => {
+    // Update progress
+    const completedCount = todayPlans.filter(p => p.completed).length;
+    const totalCount = todayPlans.length;
+    console.log('Прогресс:', completedCount, '/', totalCount);
+    updateProgress();
+    
+    // Show/hide elements
+    const empty = document.getElementById('empty');
+    const plansContainer = document.getElementById('plansContainer');
+    
+    if (!empty || !plansContainer) {
+      console.log('Элементы empty или plansContainer не найдены');
+      console.log('empty:', empty);
+      console.log('plansContainer:', plansContainer);
+      return;
+    }
+    
+    if (todayPlans.length === 0) {
+      console.log('Нет планов на сегодня, показываем empty');
+      empty.style.display = 'flex';
+      plansContainer.style.display = 'none';
+    } else {
+      console.log('Есть планы на сегодня, показываем список');
+      empty.style.display = 'none';
+      plansContainer.style.display = 'flex';
+      
+      // Render plans
+      const plansEl = document.getElementById('plans');
+      if (!plansEl) {
+        console.log('Элемент plans не найден');
+        return;
+      }
+      
+      console.log('Начинаем рендеринг планов в элемент:', plansEl);
+      
+      let html = '';
       todayPlans.forEach(plan => {
-        if (plan.completed) {
-          const planElements = plansEl.querySelectorAll('.plan.completed');
-          planElements.forEach(planElement => {
-            const planTitle = planElement.querySelector('.plan-title');
-            if (planTitle && planTitle.textContent.trim() === plan.title) {
-              const textWidth = getTextWidth(planTitle.textContent, planTitle);
-              planTitle.style.setProperty('--text-width', textWidth + 'px');
-            }
-          });
+        try {
+          console.log('Рендерим план:', plan);
+          html += `
+            <div class="plan ${plan.completed ? 'completed' : ''}">
+              <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
+              <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
+                <div class="plan-title">
+                  ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
+                </div>
+                ${plan.room ? `<div class="room">${getRoomIcon(plan.room)} ${escapeHtml(plan.room)}</div>` : ''}
+              </div>
+            </div>
+          `;
+        } catch (e) {
+          console.error('Ошибка при рендеринге плана:', e);
         }
       });
-    }, 50);
+      
+      // Добавляем кнопку "Добавить задачу" в конец списка
+      html += `
+        <button class="add-task-btn" onclick="showAdd()">
+          <span class="add-icon">+</span>
+          Добавить задачу
+        </button>
+      `;
+      
+      console.log('Сгенерированный HTML:', html);
+      plansEl.innerHTML = html;
+      console.log('HTML установлен в элемент plans');
+      
+      // Устанавливаем ширину текста для уже выполненных задач
+      setTimeout(() => {
+        try {
+          todayPlans.forEach(plan => {
+            if (plan.completed) {
+              const planElements = plansEl.querySelectorAll('.plan.completed');
+              planElements.forEach(planElement => {
+                try {
+                  const planTitle = planElement.querySelector('.plan-title');
+                  if (planTitle && planTitle.textContent.trim() === plan.title) {
+                    const textWidth = getTextWidth(planTitle.textContent, planTitle);
+                    planTitle.style.setProperty('--text-width', textWidth + 'px');
+                  }
+                } catch (e) {
+                  console.error('Ошибка при установке ширины текста:', e);
+                }
+              });
+            }
+          });
+        } catch (e) {
+          console.error('Ошибка при обработке выполненных задач:', e);
+        }
+      }, 50);
+    }
+  } catch (e) {
+    console.error('Ошибка в функции render:', e);
   }
 }
 
 function updateRoomsSelect() {
-  const select = document.getElementById('planRoom');
-  select.innerHTML = '<option value="">Без раздела</option>';
-  rooms.forEach(room => {
-    // Поддерживаем старый формат (строки) и новый (объекты)
-    const roomName = typeof room === 'string' ? room : room.name;
-    const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+  try {
+    const select = document.getElementById('planRoom');
+    if (!select) {
+      console.log('Элемент planRoom не найден');
+      return;
+    }
     
-    const option = document.createElement('option');
-    option.value = roomName;
-    option.textContent = `${roomIcon} ${roomName}`;
-    select.appendChild(option);
-  });
+    select.innerHTML = '<option value="">Без раздела</option>';
+    rooms.forEach(room => {
+      try {
+        // Поддерживаем старый формат (строки) и новый (объекты)
+        const roomName = typeof room === 'string' ? room : room.name;
+        const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+        
+        const option = document.createElement('option');
+        option.value = roomName;
+        option.textContent = `${roomIcon} ${roomName}`;
+        select.appendChild(option);
+      } catch (e) {
+        console.error('Ошибка при добавлении раздела в селект:', e);
+      }
+    });
+  } catch (e) {
+    console.error('Ошибка в updateRoomsSelect:', e);
+  }
 }
 
 function renderRooms() {
-  const roomsList = document.getElementById('roomsList');
-  
-  let html = '';
-  rooms.forEach((room) => {
-    // Поддерживаем старый формат (строки) и новый (объекты)
-    const roomName = typeof room === 'string' ? room : room.name;
-    const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+  try {
+    const roomsList = document.getElementById('roomsList');
+    if (!roomsList) {
+      console.log('Элемент roomsList не найден');
+      return;
+    }
     
-    html += `
-      <div class="room-item">
-        <div class="room-icon">${roomIcon}</div>
-        <div class="room-name">${escapeHtml(roomName)}</div>
-        <button class="delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
-      </div>
-    `;
-  });
-  roomsList.innerHTML = html;
+    let html = '';
+    rooms.forEach((room) => {
+      try {
+        // Поддерживаем старый формат (строки) и новый (объекты)
+        const roomName = typeof room === 'string' ? room : room.name;
+        const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+        
+        html += `
+          <div class="room-item">
+            <div class="room-icon">${roomIcon}</div>
+            <div class="room-name">${escapeHtml(roomName)}</div>
+            <button class="delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
+          </div>
+        `;
+      } catch (e) {
+        console.error('Ошибка при рендеринге раздела:', e);
+      }
+    });
+    roomsList.innerHTML = html;
+  } catch (e) {
+    console.error('Ошибка в renderRooms:', e);
+  }
 }
 
 // NAVIGATION
@@ -3584,7 +3767,15 @@ function showAdd() {
   }
   
   addModal.classList.add('show');
-  document.getElementById('planDate').value = currentDate.toISOString().split('T')[0];
+  currentModal = 'add';
+  if (tg) tg.BackButton.show();
+  
+  const planDate = document.getElementById('planDate');
+  if (planDate) {
+    planDate.value = currentDate.toISOString().split('T')[0];
+  } else {
+    console.error('Элемент planDate не найден');
+  }
   updateRoomsSelect();
   setTimeout(() => {
     const planTitle = document.getElementById('planTitle');
@@ -3595,41 +3786,123 @@ function showAdd() {
 }
 
 function hideAdd() {
-  document.getElementById('addModal').classList.remove('show');
+  const addModal = document.getElementById('addModal');
+  if (addModal) {
+    addModal.classList.remove('show');
+  } else {
+    console.error('Элемент addModal не найден');
+  }
+  currentModal = null;
+  if (tg) tg.BackButton.hide();
   clearForm();
   selectedPlanId = null;
 }
 
 function showRooms() {
-  document.getElementById('roomsScreen').classList.add('show');
-  document.querySelector('.header').style.display = 'none';
-  document.getElementById('bottomNav').style.display = 'none'; // Скрываем навигацию
+  const roomsScreen = document.getElementById('roomsScreen');
+  const header = document.querySelector('.header');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  if (roomsScreen) {
+    roomsScreen.classList.add('show');
+  } else {
+    console.error('Элемент roomsScreen не найден');
+    return;
+  }
+  
+  if (header) header.style.display = 'none';
+  if (bottomNav) bottomNav.style.display = 'none'; // Скрываем навигацию
+  
+  currentModal = 'rooms';
+  if (tg) tg.BackButton.show();
   renderRooms();
 }
 
 function hideRooms() {
-  document.getElementById('roomsScreen').classList.remove('show');
-  document.querySelector('.header').style.display = 'flex';
-  document.getElementById('bottomNav').style.display = 'flex'; // Показываем навигацию
+  const roomsScreen = document.getElementById('roomsScreen');
+  const header = document.querySelector('.header');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  if (roomsScreen) {
+    roomsScreen.classList.remove('show');
+  } else {
+    console.error('Элемент roomsScreen не найден');
+  }
+  
+  if (header) header.style.display = 'flex';
+  if (bottomNav) bottomNav.style.display = 'flex'; // Показываем навигацию
+  
+  currentModal = null;
+  if (tg) tg.BackButton.hide();
 }
 
 function showProfile() {
-  document.getElementById('profileScreen').classList.add('show');
-  document.querySelector('.header').style.display = 'none';
-  document.getElementById('bottomNav').style.display = 'none'; // Скрываем навигацию
+  const profileScreen = document.getElementById('profileScreen');
+  const header = document.querySelector('.header');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  if (profileScreen) {
+    profileScreen.classList.add('show');
+  } else {
+    console.error('Элемент profileScreen не найден');
+    return;
+  }
+  
+  if (header) header.style.display = 'none';
+  if (bottomNav) bottomNav.style.display = 'none'; // Скрываем навигацию
+  
+  currentModal = 'profile';
+  if (tg) tg.BackButton.show();
   loadProfileData();
 }
 
 function hideProfile() {
-  document.getElementById('profileScreen').classList.remove('show');
-  document.querySelector('.header').style.display = 'flex';
-  document.getElementById('bottomNav').style.display = 'flex'; // Показываем навигацию
+  const profileScreen = document.getElementById('profileScreen');
+  const header = document.querySelector('.header');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  if (profileScreen) {
+    profileScreen.classList.remove('show');
+  } else {
+    console.error('Элемент profileScreen не найден');
+  }
+  
+  if (header) header.style.display = 'flex';
+  if (bottomNav) bottomNav.style.display = 'flex'; // Показываем навигацию
+  
+  currentModal = null;
+  if (tg) tg.BackButton.hide();
+}
+
+// MODAL MANAGEMENT
+function hideCurrentModal() {
+  switch(currentModal) {
+    case 'add':
+      hideAdd();
+      break;
+    case 'rooms':
+      hideRooms();
+      break;
+    case 'profile':
+      hideProfile();
+      break;
+    default:
+      currentModal = null;
+      if (tg) tg.BackButton.hide();
+  }
 }
 
 // PLANS
 function savePlan() {
   console.log('savePlan вызвана');
-  const title = document.getElementById('planTitle').value.trim();
+  
+  const planTitleEl = document.getElementById('planTitle');
+  if (!planTitleEl) {
+    console.error('Элемент planTitle не найден');
+    return;
+  }
+  
+  const title = planTitleEl.value.trim();
   console.log('Заголовок задачи:', title);
   
   if (!title) {
@@ -3637,11 +3910,19 @@ function savePlan() {
     return;
   }
   
-  const room = document.getElementById('planRoom').value;
-  const date = document.getElementById('planDate').value || currentDate.toISOString().split('T')[0];
-  const time = document.getElementById('planTime').value; // Получаем время
+  const planRoomEl = document.getElementById('planRoom');
+  const planDateEl = document.getElementById('planDate');
+  const planTimeEl = document.getElementById('planTime');
+  
+  const room = planRoomEl ? planRoomEl.value : '';
+  const date = (planDateEl ? planDateEl.value : '') || currentDate.toISOString().split('T')[0];
+  const time = planTimeEl ? planTimeEl.value : ''; // Получаем время
   
   console.log('Данные задачи:', { title, room, date, time });
+  console.log('currentDate:', currentDate);
+  console.log('currentDate.toDateString():', currentDate.toDateString());
+  console.log('Дата задачи (date):', date);
+  console.log('new Date(date).toDateString():', new Date(date).toDateString());
   
   const plan = {
     id: selectedPlanId || Date.now().toString(),
@@ -3673,15 +3954,25 @@ function savePlan() {
 }
 
 function clearForm() {
-  document.getElementById('planTitle').value = '';
-  document.getElementById('planDate').value = '';
-  document.getElementById('planTime').value = '';
-  document.getElementById('planRoom').value = '';
+  const planTitle = document.getElementById('planTitle');
+  const planDate = document.getElementById('planDate');
+  const planTime = document.getElementById('planTime');
+  const planRoom = document.getElementById('planRoom');
+  
+  if (planTitle) planTitle.value = '';
+  if (planDate) planDate.value = '';
+  if (planTime) planTime.value = '';
+  if (planRoom) planRoom.value = '';
 }
 
 function showPlanMenu(id) {
   selectedPlanId = id;
-  document.getElementById('overlay').classList.add('show');
+  const overlay = document.getElementById('overlay');
+  if (overlay) {
+    overlay.classList.add('show');
+  } else {
+    console.error('Элемент overlay не найден');
+  }
 }
 
 function editPlan() {
@@ -3689,17 +3980,31 @@ function editPlan() {
   if (!plan) return;
   
   // Fill edit form
-  document.getElementById('editPlanTitle').value = plan.title;
+  const editPlanTitle = document.getElementById('editPlanTitle');
+  if (editPlanTitle) {
+    editPlanTitle.value = plan.title;
+  } else {
+    console.error('Элемент editPlanTitle не найден');
+  }
   
   // Format date
   const date = new Date(plan.date);
   const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
   const formattedDate = `${date.getDate()} ${months[date.getMonth()]}. ${date.getFullYear()}г.`;
-  document.getElementById('editPlanDate').textContent = formattedDate;
+  
+  const editPlanDate = document.getElementById('editPlanDate');
+  if (editPlanDate) {
+    editPlanDate.textContent = formattedDate;
+  } else {
+    console.error('Элемент editPlanDate не найден');
+  }
   
   // Reset toggles (premium features disabled)
-  document.getElementById('notificationToggle').classList.remove('active');
-  document.getElementById('importantToggle').classList.remove('active');
+  const notificationToggle = document.getElementById('notificationToggle');
+  const importantToggle = document.getElementById('importantToggle');
+  
+  if (notificationToggle) notificationToggle.classList.remove('active');
+  if (importantToggle) importantToggle.classList.remove('active');
   
   hideMenu();
   showEditPlan();
@@ -3709,13 +4014,33 @@ function showEditPlan() {
   // Очищаем временную переменную даты
   window.editPlanNewDate = null;
   
-  document.getElementById('editPlanScreen').classList.add('show');
-  document.querySelector('.header').style.display = 'none';
+  const editPlanScreen = document.getElementById('editPlanScreen');
+  const header = document.querySelector('.header');
+  
+  if (editPlanScreen) {
+    editPlanScreen.classList.add('show');
+  } else {
+    console.error('Элемент editPlanScreen не найден');
+  }
+  
+  if (header) {
+    header.style.display = 'none';
+  }
 }
 
 function hideEditPlan() {
-  document.getElementById('editPlanScreen').classList.remove('show');
-  document.querySelector('.header').style.display = 'flex';
+  const editPlanScreen = document.getElementById('editPlanScreen');
+  const header = document.querySelector('.header');
+  
+  if (editPlanScreen) {
+    editPlanScreen.classList.remove('show');
+  } else {
+    console.error('Элемент editPlanScreen не найден');
+  }
+  
+  if (header) {
+    header.style.display = 'flex';
+  }
 }
 
 function toggleNotification() {
@@ -3754,7 +4079,13 @@ function setEditDate(daysOffset) {
   
   const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
   const formattedDate = `${newDate.getDate()} ${months[newDate.getMonth()]}. ${newDate.getFullYear()}г.`;
-  document.getElementById('editPlanDate').textContent = formattedDate;
+  
+  const editPlanDate = document.getElementById('editPlanDate');
+  if (editPlanDate) {
+    editPlanDate.textContent = formattedDate;
+  } else {
+    console.error('Элемент editPlanDate не найден');
+  }
   
   // Сохраняем новую дату в временную переменную
   window.editPlanNewDate = newDate.toISOString().split('T')[0];
@@ -3766,7 +4097,13 @@ function savePlanEdit() {
   const plan = plans.find(p => p.id === selectedPlanId);
   if (!plan) return;
   
-  const newTitle = document.getElementById('editPlanTitle').value.trim();
+  const editPlanTitle = document.getElementById('editPlanTitle');
+  if (!editPlanTitle) {
+    console.error('Элемент editPlanTitle не найден');
+    return;
+  }
+  
+  const newTitle = editPlanTitle.value.trim();
   if (!newTitle) return;
   
   // Обновляем только название, дату изменяем только если была выбрана новая
@@ -3803,21 +4140,13 @@ function confirmDeleteFromEdit() {
 }
 
 function hideMenu() {
-  document.getElementById('overlay').classList.remove('show');
+  const overlay = document.getElementById('overlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+  } else {
+    console.error('Элемент overlay не найден');
+  }
   selectedPlanId = null;
-}
-
-function editPlan() {
-  const plan = plans.find(p => p.id === selectedPlanId);
-  if (!plan) return;
-  
-  document.getElementById('planTitle').value = plan.title;
-  document.getElementById('planDate').value = plan.date;
-  document.getElementById('planTime').value = plan.time || '';
-  document.getElementById('planRoom').value = plan.room || '';
-  
-  hideMenu();
-  showAdd();
 }
 
 function deletePlan() {
@@ -3898,46 +4227,54 @@ function getTextWidth(text, element) {
 }
 
 function updateProgress() {
-  // Проверяем, что мы на вкладке задач
-  if (currentTab !== 'tasks') return;
-  
-  const todayPlans = getPlansForDate(currentDate);
-  const completedCount = todayPlans.filter(p => p.completed).length;
-  const totalCount = todayPlans.length;
-  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-  
-  // Обновляем круглый прогресс-бар
-  const progressCircle = document.getElementById('progressCircle');
-  const progressPercentage = document.getElementById('progressPercentage');
-  const progressContainer = document.getElementById('progressContainer');
-  const progressLabel = document.getElementById('progressLabel');
-  
-  // Проверяем наличие элементов
-  if (!progressCircle || !progressPercentage || !progressContainer || !progressLabel) return;
-  
-  // Анимируем заполнение круга
-  animateCircleProgress(progressCircle, progressPercent);
-  
-  // Плавно обновляем процент только при изменении
-  const currentPercent = parseInt(progressPercentage.textContent) || 0;
-  const targetPercent = Math.round(progressPercent);
-  
-  if (currentPercent !== targetPercent) {
-    animatePercentage(progressPercentage, currentPercent, targetPercent);
-  }
-  
-  document.getElementById('progressStats').textContent = `${completedCount}/${totalCount}`;
-  
-  // Update progress label and animations based on completion
-  if (totalCount === 0) {
-    progressLabel.textContent = 'Планов нет';
-    removeCompletionAnimations();
-  } else if (completedCount === totalCount && totalCount > 0) {
-    progressLabel.textContent = 'День завершён! 🎉';
-    addCompletionAnimations();
-  } else {
-    progressLabel.textContent = 'Прогресс дня';
-    removeCompletionAnimations();
+  try {
+    // Проверяем, что мы на вкладке задач
+    if (currentTab !== 'tasks') return;
+    
+    const todayPlans = getPlansForDate(currentDate);
+    const completedCount = todayPlans.filter(p => p.completed).length;
+    const totalCount = todayPlans.length;
+    const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+    
+    // Обновляем круглый прогресс-бар
+    const progressCircle = document.getElementById('progressCircle');
+    const progressPercentage = document.getElementById('progressPercentage');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressStats = document.getElementById('progressStats');
+    
+    // Проверяем наличие элементов
+    if (!progressCircle || !progressPercentage || !progressContainer || !progressLabel || !progressStats) {
+      console.log('Не все элементы прогресса найдены');
+      return;
+    }
+    
+    // Анимируем заполнение круга
+    animateCircleProgress(progressCircle, progressPercent);
+    
+    // Плавно обновляем процент только при изменении
+    const currentPercent = parseInt(progressPercentage.textContent) || 0;
+    const targetPercent = Math.round(progressPercent);
+    
+    if (currentPercent !== targetPercent) {
+      animatePercentage(progressPercentage, currentPercent, targetPercent);
+    }
+    
+    progressStats.textContent = `${completedCount}/${totalCount}`;
+    
+    // Update progress label and animations based on completion
+    if (totalCount === 0) {
+      progressLabel.textContent = 'Планов нет';
+      removeCompletionAnimations();
+    } else if (completedCount === totalCount && totalCount > 0) {
+      progressLabel.textContent = 'День завершён! 🎉';
+      addCompletionAnimations();
+    } else {
+      progressLabel.textContent = 'Прогресс дня';
+      removeCompletionAnimations();
+    }
+  } catch (e) {
+    console.error('Ошибка в функции updateProgress:', e);
   }
 }
 
@@ -4090,11 +4427,21 @@ function celebrateCompletion() {
 function showDatePicker() {
   calendarDate = new Date(currentDate);
   renderCalendar();
-  document.getElementById('calendar').classList.add('show');
+  const calendar = document.getElementById('calendar');
+  if (calendar) {
+    calendar.classList.add('show');
+  } else {
+    console.error('Элемент calendar не найден');
+  }
 }
 
 function hideCalendar() {
-  document.getElementById('calendar').classList.remove('show');
+  const calendar = document.getElementById('calendar');
+  if (calendar) {
+    calendar.classList.remove('show');
+  } else {
+    console.error('Элемент calendar не найден');
+  }
 }
 
 function changeCalendarMonth(direction) {
@@ -4117,13 +4464,23 @@ function renderCalendar() {
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
   ];
   
-  document.getElementById('calendarTitle').textContent = `${monthNames[month]} ${year}`;
+  const calendarTitle = document.getElementById('calendarTitle');
+  if (calendarTitle) {
+    calendarTitle.textContent = `${monthNames[month]} ${year}`;
+  } else {
+    console.error('Элемент calendarTitle не найден');
+  }
   
   const firstDay = new Date(year, month, 1);
   const startDate = new Date(firstDay);
   startDate.setDate(startDate.getDate() - (firstDay.getDay() || 7) + 1);
   
   const grid = document.getElementById('calendarGrid');
+  if (!grid) {
+    console.error('Элемент calendarGrid не найден');
+    return;
+  }
+  
   grid.innerHTML = '';
   
   const today = new Date();
@@ -4294,6 +4651,9 @@ function loadProfileData() {
 }
 
 function editName() {
+  const profileName = document.getElementById('profileName');
+  const currentName = profileName ? profileName.textContent : 'Пользователь';
+  
   showPopup(
     'Изменить имя',
     '',
@@ -4302,12 +4662,17 @@ function editName() {
       { text: 'Сохранить', type: 'confirm', action: saveName }
     ],
     true,
-    document.getElementById('profileName').textContent
+    currentName
   );
 }
 
 function saveName() {
   const input = document.querySelector('.popup-input');
+  if (!input) {
+    console.error('Элемент popup-input не найден');
+    return;
+  }
+  
   const newName = input.value.trim();
   
   if (newName) {
@@ -4354,10 +4719,18 @@ function openSupport() {
 
 // POPUP SYSTEM
 function showPopup(title, message, buttons, hasInput = false, inputValue = '') {
-  document.getElementById('popupTitle').textContent = title;
-  document.getElementById('popupMessage').textContent = message;
-  
+  const popupTitle = document.getElementById('popupTitle');
+  const popupMessage = document.getElementById('popupMessage');
   const buttonsContainer = document.getElementById('popupButtons');
+  const popup = document.getElementById('popup');
+  
+  if (!popupTitle || !popupMessage || !buttonsContainer || !popup) {
+    console.error('Не найдены элементы попапа');
+    return;
+  }
+  
+  popupTitle.textContent = title;
+  popupMessage.textContent = message;
   buttonsContainer.innerHTML = '';
   
   if (hasInput) {
@@ -4366,8 +4739,12 @@ function showPopup(title, message, buttons, hasInput = false, inputValue = '') {
     input.placeholder = 'Введите текст...';
     input.value = inputValue;
     input.style.marginBottom = '16px';
-    document.querySelector('.popup-content').insertBefore(input, buttonsContainer);
-    setTimeout(() => input.focus(), 100);
+    
+    const popupContent = document.querySelector('.popup-content');
+    if (popupContent) {
+      popupContent.insertBefore(input, buttonsContainer);
+      setTimeout(() => input.focus(), 100);
+    }
   }
   
   buttons.forEach(btn => {
@@ -4378,11 +4755,16 @@ function showPopup(title, message, buttons, hasInput = false, inputValue = '') {
     buttonsContainer.appendChild(button);
   });
   
-  document.getElementById('popup').classList.add('show');
+  popup.classList.add('show');
 }
 
 function hidePopup() {
-  document.getElementById('popup').classList.remove('show');
+  const popup = document.getElementById('popup');
+  if (popup) {
+    popup.classList.remove('show');
+  } else {
+    console.error('Элемент popup не найден');
+  }
   
   // Remove input if exists
   const existingInput = document.querySelector('.popup-input');
@@ -4394,19 +4776,27 @@ function hidePopup() {
 // TELEGRAM INTEGRATION
 if (tg) {
   tg.onEvent('backButtonClicked', () => {
-    if (document.getElementById('editPlanScreen').classList.contains('show')) {
+    const editPlanScreen = document.getElementById('editPlanScreen');
+    const roomsScreen = document.getElementById('roomsScreen');
+    const profileScreen = document.getElementById('profileScreen');
+    const addModal = document.getElementById('addModal');
+    const overlay = document.getElementById('overlay');
+    const calendar = document.getElementById('calendar');
+    const popup = document.getElementById('popup');
+    
+    if (editPlanScreen && editPlanScreen.classList.contains('show')) {
       hideEditPlan();
-    } else if (document.getElementById('roomsScreen').classList.contains('show')) {
+    } else if (roomsScreen && roomsScreen.classList.contains('show')) {
       hideRooms();
-    } else if (document.getElementById('profileScreen').classList.contains('show')) {
+    } else if (profileScreen && profileScreen.classList.contains('show')) {
       hideProfile();
-    } else if (document.getElementById('addModal').classList.contains('show')) {
+    } else if (addModal && addModal.classList.contains('show')) {
       hideAdd();
-    } else if (document.getElementById('overlay').classList.contains('show')) {
+    } else if (overlay && overlay.classList.contains('show')) {
       hideMenu();
-    } else if (document.getElementById('calendar').classList.contains('show')) {
+    } else if (calendar && calendar.classList.contains('show')) {
       hideCalendar();
-    } else if (document.getElementById('popup').classList.contains('show')) {
+    } else if (popup && popup.classList.contains('show')) {
       hidePopup();
     } else {
       tg.close();
@@ -4426,11 +4816,15 @@ document.addEventListener('keydown', (e) => {
   }
   
   if (e.key === 'Escape') {
-    if (document.getElementById('popup').classList.contains('show')) {
+    const popup = document.getElementById('popup');
+    const calendar = document.getElementById('calendar');
+    const overlay = document.getElementById('overlay');
+    
+    if (popup && popup.classList.contains('show')) {
       hidePopup();
-    } else if (document.getElementById('calendar').classList.contains('show')) {
+    } else if (calendar && calendar.classList.contains('show')) {
       hideCalendar();
-    } else if (document.getElementById('overlay').classList.contains('show')) {
+    } else if (overlay && overlay.classList.contains('show')) {
       hideMenu();
     }
   }
@@ -4439,12 +4833,18 @@ document.addEventListener('keydown', (e) => {
 // BOTTOM NAVIGATION
 function switchTab(tabName) {
   // Убираем активный класс со всех кнопок
-  document.querySelectorAll('.nav-item').forEach(item => {
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
     item.classList.remove('active');
   });
   
   // Добавляем активный класс к выбранной кнопке
-  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+  if (selectedTab) {
+    selectedTab.classList.add('active');
+  } else {
+    console.error(`Вкладка с data-tab="${tabName}" не найдена`);
+  }
   
   // Обновляем текущую вкладку
   currentTab = tabName;
@@ -4461,8 +4861,17 @@ function switchTab(tabName) {
 function showTabContent(tabName) {
   const content = document.querySelector('.content');
   
+  if (!content) {
+    console.error('Элемент .content не найден');
+    return;
+  }
+  
   switch(tabName) {
     case 'tasks':
+      console.log('Переключаемся на вкладку задач');
+      console.log('Планы перед переключением:', plans);
+      console.log('Количество планов перед переключением:', plans.length);
+      
       // Восстанавливаем оригинальную структуру задач
       content.innerHTML = `
         <div class="progress-container" id="progressContainer">
@@ -4502,8 +4911,13 @@ function showTabContent(tabName) {
         progressCircle.dataset.currentAngle = '0';
       }
       
+      console.log('Перед render в showTabContent - планы:', plans);
+      console.log('Перед render в showTabContent - количество планов:', plans.length);
+      
       // Перерендериваем задачи
       render();
+      
+      console.log('После render в showTabContent');
       break;
       
     case 'nutrition':
@@ -4624,12 +5038,15 @@ function getWeekStart(date) {
 
 function loadNutritionData() {
   try {
+    console.log('Загружаем данные питания...');
+    
     const saved = localStorage.getItem('planner_nutrition');
     if (saved) {
       const loadedData = JSON.parse(saved);
       
       // Миграция старой структуры воды
       if (loadedData.water && typeof loadedData.water.current !== 'undefined') {
+        console.log('Мигрируем старую структуру воды...');
         // Старая структура - мигрируем
         const oldDate = loadedData.water.date || new Date().toDateString();
         const oldAmount = loadedData.water.current || 0;
@@ -4637,6 +5054,7 @@ function loadNutritionData() {
         nutritionData.water.target = loadedData.water.target || 8;
         nutritionData.water.daily = {};
         nutritionData.water.daily[oldDate] = oldAmount;
+        console.log('Миграция воды завершена');
       } else if (loadedData.water && loadedData.water.daily) {
         // Новая структура
         nutritionData.water = loadedData.water;
@@ -4661,6 +5079,10 @@ function loadNutritionData() {
       if (loadedData.mealTypes) {
         nutritionData.mealTypes = loadedData.mealTypes;
       }
+      
+      console.log('Данные питания успешно загружены');
+    } else {
+      console.log('Сохраненных данных питания не найдено, используем значения по умолчанию');
     }
     
     // Инициализируем daily если его нет
@@ -4668,140 +5090,192 @@ function loadNutritionData() {
       nutritionData.water.daily = {};
     }
   } catch (e) {
-    console.error('Error loading nutrition data:', e);
+    console.error('Ошибка при загрузке данных питания:', e);
+    
+    // Инициализируем значениями по умолчанию в случае ошибки
+    nutritionData = {
+      water: {
+        target: 8,
+        daily: {}
+      },
+      meals: {},
+      mealTypes: {}
+    };
+    
+    // Показываем уведомление пользователю
+    if (typeof showPopup === 'function') {
+      showPopup('Ошибка загрузки', 'Не удалось загрузить данные питания. Используются настройки по умолчанию.', [
+        { text: 'OK', type: 'confirm', action: hidePopup }
+      ]);
+    }
   }
 }
 
 function saveNutritionData() {
   try {
     localStorage.setItem('planner_nutrition', JSON.stringify(nutritionData));
+    console.log('Данные питания успешно сохранены');
   } catch (e) {
-    console.error('Error saving nutrition data:', e);
+    console.error('Ошибка при сохранении данных питания:', e);
+    // Показываем уведомление пользователю
+    if (typeof showPopup === 'function') {
+      showPopup('Ошибка сохранения', 'Не удалось сохранить данные питания. Проверьте свободное место на устройстве.', [
+        { text: 'OK', type: 'confirm', action: hidePopup }
+      ]);
+    }
   }
 }
 
 // Навигация по дням питания теперь использует общую функцию changeDay
 
 function renderNutritionDay() {
-  const mealsContainer = document.getElementById('nutritionMeals');
-  
-  if (!mealsContainer) return;
-  
-  const dateStr = currentNutritionDate.toDateString();
-  
-  // Получаем приемы пищи для этого дня
-  const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
-  const dayMeals = nutritionData.meals[dateStr] || {};
-  
-  // Анимация исчезновения старого контента
-  mealsContainer.style.opacity = '0';
-  mealsContainer.style.transform = 'translateY(20px)';
-  
-  setTimeout(() => {
-    let html = '';
+  try {
+    const mealsContainer = document.getElementById('nutritionMeals');
     
-    // Рендерим существующие приемы пищи
-    dayMealTypes.forEach((mealType, index) => {
-      const mealData = dayMeals[mealType.id] || {};
-      const mealContent = mealData.content || 'Не запланировано';
-      const mealTime = mealData.time || mealType.time || '';
-      const isCompleted = mealData.completed || false;
-      
-      html += `
-        <div class="meal animate-in ${isCompleted ? 'completed' : ''}" style="animation-delay: ${index * 0.1}s">
-          <div class="meal-with-checkbox">
-            <div class="meal-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleMealComplete('${dateStr}', '${mealType.id}', event)"></div>
-            <div class="meal-main-content" onclick="editMeal('${dateStr}', '${mealType.id}')">
-              <div class="meal-header">
-                <div class="meal-label">
-                  ${mealType.icon} ${mealType.name}
-                  ${mealTime ? `<span class="meal-time-badge">${mealTime}</span>` : ''}
-                </div>
-                <button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>
-              </div>
+    if (!mealsContainer) {
+      console.log('Контейнер приемов пищи не найден');
+      return;
+    }
+    
+    const dateStr = currentNutritionDate.toDateString();
+    
+    // Получаем приемы пищи для этого дня
+    const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
+    const dayMeals = nutritionData.meals[dateStr] || {};
+    
+    // Анимация исчезновения старого контента
+    mealsContainer.style.opacity = '0';
+    mealsContainer.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      try {
+        let html = '';
+        
+        // Рендерим существующие приемы пищи
+        dayMealTypes.forEach((mealType, index) => {
+          try {
+            const mealData = dayMeals[mealType.id] || {};
+            const mealContent = mealData.content || 'Не запланировано';
+            const mealTime = mealData.time || mealType.time || '';
+            const isCompleted = mealData.completed || false;
+            
+            html += `
+              <div class="meal animate-in ${isCompleted ? 'completed' : ''}" style="animation-delay: ${index * 0.1}s">
+                <div class="meal-with-checkbox">
+                  <div class="meal-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleMealComplete('${dateStr}', '${mealType.id}', event)"></div>
+                  <div class="meal-main-content" onclick="editMeal('${dateStr}', '${mealType.id}')">
+                    <div class="meal-header">
+                      <div class="meal-label">
+                        ${mealType.icon} ${mealType.name}
+                        ${mealTime ? `<span class="meal-time-badge">${mealTime}</span>` : ''}
+                      </div>
+                      <button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>
+                    </div>
               <div class="meal-content">${mealContent}</div>
             </div>
           </div>
         </div>
       `;
-    });
+          } catch (e) {
+            console.error('Ошибка при рендеринге приема пищи:', e);
+          }
+        });
     
-    mealsContainer.innerHTML = html;
-    
-    // Анимация появления нового контента
-    mealsContainer.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-    mealsContainer.style.opacity = '1';
-    mealsContainer.style.transform = 'translateY(0)';
-    
-    // Добавляем анимации для новых элементов
-    setTimeout(() => {
-      const meals = mealsContainer.querySelectorAll('.meal');
-      meals.forEach((meal, index) => {
-        meal.style.animationDelay = `${index * 0.1}s`;
-        meal.classList.add('animate-in');
+        mealsContainer.innerHTML = html;
+        // Анимация появления нового контента
+        mealsContainer.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        mealsContainer.style.opacity = '1';
+        mealsContainer.style.transform = 'translateY(0)';
         
-        // Устанавливаем ширину текста для уже выполненных приемов пищи
-        if (meal.classList.contains('completed')) {
-          const mealLabel = meal.querySelector('.meal-label');
-          const mealContent = meal.querySelector('.meal-content');
-          
-          if (mealLabel) {
-            // Создаем временный элемент для измерения только текста
-            const tempLabel = document.createElement('span');
-            tempLabel.style.cssText = `
-              position: absolute;
-              visibility: hidden;
-              white-space: nowrap;
-              font-family: ${window.getComputedStyle(mealLabel).fontFamily};
-              font-size: ${window.getComputedStyle(mealLabel).fontSize};
-              font-weight: ${window.getComputedStyle(mealLabel).fontWeight};
-            `;
+        // Добавляем анимации для новых элементов
+        setTimeout(() => {
+          const meals = mealsContainer.querySelectorAll('.meal');
+          meals.forEach((meal, index) => {
+            meal.style.animationDelay = `${index * 0.1}s`;
+            meal.classList.add('animate-in');
             
-            // Получаем только текст без HTML тегов и значков времени
-            const labelTextOnly = mealLabel.textContent.replace(/\s*\d{2}:\d{2}\s*$/, '').trim();
-            tempLabel.textContent = labelTextOnly;
-            
-            document.body.appendChild(tempLabel);
-            const labelWidth = tempLabel.offsetWidth;
-            document.body.removeChild(tempLabel);
-            
-            mealLabel.style.setProperty('--text-width', labelWidth + 'px');
-          }
-          
-          if (mealContent) {
-            // Создаем временный элемент для измерения текста контента
-            const tempContent = document.createElement('span');
-            tempContent.style.cssText = `
-              position: absolute;
-              visibility: hidden;
-              white-space: nowrap;
-              font-family: ${window.getComputedStyle(mealContent).fontFamily};
-              font-size: ${window.getComputedStyle(mealContent).fontSize};
-              font-weight: ${window.getComputedStyle(mealContent).fontWeight};
-            `;
-            tempContent.textContent = mealContent.textContent;
-            
-            document.body.appendChild(tempContent);
-            const contentWidth = tempContent.offsetWidth;
-            document.body.removeChild(tempContent);
-            
-            mealContent.style.setProperty('--text-width', contentWidth + 'px');
-          }
-        }
-      });
-    }, 100);
-    
-  }, 200);
+            // Устанавливаем ширину текста для уже выполненных приемов пищи
+            if (meal.classList.contains('completed')) {
+              const mealLabel = meal.querySelector('.meal-label');
+              const mealContent = meal.querySelector('.meal-content');
+              
+              if (mealLabel) {
+                try {
+                  // Создаем временный элемент для измерения только текста
+                  const tempLabel = document.createElement('span');
+                  tempLabel.style.cssText = `
+                    position: absolute;
+                    visibility: hidden;
+                    white-space: nowrap;
+                    font-family: ${window.getComputedStyle(mealLabel).fontFamily};
+                    font-size: ${window.getComputedStyle(mealLabel).fontSize};
+                    font-weight: ${window.getComputedStyle(mealLabel).fontWeight};
+                  `;
+                  
+                  // Получаем только текст без HTML тегов и значков времени
+                  const labelTextOnly = mealLabel.textContent.replace(/\s*\d{2}:\d{2}\s*$/, '').trim();
+                  tempLabel.textContent = labelTextOnly;
+                  
+                  document.body.appendChild(tempLabel);
+                  const labelWidth = tempLabel.offsetWidth;
+                  document.body.removeChild(tempLabel);
+                  
+                  mealLabel.style.setProperty('--text-width', labelWidth + 'px');
+                } catch (e) {
+                  console.log('Ошибка при измерении ширины текста метки:', e);
+                }
+              }
+              
+              if (mealContent) {
+                try {
+                  // Создаем временный элемент для измерения текста контента
+                  const tempContent = document.createElement('span');
+                  tempContent.style.cssText = `
+                    position: absolute;
+                    visibility: hidden;
+                    white-space: nowrap;
+                    font-family: ${window.getComputedStyle(mealContent).fontFamily};
+                    font-size: ${window.getComputedStyle(mealContent).fontSize};
+                    font-weight: ${window.getComputedStyle(mealContent).fontWeight};
+                  `;
+                  tempContent.textContent = mealContent.textContent;
+                  
+                  document.body.appendChild(tempContent);
+                  const contentWidth = tempContent.offsetWidth;
+                  document.body.removeChild(tempContent);
+                  
+                  mealContent.style.setProperty('--text-width', contentWidth + 'px');
+                } catch (e) {
+                  console.log('Ошибка при измерении ширины текста контента:', e);
+                }
+              }
+            }
+          });
+        }, 100);
+        
+      } catch (e) {
+        console.error('Ошибка при рендеринге дня питания в setTimeout:', e);
+      }
+    }, 200);
+  } catch (e) {
+    console.error('Ошибка в функции renderNutritionDay:', e);
+  }
 }
 
 // Функция обновления заголовка дня для питания
 function updateNutritionDayTitle() {
-  const dayTitle = document.getElementById('dayTitle');
-  const daySubtitle = document.getElementById('daySubtitle');
-  
-  if (dayTitle && daySubtitle && currentTab === 'nutrition') {
-    dayTitle.textContent = formatDate(currentNutritionDate);
-    daySubtitle.textContent = formatDateSubtitle(currentNutritionDate);
+  try {
+    const dayTitle = document.getElementById('dayTitle');
+    const daySubtitle = document.getElementById('daySubtitle');
+    
+    if (dayTitle && daySubtitle && currentTab === 'nutrition') {
+      dayTitle.textContent = formatDate(currentNutritionDate);
+      daySubtitle.textContent = formatDateSubtitle(currentNutritionDate);
+    } else if (currentTab === 'nutrition') {
+      console.log('Элементы заголовка дня не найдены для питания');
+    }
+  } catch (e) {
+    console.error('Ошибка в функции updateNutritionDayTitle:', e);
   }
 }
 
@@ -4891,60 +5365,67 @@ function saveWaterAmount() {
 }
 
 function updateWaterTracker() {
-  const waterStats = document.getElementById('waterStats');
-  const waterProgressFill = document.getElementById('waterProgressFill');
-  const waterCurrent = document.getElementById('waterCurrent');
-  
-  if (!waterStats || !waterProgressFill || !waterCurrent) return;
-  
-  // Получаем воду для текущего дня питания
-  const dateStr = currentNutritionDate.toDateString();
-  const current = nutritionData.water.daily[dateStr] || 0;
-  const target = nutritionData.water.target;
-  const percentage = (current / target) * 100;
-  
-  // Плавное обновление статистики
-  const currentStats = waterStats.textContent;
-  const newStats = `${current}/${target} стаканов`;
-  
-  if (currentStats !== newStats) {
-    waterStats.style.opacity = '0.7';
-    waterStats.style.transform = 'scale(0.95)';
+  try {
+    const waterStats = document.getElementById('waterStats');
+    const waterProgressFill = document.getElementById('waterProgressFill');
+    const waterCurrent = document.getElementById('waterCurrent');
     
-    setTimeout(() => {
-      waterStats.textContent = newStats;
-      waterStats.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-      waterStats.style.opacity = '1';
-      waterStats.style.transform = 'scale(1)';
-    }, 150);
-  }
-  
-  // Плавное обновление прогресс-бара
-  waterProgressFill.style.transition = 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-  waterProgressFill.style.width = `${Math.min(100, percentage)}%`;
-  
-  // Плавное обновление текущего значения
-  const currentValue = parseInt(waterCurrent.textContent) || 0;
-  if (currentValue !== current) {
-    animateWaterValue(waterCurrent, currentValue, current);
-  }
-  
-  // Добавляем класс completed если цель достигнута
-  const waterTracker = document.querySelector('.water-tracker');
-  if (waterTracker) {
-    if (current >= target) {
-      if (!waterTracker.classList.contains('completed')) {
-        waterTracker.classList.add('completed');
-        // Добавляем небольшую вибрацию при достижении цели
-        if (navigator.vibrate) {
-          navigator.vibrate([100, 50, 100]);
-        }
-        // Показываем уведомление о достижении цели
-        showWaterCompletionEffect();
-      }
-    } else {
-      waterTracker.classList.remove('completed');
+    if (!waterStats || !waterProgressFill || !waterCurrent) {
+      console.log('Элементы трекера воды не найдены, пропускаем обновление');
+      return;
     }
+    
+    // Получаем воду для текущего дня питания
+    const dateStr = currentNutritionDate.toDateString();
+    const current = nutritionData.water.daily[dateStr] || 0;
+    const target = nutritionData.water.target;
+    const percentage = (current / target) * 100;
+    
+    // Плавное обновление статистики
+    const currentStats = waterStats.textContent;
+    const newStats = `${current}/${target} стаканов`;
+    
+    if (currentStats !== newStats) {
+      waterStats.style.opacity = '0.7';
+      waterStats.style.transform = 'scale(0.95)';
+      
+      setTimeout(() => {
+        waterStats.textContent = newStats;
+        waterStats.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        waterStats.style.opacity = '1';
+        waterStats.style.transform = 'scale(1)';
+      }, 150);
+    }
+    
+    // Плавное обновление прогресс-бара
+    waterProgressFill.style.transition = 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+    waterProgressFill.style.width = `${Math.min(100, percentage)}%`;
+    
+    // Плавное обновление текущего значения
+    const currentValue = parseInt(waterCurrent.textContent) || 0;
+    if (currentValue !== current) {
+      animateWaterValue(waterCurrent, currentValue, current);
+    }
+    
+    // Добавляем класс completed если цель достигнута
+    const waterTracker = document.querySelector('.water-tracker');
+    if (waterTracker) {
+      if (current >= target) {
+        if (!waterTracker.classList.contains('completed')) {
+          waterTracker.classList.add('completed');
+          // Добавляем небольшую вибрацию при достижении цели
+          if (navigator.vibrate) {
+            navigator.vibrate([100, 50, 100]);
+          }
+          // Показываем уведомление о достижении цели
+          showWaterCompletionEffect();
+        }
+      } else {
+        waterTracker.classList.remove('completed');
+      }
+    }
+  } catch (e) {
+    console.error('Ошибка в функции updateWaterTracker:', e);
   }
 }
 
@@ -5381,91 +5862,103 @@ function saveMeal(dateStr, mealType) {
 function toggleMealComplete(dateStr, mealTypeId, event) {
   event.stopPropagation();
   
-  if (!nutritionData.meals[dateStr]) {
-    nutritionData.meals[dateStr] = {};
-  }
-  
-  if (!nutritionData.meals[dateStr][mealTypeId]) {
-    nutritionData.meals[dateStr][mealTypeId] = {};
-  }
-  
-  const mealData = nutritionData.meals[dateStr][mealTypeId];
-  const wasCompleted = mealData.completed || false;
-  
-  // Переключаем состояние
-  mealData.completed = !wasCompleted;
-  
-  // Находим элементы для анимации
-  const checkbox = event.target;
-  const mealElement = checkbox.closest('.meal');
-  const mealLabel = mealElement.querySelector('.meal-label');
-  const mealContent = mealElement.querySelector('.meal-content');
-  
-  if (mealData.completed) {
-    // Отмечаем как выполненное - с анимацией
-    checkbox.classList.add('checked');
-    
-    // Измеряем точную ширину текста для красивого зачеркивания
-    if (mealLabel) {
-      // Создаем временный элемент для измерения только текста (без значков времени)
-      const tempLabel = document.createElement('span');
-      tempLabel.style.cssText = `
-        position: absolute;
-        visibility: hidden;
-        white-space: nowrap;
-        font-family: ${window.getComputedStyle(mealLabel).fontFamily};
-        font-size: ${window.getComputedStyle(mealLabel).fontSize};
-        font-weight: ${window.getComputedStyle(mealLabel).fontWeight};
-      `;
-      
-      // Получаем только текст без HTML тегов
-      const labelTextOnly = mealLabel.textContent.replace(/\s*\d{2}:\d{2}\s*$/, '').trim();
-      tempLabel.textContent = labelTextOnly;
-      
-      document.body.appendChild(tempLabel);
-      const labelWidth = tempLabel.offsetWidth;
-      document.body.removeChild(tempLabel);
-      
-      mealLabel.style.setProperty('--text-width', labelWidth + 'px');
+  try {
+    if (!nutritionData.meals[dateStr]) {
+      nutritionData.meals[dateStr] = {};
     }
     
-    if (mealContent) {
-      // Создаем временный элемент для измерения текста контента
-      const tempContent = document.createElement('span');
-      tempContent.style.cssText = `
-        position: absolute;
-        visibility: hidden;
-        white-space: nowrap;
-        font-family: ${window.getComputedStyle(mealContent).fontFamily};
-        font-size: ${window.getComputedStyle(mealContent).fontSize};
-        font-weight: ${window.getComputedStyle(mealContent).fontWeight};
-      `;
-      tempContent.textContent = mealContent.textContent;
-      
-      document.body.appendChild(tempContent);
-      const contentWidth = tempContent.offsetWidth;
-      document.body.removeChild(tempContent);
-      
-      mealContent.style.setProperty('--text-width', contentWidth + 'px');
+    if (!nutritionData.meals[dateStr][mealTypeId]) {
+      nutritionData.meals[dateStr][mealTypeId] = {};
     }
     
-    // Через небольшую задержку добавляем анимацию зачеркивания
-    setTimeout(() => {
-      mealElement.classList.add('completed');
+    const mealData = nutritionData.meals[dateStr][mealTypeId];
+    const wasCompleted = mealData.completed || false;
+    
+    // Переключаем состояние
+    mealData.completed = !wasCompleted;
+    
+    // Находим элементы для анимации
+    const checkbox = event.target;
+    const mealElement = checkbox.closest('.meal');
+    const mealLabel = mealElement.querySelector('.meal-label');
+    const mealContent = mealElement.querySelector('.meal-content');
+    
+    if (mealData.completed) {
+      // Отмечаем как выполненное - с анимацией
+      checkbox.classList.add('checked');
       
-      // Добавляем небольшую вибрацию для тактильной обратной связи
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
+      // Измеряем точную ширину текста для красивого зачеркивания
+      if (mealLabel) {
+        try {
+          // Создаем временный элемент для измерения только текста (без значков времени)
+          const tempLabel = document.createElement('span');
+          tempLabel.style.cssText = `
+            position: absolute;
+            visibility: hidden;
+            white-space: nowrap;
+            font-family: ${window.getComputedStyle(mealLabel).fontFamily};
+            font-size: ${window.getComputedStyle(mealLabel).fontSize};
+            font-weight: ${window.getComputedStyle(mealLabel).fontWeight};
+          `;
+          
+          // Получаем только текст без HTML тегов
+          const labelTextOnly = mealLabel.textContent.replace(/\s*\d{2}:\d{2}\s*$/, '').trim();
+          tempLabel.textContent = labelTextOnly;
+          
+          document.body.appendChild(tempLabel);
+          const labelWidth = tempLabel.offsetWidth;
+          document.body.removeChild(tempLabel);
+          
+          mealLabel.style.setProperty('--text-width', labelWidth + 'px');
+        } catch (e) {
+          console.log('Ошибка при измерении ширины метки:', e);
+        }
       }
-    }, 150);
-  } else {
-    // Убираем выполнение - мгновенно
-    mealData.completed = false;
-    mealElement.classList.remove('completed');
-    checkbox.classList.remove('checked');
+      
+      if (mealContent) {
+        try {
+          // Создаем временный элемент для измерения текста контента
+          const tempContent = document.createElement('span');
+          tempContent.style.cssText = `
+            position: absolute;
+            visibility: hidden;
+            white-space: nowrap;
+            font-family: ${window.getComputedStyle(mealContent).fontFamily};
+            font-size: ${window.getComputedStyle(mealContent).fontSize};
+            font-weight: ${window.getComputedStyle(mealContent).fontWeight};
+          `;
+          tempContent.textContent = mealContent.textContent;
+          
+          document.body.appendChild(tempContent);
+          const contentWidth = tempContent.offsetWidth;
+          document.body.removeChild(tempContent);
+          
+          mealContent.style.setProperty('--text-width', contentWidth + 'px');
+        } catch (e) {
+          console.log('Ошибка при измерении ширины контента:', e);
+        }
+      }
+      
+      // Через небольшую задержку добавляем анимацию зачеркивания
+      setTimeout(() => {
+        mealElement.classList.add('completed');
+        
+        // Добавляем небольшую вибрацию для тактильной обратной связи
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+      }, 150);
+    } else {
+      // Убираем выполнение - мгновенно
+      mealData.completed = false;
+      mealElement.classList.remove('completed');
+      checkbox.classList.remove('checked');
+    }
+    
+    saveNutritionData();
+  } catch (e) {
+    console.error('Ошибка при переключении состояния приема пищи:', e);
   }
-  
-  saveNutritionData();
 }
 
 function showHabitsTab() {
@@ -5484,19 +5977,41 @@ function showHabitsTab() {
 
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
-  loadData();
-  loadProfileData();
-  
-  // Инициализируем прогресс-бар
-  const progressCircle = document.getElementById('progressCircle');
-  if (progressCircle) {
-    progressCircle.dataset.currentAngle = '0';
+  try {
+    console.log('DOMContentLoaded - начинаем инициализацию приложения');
+    
+    loadData();
+    console.log('После loadData - планы:', plans);
+    console.log('После loadData - количество планов:', plans.length);
+    
+    loadProfileData();
+    
+    // Инициализируем прогресс-бар
+    const progressCircle = document.getElementById('progressCircle');
+    if (progressCircle) {
+      progressCircle.dataset.currentAngle = '0';
+    }
+    
+    // Убеждаемся что мы на вкладке задач
+    currentTab = 'tasks';
+    
+    // Устанавливаем активную вкладку в навигации
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.classList.remove('active');
+    });
+    
+    const tasksTab = document.querySelector('[data-tab="tasks"]');
+    if (tasksTab) {
+      tasksTab.classList.add('active');
+    }
+    
+    console.log('Перед render - планы:', plans);
+    render();
+    console.log('DOMContentLoaded - инициализация завершена');
+  } catch (e) {
+    console.error('Ошибка при инициализации приложения:', e);
   }
-  
-  // Убеждаемся что мы на вкладке задач
-  currentTab = 'tasks';
-  
-  render();
   
   // Добавляем CSS для конфетти и капель воды
   const confettiStyle = document.createElement('style');

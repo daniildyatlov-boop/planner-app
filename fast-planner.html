@@ -410,11 +410,21 @@ document.getElementById('newRoomModal').value='';
 function addRoomFromModal(){
 const input=document.getElementById('newRoomModal');
 const roomName=input.value.trim();
-if(!roomName||teams.includes(roomName))return;
+console.log('Добавляем комнату:', roomName);
+if(!roomName){
+console.log('Пустое название');
+return;
+}
+if(teams.includes(roomName)){
+console.log('Комната уже существует');
+return;
+}
 
 teams.push(roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
+console.log('Комната добавлена, обновляем список');
 renderRooms();
+updateRoomsSelect();
 hideAddRoomModal();
 }
 

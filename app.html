@@ -1809,10 +1809,118 @@ body{
   font-size: 20px;
   margin-right: var(--spacing-md);
 }
-.meal-type-name{
+/* MEAL INPUT MODAL */
+.meal-input-modal{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-input-modal.show{
+  opacity: 1;
+}
+.meal-input-modal-content{
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-xl);
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
+  transform: scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-input-modal.show .meal-input-modal-content{
+  transform: scale(1);
+}
+.meal-input-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xl);
+  border-bottom: 1px solid var(--border-secondary);
+}
+.meal-input-header h3{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.meal-input-close{
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-input-close:hover{
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.meal-input-form{
+  padding: var(--spacing-xl);
+}
+.meal-content-input{
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+.meal-input-buttons{
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  border-top: 1px solid var(--border-secondary);
+}
+.btn-secondary{
+  flex: 1;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-secondary:hover{
+  background: var(--bg-card-hover);
+  border-color: var(--border-primary);
+}
+.btn-primary{
+  flex: 1;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+}
+.btn-primary:active{
+  transform: scale(0.98);
 }
 
 /* BOTTOM NAVIGATION */
@@ -3905,7 +4013,6 @@ function editWaterAmount() {
     if (input) {
       input.type = 'number';
       input.min = '0';
-      input.max = '50';
       input.placeholder = 'Сколько стаканов выпили?';
       input.select(); // Выделяем текст для быстрого редактирования
     }
@@ -3983,7 +4090,6 @@ function showWaterSettings() {
     if (input) {
       input.type = 'number';
       input.min = '1';
-      input.max = '20';
       input.placeholder = 'Сколько стаканов в день?';
     }
   }, 100);
@@ -3993,8 +4099,8 @@ function saveWaterSettings() {
   const input = document.querySelector('.popup-input');
   const newTarget = parseInt(input.value.trim());
   
-  if (!newTarget || newTarget < 1 || newTarget > 20) {
-    showPopup('Ошибка', 'Введите число от 1 до 20', [
+  if (!newTarget || newTarget < 1) {
+    showPopup('Ошибка', 'Введите число больше 0', [
       { text: 'OK', type: 'confirm', action: hidePopup }
     ]);
     return;
@@ -4124,32 +4230,67 @@ function saveCustomMealType(dateStr) {
 }
 
 function showMealTimeInput(dateStr, mealId, mealName, mealIcon, defaultTime) {
-  showPopup(
-    `${mealIcon} ${mealName}`,
-    'Укажите время приема пищи (необязательно)',
-    [
-      { text: 'Пропустить', type: 'cancel', action: () => saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon, '') },
-      { text: 'Сохранить', type: 'confirm', action: () => saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon) }
-    ],
-    true,
-    defaultTime
-  );
+  // Создаем специальное модальное окно для полного ввода данных о приеме пищи
+  const modal = document.createElement('div');
+  modal.className = 'meal-input-modal';
+  modal.innerHTML = `
+    <div class="meal-input-modal-content">
+      <div class="meal-input-header">
+        <h3>${mealIcon} ${mealName}</h3>
+        <button class="meal-input-close" onclick="closeMealInputModal()">×</button>
+      </div>
+      <div class="meal-input-form">
+        <div class="form-group">
+          <label class="label">Время (необязательно)</label>
+          <input type="time" class="input" id="mealTimeInput" value="${defaultTime}" placeholder="Время приема пищи">
+        </div>
+        <div class="form-group">
+          <label class="label">Что планируете съесть</label>
+          <textarea class="input meal-content-input" id="mealContentInput" placeholder="Опишите прием пищи (например: овсянка с фруктами, кофе)" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="meal-input-buttons">
+        <button class="btn-secondary" onclick="closeMealInputModal()">Отмена</button>
+        <button class="btn-primary" onclick="saveMealWithAllData('${dateStr}', '${mealId}', '${mealName}', '${mealIcon}')">Добавить</button>
+      </div>
+    </div>
+  `;
   
+  document.body.appendChild(modal);
+  
+  // Показываем модальное окно с анимацией
   setTimeout(() => {
-    const input = document.querySelector('.popup-input');
-    if (input) {
-      input.type = 'time';
-      input.placeholder = 'Время приема пищи';
+    modal.classList.add('show');
+    // Фокусируемся на поле содержимого
+    const contentInput = document.getElementById('mealContentInput');
+    if (contentInput) {
+      contentInput.focus();
     }
-  }, 100);
+  }, 10);
 }
 
-function saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon, timeOverride) {
-  let mealTime = timeOverride;
+function closeMealInputModal() {
+  const modal = document.querySelector('.meal-input-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      document.body.removeChild(modal);
+    }, 300);
+  }
+}
+
+function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
+  const timeInput = document.getElementById('mealTimeInput');
+  const contentInput = document.getElementById('mealContentInput');
   
-  if (timeOverride === undefined) {
-    const input = document.querySelector('.popup-input');
-    mealTime = input.value.trim();
+  const mealTime = timeInput.value.trim();
+  const mealContent = contentInput.value.trim();
+  
+  if (!mealContent) {
+    // Подсвечиваем поле, если оно пустое
+    contentInput.style.borderColor = '#ef4444';
+    contentInput.focus();
+    return;
   }
   
   // Создаем новый тип приема пищи
@@ -4174,9 +4315,18 @@ function saveMealTypeWithTime(dateStr, mealId, mealName, mealIcon, timeOverride)
     return a.time.localeCompare(b.time);
   });
   
+  // Сохраняем содержимое приема пищи
+  if (!nutritionData.meals[dateStr]) {
+    nutritionData.meals[dateStr] = {};
+  }
+  nutritionData.meals[dateStr][mealId] = {
+    content: mealContent,
+    time: mealTime
+  };
+  
   saveNutritionData();
   renderNutritionDay();
-  hidePopup();
+  closeMealInputModal();
 }
 
 // Удаление типа приема пищи

@@ -6,7 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Планы v2.1 - iOS 26</title>
+<meta name="version" content="v2.2-profile-1738000001">
+<title>Планы v2.2 - iOS 26 + Profile</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=5"></script>
 <style>
 /* iOS 26 System-Level Design */
@@ -441,7 +442,7 @@ color:#007AFF;
 <div class="header">
 <button class="header-btn left" onclick="showProfile()" id="profileBtn">👤</button>
 <button class="header-btn left" onclick="showRooms()" style="display:none;left:64px" id="roomsBtn">Комнаты</button>
-<div class="header-title">🍎 Планы</div>
+<div class="header-title">🍎 Планы v2.2</div>
 <button class="header-btn right" onclick="showAdd()" id="addBtn">Добавить</button>
 <button class="header-btn right" onclick="showSupport()" id="supportBtn" style="right:80px;display:block">ℹ️</button>
 </div>
@@ -517,7 +518,7 @@ color:#007AFF;
 <div class="support-info">
 <div class="info-section">
 <div class="info-title">Версия приложения</div>
-<div class="info-value">v2.1 - iOS 26 Design</div>
+<div class="info-value">v2.2 - iOS 26 + Profile</div>
 </div>
 <div class="info-section">
 <div class="info-title">Последнее обновление</div>
@@ -574,8 +575,8 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// Force cache refresh - iOS 26 Design v2.1
-console.log('🍎 iOS 26 Design v2.1 loaded - ' + new Date().toISOString());
+// Force cache refresh - iOS 26 Design v2.2 + Profile
+console.log('🍎 iOS 26 Design v2.2 + Profile loaded - ' + new Date().toISOString());
 
 // App state
 let currentDate = new Date();

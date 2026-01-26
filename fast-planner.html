@@ -34,8 +34,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .plans{flex:0}
 .group{margin-bottom:16px}
 .group-title{font-size:13px;color:var(--tg-theme-hint-color,#8e8e93);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;padding:0 4px}
-.plan{background:white;border-radius:12px;padding:16px;margin-bottom:8px;display:flex;align-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04)}
+.progress-bar{height:4px;background:#f0f0f0;border-radius:2px;margin:16px 20px 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#007aff,#34c759);border-radius:2px;transition:width 0.3s ease;width:0%}
+.plan{background:white;border-radius:12px;padding:16px;margin-bottom:8px;display:flex;align-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04);transition:all 0.2s ease}
 .plan:active{opacity:0.8;transform:scale(0.98)}
+.plan.completed{opacity:0.6;background:#f8f9fa}
+.plan.completed .plan-title{text-decoration:line-through;color:#8e8e93}
+.plan.completed .time{background:#e5e5ea;color:#8e8e93}
+.checkbox{width:20px;height:20px;border:2px solid #007aff;border-radius:10px;margin-right:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.2s ease}
+.checkbox.checked{background:#007aff;border-color:#007aff}
+.checkbox.checked::after{content:'✓';color:white;font-size:12px;font-weight:bold}
 .time{font-size:15px;color:#007aff;font-weight:600;min-width:50px;margin-right:12px;background:rgba(0,122,255,0.1);padding:4px 8px;border-radius:6px}
 .plan-content{flex:1}
 .plan-title{font-size:17px;margin-bottom:2px;color:#000;font-weight:500}
@@ -210,13 +218,20 @@ fixedBtn.style.display='block';
 
 const withTime=today.filter(p=>p.time).sort((a,b)=>a.time.localeCompare(b.time));
 const withoutTime=today.filter(p=>!p.time);
+const allPlans=[...withTime,...withoutTime];
 
-let html='';
+// Прогресс бар
+const completedCount=allPlans.filter(p=>p.completed).length;
+const totalCount=allPlans.length;
+const progressPercent=totalCount>0?(completedCount/totalCount)*100:0;
+
+let html=`<div class="progress-bar"><div class="progress-fill" style="width:${progressPercent}%"></div></div>`;
 
 if(withTime.length>0){
 html+='<div class="group"><div class="group-title">С временем</div>';
 withTime.forEach(p=>{
-html+=`<div class="plan" onclick="showMenu('${p.id}')">
+html+=`<div class="plan ${p.completed?'completed':''}" onclick="showMenu('${p.id}')">
+<div class="checkbox ${p.completed?'checked':''}" onclick="toggleComplete('${p.id}',event)"></div>
 <div class="time">${p.time}</div>
 <div class="plan-content">
 <div class="plan-title">${escapeHtml(p.title)}</div>
@@ -228,16 +243,15 @@ html+='</div>';
 }
 
 if(withoutTime.length>0){
-html+='<div class="group"><div class="group-title">Без времени</div>';
 withoutTime.forEach(p=>{
-html+=`<div class="plan" onclick="showMenu('${p.id}')">
+html+=`<div class="plan ${p.completed?'completed':''}" onclick="showMenu('${p.id}')">
+<div class="checkbox ${p.completed?'checked':''}" onclick="toggleComplete('${p.id}',event)"></div>
 <div class="plan-content">
 <div class="plan-title">${escapeHtml(p.title)}</div>
 ${p.room?`<div class="room">${escapeHtml(p.room)}</div>`:''}
 </div>
 </div>`;
 });
-html+='</div>';
 }
 
 plansEl.innerHTML=html;
@@ -420,6 +434,16 @@ plans=plans.filter(p=>p.id!==selected);
 localStorage.setItem('plans',JSON.stringify(plans));
 hideMenu();
 render();
+}
+
+function toggleComplete(id,event){
+event.stopPropagation();
+const plan=plans.find(p=>p.id===id);
+if(plan){
+plan.completed=!plan.completed;
+localStorage.setItem('plans',JSON.stringify(plans));
+render();
+}
 }
 
 // Pull to refresh

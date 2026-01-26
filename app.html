@@ -2013,6 +2013,20 @@ textarea.input {
 }
 .meal.completed .meal-label {
   color: var(--text-muted);
+  position: relative;
+}
+.meal.completed .meal-label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
+  border-radius: 1px;
+  transform: translateY(-50%);
+  animation: meal-label-strikethrough 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .meal.completed .meal-content {
   color: var(--text-muted);
@@ -2028,12 +2042,12 @@ textarea.input {
   background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
   border-radius: 1px;
   transform: translateY(-50%);
-  animation: meal-strikethrough 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: meal-content-strikethrough 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Анимация зачеркивания для приемов пищи */
-@keyframes meal-strikethrough {
+/* Анимации зачеркивания для разных частей приема пищи */
+@keyframes meal-label-strikethrough {
   0% {
     width: 0;
     opacity: 0;
@@ -2042,9 +2056,36 @@ textarea.input {
     opacity: 1;
   }
   100% {
-    width: 100%;
+    width: var(--text-width, 100%);
     opacity: 1;
   }
+}
+
+@keyframes meal-content-strikethrough {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    width: var(--text-width, 100%);
+    opacity: 1;
+  }
+}
+
+/* Улучшенные стили для зачеркнутого текста */
+.meal.completed .meal-label,
+.meal.completed .meal-content {
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Стили для значков времени в выполненных приемах */
+.meal.completed .meal-time-badge {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
 }
 
 /* ADD MEAL BUTTON */
@@ -4626,6 +4667,22 @@ function renderNutritionDay() {
       meals.forEach((meal, index) => {
         meal.style.animationDelay = `${index * 0.1}s`;
         meal.classList.add('animate-in');
+        
+        // Устанавливаем ширину текста для уже выполненных приемов пищи
+        if (meal.classList.contains('completed')) {
+          const mealLabel = meal.querySelector('.meal-label');
+          const mealContent = meal.querySelector('.meal-content');
+          
+          if (mealLabel) {
+            const labelWidth = getTextWidth(mealLabel.textContent, mealLabel);
+            mealLabel.style.setProperty('--text-width', labelWidth + 'px');
+          }
+          
+          if (mealContent) {
+            const contentWidth = getTextWidth(mealContent.textContent, mealContent);
+            mealContent.style.setProperty('--text-width', contentWidth + 'px');
+          }
+        }
       });
     }, 100);
     
@@ -5202,11 +5259,23 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
   // Находим элементы для анимации
   const checkbox = event.target;
   const mealElement = checkbox.closest('.meal');
+  const mealLabel = mealElement.querySelector('.meal-label');
   const mealContent = mealElement.querySelector('.meal-content');
   
   if (mealData.completed) {
     // Отмечаем как выполненное - с анимацией
     checkbox.classList.add('checked');
+    
+    // Измеряем точную ширину текста для красивого зачеркивания
+    if (mealLabel) {
+      const labelWidth = getTextWidth(mealLabel.textContent, mealLabel);
+      mealLabel.style.setProperty('--text-width', labelWidth + 'px');
+    }
+    
+    if (mealContent) {
+      const contentWidth = getTextWidth(mealContent.textContent, mealContent);
+      mealContent.style.setProperty('--text-width', contentWidth + 'px');
+    }
     
     // Через небольшую задержку добавляем анимацию зачеркивания
     setTimeout(() => {

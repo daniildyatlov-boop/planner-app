@@ -5074,9 +5074,10 @@ function selectMealType(typeId, typeName, typeIcon, defaultTime) {
       showCustomMealTypeInput(dateStr);
     }, 300);
   } else {
-    // Для предустановленных типов показываем настройку времени
+    // Для предустановленных типов генерируем уникальный ID
+    const uniqueId = typeId + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     setTimeout(() => {
-      showMealTimeInput(dateStr, typeId, typeName, typeIcon, defaultTime);
+      showMealTimeInput(dateStr, uniqueId, typeName, typeIcon, defaultTime);
     }, 300);
   }
 }
@@ -5113,8 +5114,12 @@ function saveCustomMealType(dateStr) {
   }
   
   hidePopup();
+  
+  // Генерируем уникальный ID для кастомного приема пищи
+  const uniqueId = 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  
   setTimeout(() => {
-    showMealTimeInput(dateStr, 'meal_' + Date.now(), mealName, '🍽️', '');
+    showMealTimeInput(dateStr, uniqueId, mealName, '🍽️', '');
   }, 100);
 }
 
@@ -5182,6 +5187,8 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     return;
   }
   
+  console.log('Сохраняем прием пищи:', { dateStr, mealId, mealName, mealIcon, mealTime, mealContent });
+  
   // Создаем новый тип приема пищи
   const newMealType = {
     id: mealId,
@@ -5214,6 +5221,9 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     completed: false // Новые приемы пищи по умолчанию не выполнены
   };
   
+  console.log('Текущие типы приемов пищи для дня:', nutritionData.mealTypes[dateStr]);
+  console.log('Текущие данные приемов пищи для дня:', nutritionData.meals[dateStr]);
+  
   saveNutritionData();
   renderNutritionDay();
   closeMealInputModal();
@@ -5222,13 +5232,23 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
 // Удаление типа приема пищи
 function deleteMealType(dateStr, mealTypeId) {
   // Получаем название приема пищи для подтверждения
-  const dayMealTypes = nutritionData.mealTypes[dateStr] || getDefaultMealTypes();
+  const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
   const mealType = dayMealTypes.find(m => m.id === mealTypeId);
   const mealName = mealType ? mealType.name : 'Прием пищи';
+  const mealTime = mealType && mealType.time ? ` в ${mealType.time}` : '';
+  
+  // Получаем содержимое приема пищи
+  const mealData = nutritionData.meals[dateStr] && nutritionData.meals[dateStr][mealTypeId];
+  const mealContent = mealData && mealData.content ? mealData.content : '';
+  const contentPreview = mealContent.length > 30 ? mealContent.substring(0, 30) + '...' : mealContent;
+  
+  const confirmMessage = contentPreview 
+    ? `Прием пищи "${mealName}${mealTime}" с содержимым "${contentPreview}" будет удален.`
+    : `Прием пищи "${mealName}${mealTime}" будет удален.`;
   
   showPopup(
     'Удалить прием пищи?',
-    `Прием пищи "${mealName}" будет удален из этого дня.`,
+    confirmMessage,
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
       { text: 'Удалить', type: 'danger', action: () => confirmDeleteMealType(dateStr, mealTypeId) }
@@ -5237,15 +5257,26 @@ function deleteMealType(dateStr, mealTypeId) {
 }
 
 function confirmDeleteMealType(dateStr, mealTypeId) {
+  console.log('Удаляем прием пищи:', { dateStr, mealTypeId });
+  console.log('Типы приемов пищи до удаления:', nutritionData.mealTypes[dateStr]);
+  console.log('Данные приемов пищи до удаления:', nutritionData.meals[dateStr]);
+  
   // Удаляем тип приема пищи
   if (nutritionData.mealTypes[dateStr]) {
+    const beforeCount = nutritionData.mealTypes[dateStr].length;
     nutritionData.mealTypes[dateStr] = nutritionData.mealTypes[dateStr].filter(m => m.id !== mealTypeId);
+    const afterCount = nutritionData.mealTypes[dateStr].length;
+    console.log(`Удалено типов приемов пищи: ${beforeCount - afterCount}`);
   }
   
   // Удаляем данные о еде для этого типа
   if (nutritionData.meals[dateStr] && nutritionData.meals[dateStr][mealTypeId]) {
     delete nutritionData.meals[dateStr][mealTypeId];
+    console.log('Удалены данные приема пищи с ID:', mealTypeId);
   }
+  
+  console.log('Типы приемов пищи после удаления:', nutritionData.mealTypes[dateStr]);
+  console.log('Данные приемов пищи после удаления:', nutritionData.meals[dateStr]);
   
   saveNutritionData();
   renderNutritionDay();

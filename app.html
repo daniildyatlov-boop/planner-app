@@ -26,11 +26,11 @@ body{
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ENHANCED ANIMATIONS SYSTEM */
+/* ENHANCED ANIMATIONS SYSTEM - УЛУЧШЕННАЯ СИСТЕМА АНИМАЦИЙ */
 @keyframes slideInFromBottom {
   from {
     opacity: 0;
-    transform: translateY(100px) scale(0.9);
+    transform: translateY(50px) scale(0.95);
   }
   to {
     opacity: 1;
@@ -45,21 +45,21 @@ body{
   }
   to {
     opacity: 0;
-    transform: translateY(100px) scale(0.9);
+    transform: translateY(50px) scale(0.95);
   }
 }
 
 @keyframes bounceIn {
   0% {
     opacity: 0;
-    transform: scale(0.3) rotate(-10deg);
+    transform: scale(0.3) rotate(-5deg);
   }
   50% {
     opacity: 1;
-    transform: scale(1.05) rotate(5deg);
+    transform: scale(1.05) rotate(2deg);
   }
   70% {
-    transform: scale(0.95) rotate(-2deg);
+    transform: scale(0.95) rotate(-1deg);
   }
   100% {
     opacity: 1;
@@ -70,7 +70,7 @@ body{
 @keyframes floatIn {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.8);
+    transform: translateY(20px) scale(0.9);
   }
   to {
     opacity: 1;
@@ -87,14 +87,61 @@ body{
   }
 }
 
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Улучшенные анимации для элементов */
 .animate-in {
-  animation: floatIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: floatIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .animate-bounce {
-  animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+  animation: bounceIn 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
 }
+
+.animate-slide-right {
+  animation: slideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-slide-left {
+  animation: slideInFromLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-scale {
+  animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Классы для плавных переходов */
 .ease-bounce { transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); }
 .ease-smooth { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
 .ease-swift { transition-timing-function: cubic-bezier(0.55, 0, 0.1, 1); }
@@ -1044,45 +1091,55 @@ body{
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
+
+/* УЛУЧШЕННЫЕ ПОЛЯ ВВОДА - ИСПРАВЛЯЕМ ПРОБЛЕМЫ С КУРСОРОМ */
 .input,.select{
   width:100%;
   background:rgba(28,28,30,0.8);
   backdrop-filter: blur(20px);
   border:1px solid rgba(44,44,46,0.6);
-  border-radius:10px;
-  padding:var(--spacing-md);
-  font-size:var(--spacing-lg);
-  font-family:inherit;
+  border-radius:12px;
+  padding:16px;
+  font-size:16px;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
   color:#ffffff;
-  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  transform: translateZ(0);
-  /* Исправляем проблему с курсором */
-  line-height: 1.5;
-  vertical-align: top;
+  /* КРИТИЧЕСКИ ВАЖНО ДЛЯ СТАБИЛЬНОСТИ КУРСОРА */
+  line-height: 1.4;
+  height: 52px;
+  box-sizing: border-box;
+  vertical-align: baseline;
   text-align: left;
   caret-color: var(--accent-primary);
+  /* Убираем любые трансформации в покое */
+  transform: none;
+  /* Стабилизируем позиционирование */
+  position: relative;
+  z-index: 1;
 }
+
+/* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ РАЗНЫХ ТИПОВ ПОЛЕЙ */
+.input[type="text"], .input[type="email"], .input[type="password"] {
+  /* Стандартные текстовые поля */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .input[type="date"]{
-  /* Убираем встроенные стили браузера для поля даты */
+  /* Поле даты - убираем браузерные стили */
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  /* Обеспечиваем одинаковую высоту с другими полями */
-  height: auto;
-  line-height: 1.5;
-  /* Убираем стандартный календарь браузера */
-  position: relative;
-  /* Принудительно задаем минимальную высоту как у других полей */
-  min-height: 48px;
-  /* Убираем внутренние отступы браузера */
-  padding: var(--spacing-md) !important;
-  /* Выравниваем по вертикали */
-  display: flex;
-  align-items: center;
+  cursor: pointer;
+  /* Принудительно задаем высоту */
+  height: 52px !important;
+  line-height: 1.4 !important;
+  padding: 16px !important;
+  /* Убираем стандартные иконки */
+  background-image: none;
 }
 .input[type="date"]::-webkit-calendar-picker-indicator {
-  /* Скрываем стандартную иконку календаря */
   opacity: 0;
   position: absolute;
   right: 0;
@@ -1090,25 +1147,23 @@ body{
   height: 100%;
   cursor: pointer;
 }
+.input[type="date"]::-webkit-inner-spin-button,
+.input[type="date"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .input[type="time"]{
-  /* Убираем встроенные стили браузера для поля времени */
+  /* Поле времени */
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  /* Обеспечиваем одинаковую высоту с другими полями */
-  height: auto;
-  line-height: 1.5;
-  position: relative;
-  /* Принудительно задаем минимальную высоту как у других полей */
-  min-height: 48px;
-  /* Убираем внутренние отступы браузера */
-  padding: var(--spacing-md) !important;
-  /* Выравниваем по вертикали */
-  display: flex;
-  align-items: center;
+  cursor: pointer;
+  height: 52px !important;
+  line-height: 1.4 !important;
+  padding: 16px !important;
 }
 .input[type="time"]::-webkit-calendar-picker-indicator {
-  /* Скрываем стандартную иконку часов */
   opacity: 0;
   position: absolute;
   right: 0;
@@ -1116,37 +1171,50 @@ body{
   height: 100%;
   cursor: pointer;
 }
+
 .input[type="number"]{
-  /* Стабилизируем числовые поля */
+  /* Числовые поля */
   -webkit-appearance: none;
   -moz-appearance: textfield;
   appearance: none;
-  line-height: 1.5;
+  text-align: left;
 }
 .input[type="number"]::-webkit-outer-spin-button,
 .input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* СОСТОЯНИЯ ПОЛЕЙ - УБИРАЕМ АГРЕССИВНЫЕ ТРАНСФОРМАЦИИ */
 .input:focus,.select:focus{
   outline:none;
   border-color:#6366f1;
   box-shadow:0 0 0 3px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.2);
   background:rgba(28,28,30,0.95);
-  transform: translateY(-2px) scale(1.02);
+  /* Убираем трансформации при фокусе - они вызывают дерганье курсора */
+  transform: none;
 }
-.input:hover,.select:hover{
+.input:hover:not(:focus),.select:hover:not(:focus){
   border-color:rgba(99,102,241,0.4);
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  /* Минимальная трансформация только при ховере без фокуса */
   transform: translateY(-1px);
 }
 .input::placeholder{
   color:#6b7280;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .input:focus::placeholder{
-  opacity: 0.7;
-  transform: translateY(-2px);
+  opacity: 0.5;
+}
+
+/* TEXTAREA - СПЕЦИАЛЬНЫЕ СТИЛИ */
+textarea.input {
+  height: auto;
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.5;
+  padding: 16px;
 }
 
 .select-wrapper{
@@ -1524,77 +1592,136 @@ body{
 
 
 
-/* NUTRITION STYLES */
+/* NUTRITION STYLES - УЛУЧШЕННЫЕ СТИЛИ ПИТАНИЯ */
 .water-tracker{
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xl);
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.1) 0%, 
+    rgba(14, 165, 233, 0.1) 50%,
+    rgba(6, 182, 212, 0.1) 100%);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2xl);
   margin: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 12px 40px rgba(59, 130, 246, 0.15),
     0 1px 0 rgba(255, 255, 255, 0.05) inset;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: slideInFromRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.water-tracker::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(59, 130, 246, 0.1), 
+    transparent);
+  animation: water-shimmer-bg 4s infinite;
+}
+@keyframes water-shimmer-bg {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 .water-tracker.completed{
-  border-color: rgba(34, 197, 94, 0.3);
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.1) 0%, 
+    rgba(16, 185, 129, 0.1) 50%,
+    rgba(5, 150, 105, 0.1) 100%);
   box-shadow: 
-    0 8px 32px rgba(34, 197, 94, 0.2),
+    0 12px 40px rgba(34, 197, 94, 0.2),
     0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  animation: water-completion-glow 2s infinite ease-in-out;
 }
+@keyframes water-completion-glow {
+  0%, 100% { 
+    box-shadow: 
+      0 12px 40px rgba(34, 197, 94, 0.2),
+      0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  }
+  50% { 
+    box-shadow: 
+      0 16px 50px rgba(34, 197, 94, 0.3),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  }
+}
+
 .water-header{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  position: relative;
+  z-index: 2;
 }
 .water-info{
   flex: 1;
 }
 .water-label{
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text-primary);
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  letter-spacing: 0.3px;
 }
 .water-stats{
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 .water-settings-btn{
-  background: none;
-  border: none;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
   font-size: 18px;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: var(--spacing-sm);
-  border-radius: var(--spacing-sm);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: var(--spacing-md);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 .water-settings-btn:hover{
-  color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.1);
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
+
 .water-progress{
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
+  position: relative;
+  z-index: 2;
 }
 .water-progress-bar{
   flex: 1;
-  height: 8px;
-  background: rgba(99, 102, 241, 0.1);
-  border-radius: 4px;
+  height: 12px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) inset;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 .water-progress-fill{
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #06b6d4);
-  border-radius: 4px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, 
+    #3b82f6 0%, 
+    #0ea5e9 50%, 
+    #06b6d4 100%);
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
 }
 .water-progress-fill::after{
   content: '';
@@ -1603,159 +1730,187 @@ body{
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: water-shimmer 2s infinite;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255,255,255,0.4), 
+    transparent);
+  animation: water-shimmer 2.5s infinite;
 }
 @keyframes water-shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
 .water-controls{
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
 }
 .water-btn{
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--accent-primary);
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b82f6;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 .water-btn:hover{
-  background: var(--accent-primary);
+  background: #3b82f6;
   color: white;
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  border-color: #3b82f6;
 }
 .water-btn:active{
-  transform: scale(0.95);
+  transform: scale(1.05);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .water-current{
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
-  min-width: 24px;
+  min-width: 32px;
   text-align: center;
   cursor: pointer;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--spacing-xs);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--spacing-sm);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
+  background: rgba(59, 130, 246, 0.05);
+  text-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
 }
 .water-current:hover{
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: var(--accent-primary);
-  transform: scale(1.05);
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 .water-current:active{
-  transform: scale(0.95);
+  transform: scale(1.05);
 }
 
+/* DAY NAVIGATION - УЛУЧШЕННАЯ НАВИГАЦИЯ ПО ДНЯМ */
 .day-nav{
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-lg) var(--spacing-xl);
-  gap: var(--spacing-xl);
+  gap: var(--spacing-2xl);
+  animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
 }
 .day-arrow{
   background: var(--bg-card);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  width: 40px;
-  height: 40px;
+  border-radius: 14px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--accent-primary);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 .day-arrow:hover{
   background: var(--accent-primary);
   color: white;
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  border-color: var(--accent-primary);
+}
+.day-arrow:active{
   transform: scale(1.05);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .day-title{
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.3px;
 }
 
+/* SINGLE DAY CONTAINER - КОНТЕЙНЕР ДНЯ */
 .single-day-container{
   padding: 0 var(--spacing-xl) var(--spacing-xl);
+  animation: slideInFromBottom 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
 }
 .single-day-container .day-card{
   max-width: 600px;
   margin: 0 auto;
 }
 
-.days-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
-  padding: 0 var(--spacing-xl) var(--spacing-xl);
-  overflow: visible;
-  min-height: auto;
-}
+/* DAY CARD - КАРТОЧКА ДНЯ */
 .day-card{
   background: var(--bg-card);
+  backdrop-filter: blur(30px);
   border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2xl);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  position: relative;
+  overflow: hidden;
+}
+.day-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.02) 0%, 
+    rgba(139, 92, 246, 0.02) 100%);
+  pointer-events: none;
 }
 .day-card.today{
-  border-color: var(--accent-primary);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 
+    0 16px 50px rgba(99, 102, 241, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
 }
-.day-header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--border-secondary);
-}
-.day-name{
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.day-date{
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
+
+/* MEALS CONTAINER - КОНТЕЙНЕР ПРИЕМОВ ПИЩИ */
 .meals{
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-lg);
+  position: relative;
+  z-index: 2;
 }
+
+/* MEAL CARDS - КАРТОЧКИ ПРИЕМОВ ПИЩИ */
 .meal{
   background: var(--bg-tertiary);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--border-secondary);
-  border-radius: var(--spacing-sm);
-  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
   position: relative;
   overflow: hidden;
   animation: floatIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    0 1px 0 rgba(255, 255, 255, 0.02) inset;
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.03) inset;
 }
 .meal::before {
   content: '';
@@ -1764,298 +1919,489 @@ body{
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(139, 92, 246, 0.03));
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.03), 
+    rgba(139, 92, 246, 0.03));
   opacity: 0;
   transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.meal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(99, 102, 241, 0.1), 
+    transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Анимационные задержки для приемов пищи */
 .meal:nth-child(1) { animation-delay: 0.1s; }
 .meal:nth-child(2) { animation-delay: 0.15s; }
 .meal:nth-child(3) { animation-delay: 0.2s; }
 .meal:nth-child(4) { animation-delay: 0.25s; }
 .meal:nth-child(5) { animation-delay: 0.3s; }
+
 .meal:hover{
   background: var(--bg-card-hover);
-  border-color: var(--accent-primary);
-  transform: translateY(-3px) scale(1.01);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-4px) scale(1.02);
   box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.2),
-    0 2px 0 rgba(255, 255, 255, 0.05) inset;
+    0 12px 32px rgba(0, 0, 0, 0.15),
+    0 2px 0 rgba(255, 255, 255, 0.08) inset;
 }
 .meal:hover::before {
   opacity: 1;
 }
+.meal:hover::after {
+  left: 100%;
+}
 .meal:active {
-  transform: translateY(-1px) scale(0.99);
+  transform: translateY(-2px) scale(1.01);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ADD MEAL BUTTON */
 .meal.add-meal{
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px dashed var(--accent-primary);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.08) 0%, 
+    rgba(139, 92, 246, 0.08) 100%);
+  border: 2px dashed rgba(99, 102, 241, 0.3);
   color: var(--accent-primary);
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .meal.add-meal:hover{
-  background: rgba(99, 102, 241, 0.2);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%, 
+    rgba(139, 92, 246, 0.15) 100%);
   border-style: solid;
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px) scale(1.01);
 }
-.meal-label{
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
+
+/* MEAL CONTENT */
 .meal-header{
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-sm);
+  position: relative;
+  z-index: 2;
 }
+.meal-label{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+.meal.add-meal .meal-label{
+  color: var(--accent-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+.meal-content{
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+  position: relative;
+  z-index: 2;
+}
+.meal.add-meal .meal-content{
+  color: var(--accent-secondary);
+  font-size: 14px;
+}
+
+/* DELETE MEAL BUTTON */
 .delete-meal-btn{
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #ef4444;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
 }
 .delete-meal-btn:hover{
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 .delete-meal-btn:active{
-  transform: scale(0.9);
-}
-.meal.add-meal .meal-label{
-  color: var(--accent-primary);
-}
-.meal-content{
-  font-size: 14px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-.meal-time-badge{
-  font-size: 10px;
-  color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.12);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 8px;
-  font-weight: 600;
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  transform: scale(1.05);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* MEAL TYPE SELECTOR MODAL */
+/* MEAL TIME BADGE */
+.meal-time-badge{
+  font-size: 11px;
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-left: var(--spacing-sm);
+  font-weight: 700;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(99, 102, 241, 0.2);
+}
+
+/* MEAL TYPE SELECTOR MODAL - УЛУЧШЕННЫЙ СЕЛЕКТОР ТИПОВ ПРИЕМОВ ПИЩИ */
 .meal-type-modal{
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(30px);
   z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .meal-type-modal.show{
   opacity: 1;
 }
 .meal-type-modal-content{
   background: var(--bg-secondary);
+  backdrop-filter: blur(40px);
   border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
   margin: var(--spacing-xl);
-  max-width: 400px;
+  max-width: 420px;
   width: 100%;
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
-  transform: scale(0.9);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+.meal-type-modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.05) 0%, 
+    rgba(139, 92, 246, 0.05) 100%);
+  pointer-events: none;
 }
 .meal-type-modal.show .meal-type-modal-content{
-  transform: scale(1);
+  transform: scale(1) translateY(0);
 }
 .meal-type-header{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--border-secondary);
+  position: relative;
+  z-index: 2;
 }
 .meal-type-header h3{
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 .meal-type-close{
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--text-secondary);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  font-size: 20px;
+  color: #ef4444;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 .meal-type-close:hover{
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 .meal-type-options{
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
   display: grid;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
+  position: relative;
+  z-index: 2;
 }
 
 .meal-type-option{
   display: flex;
   align-items: center;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-xl);
   background: var(--bg-tertiary);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--border-secondary);
-  border-radius: var(--spacing-sm);
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.meal-type-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.05), 
+    rgba(139, 92, 246, 0.05));
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-type-option::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(99, 102, 241, 0.1), 
+    transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .meal-type-option:hover{
   background: var(--bg-card-hover);
-  border-color: var(--accent-primary);
-  transform: translateY(-1px);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.meal-type-option:hover::before {
+  opacity: 1;
+}
+.meal-type-option:hover::after {
+  left: 100%;
 }
 .meal-type-option:active{
-  transform: scale(0.98);
+  transform: translateY(-1px) scale(1.01);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .meal-type-icon{
-  font-size: 20px;
-  margin-right: var(--spacing-md);
+  font-size: 24px;
+  margin-right: var(--spacing-lg);
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
-/* MEAL INPUT MODAL */
+.meal-type-name{
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 2;
+}
+
+/* MEAL INPUT MODAL - УЛУЧШЕННОЕ МОДАЛЬНОЕ ОКНО ВВОДА */
 .meal-input-modal{
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(30px);
   z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .meal-input-modal.show{
   opacity: 1;
 }
 .meal-input-modal-content{
   background: var(--bg-secondary);
+  backdrop-filter: blur(40px);
   border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
   margin: var(--spacing-xl);
-  max-width: 500px;
+  max-width: 520px;
   width: 100%;
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
-  transform: scale(0.9);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+.meal-input-modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.05) 0%, 
+    rgba(139, 92, 246, 0.05) 100%);
+  pointer-events: none;
 }
 .meal-input-modal.show .meal-input-modal-content{
-  transform: scale(1);
+  transform: scale(1) translateY(0);
 }
 .meal-input-header{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--border-secondary);
+  position: relative;
+  z-index: 2;
 }
 .meal-input-header h3{
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 .meal-input-close{
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--text-secondary);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  font-size: 20px;
+  color: #ef4444;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 .meal-input-close:hover{
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 .meal-input-form{
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
+  position: relative;
+  z-index: 2;
 }
 .meal-content-input{
   resize: vertical;
-  min-height: 80px;
+  min-height: 100px;
   font-family: inherit;
+  line-height: 1.5;
 }
 .meal-input-buttons{
   display: flex;
-  gap: var(--spacing-md);
-  padding: var(--spacing-xl);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-2xl);
   border-top: 1px solid var(--border-secondary);
+  position: relative;
+  z-index: 2;
 }
 .btn-secondary{
   flex: 1;
   background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border-primary);
-  border-radius: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg) var(--spacing-xl);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 .btn-secondary:hover{
   background: var(--bg-card-hover);
   border-color: var(--border-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 .btn-primary{
   flex: 1;
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   border: none;
-  border-radius: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg) var(--spacing-xl);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255,255,255,0.3), 
+    transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .btn-primary:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+}
+.btn-primary:hover::before {
+  left: 100%;
 }
 .btn-primary:active{
-  transform: scale(0.98);
+  transform: translateY(-1px) scale(1.01);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* BOTTOM NAVIGATION */
@@ -3952,6 +4298,17 @@ function showNutritionTab() {
   content.style.overflow = 'auto';
   content.style.height = 'auto';
   
+  // Добавляем анимации появления с задержками
+  setTimeout(() => {
+    const waterTracker = document.querySelector('.water-tracker');
+    const dayNav = document.querySelector('.day-nav');
+    const dayContainer = document.querySelector('.single-day-container');
+    
+    if (waterTracker) waterTracker.classList.add('animate-slide-right');
+    if (dayNav) dayNav.classList.add('animate-slide-left');
+    if (dayContainer) dayContainer.classList.add('animate-in');
+  }, 50);
+  
   // Инициализируем питание
   initNutrition();
 }
@@ -4054,36 +4411,65 @@ function renderNutritionDay() {
   
   const dateStr = currentNutritionDate.toDateString();
   
-  // Обновляем заголовок дня
-  dayTitle.textContent = formatNutritionDate(currentNutritionDate);
+  // Обновляем заголовок дня с анимацией
+  dayTitle.style.opacity = '0';
+  dayTitle.style.transform = 'translateY(-10px)';
   
-  // Получаем приемы пищи для этого дня (начинаем с пустого списка)
+  setTimeout(() => {
+    dayTitle.textContent = formatNutritionDate(currentNutritionDate);
+    dayTitle.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    dayTitle.style.opacity = '1';
+    dayTitle.style.transform = 'translateY(0)';
+  }, 100);
+  
+  // Получаем приемы пищи для этого дня
   const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
   const dayMeals = nutritionData.meals[dateStr] || {};
   
-  let html = '';
+  // Анимация исчезновения старого контента
+  mealsContainer.style.opacity = '0';
+  mealsContainer.style.transform = 'translateY(20px)';
   
-  // Рендерим существующие приемы пищи
-  dayMealTypes.forEach(mealType => {
-    const mealData = dayMeals[mealType.id] || {};
-    const mealContent = mealData.content || 'Не запланировано';
-    const mealTime = mealData.time || mealType.time || '';
+  setTimeout(() => {
+    let html = '';
     
-    html += `
-      <div class="meal" onclick="editMeal('${dateStr}', '${mealType.id}')">
-        <div class="meal-header">
-          <div class="meal-label">
-            ${mealType.icon} ${mealType.name}
-            ${mealTime ? `<span class="meal-time-badge">${mealTime}</span>` : ''}
+    // Рендерим существующие приемы пищи
+    dayMealTypes.forEach((mealType, index) => {
+      const mealData = dayMeals[mealType.id] || {};
+      const mealContent = mealData.content || 'Не запланировано';
+      const mealTime = mealData.time || mealType.time || '';
+      
+      html += `
+        <div class="meal animate-in" onclick="editMeal('${dateStr}', '${mealType.id}')" style="animation-delay: ${index * 0.1}s">
+          <div class="meal-header">
+            <div class="meal-label">
+              ${mealType.icon} ${mealType.name}
+              ${mealTime ? `<span class="meal-time-badge">${mealTime}</span>` : ''}
+            </div>
+            <button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>
           </div>
-          <button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>
+          <div class="meal-content">${mealContent}</div>
         </div>
-        <div class="meal-content">${mealContent}</div>
-      </div>
-    `;
-  });
-  
-  mealsContainer.innerHTML = html;
+      `;
+    });
+    
+    mealsContainer.innerHTML = html;
+    
+    // Анимация появления нового контента
+    mealsContainer.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    mealsContainer.style.opacity = '1';
+    mealsContainer.style.transform = 'translateY(0)';
+    
+    // Добавляем анимации для новых элементов
+    setTimeout(() => {
+      const meals = mealsContainer.querySelectorAll('.meal');
+      meals.forEach((meal, index) => {
+        meal.style.animationDelay = `${index * 0.1}s`;
+        meal.classList.add('animate-in');
+      });
+    }, 100);
+    
+  }, 200);
 }
 
 function formatNutritionDate(date) {
@@ -4192,18 +4578,110 @@ function updateWaterTracker() {
   const target = nutritionData.water.target;
   const percentage = (current / target) * 100;
   
-  waterStats.textContent = `${current}/${target} стаканов`;
+  // Плавное обновление статистики
+  const currentStats = waterStats.textContent;
+  const newStats = `${current}/${target} стаканов`;
+  
+  if (currentStats !== newStats) {
+    waterStats.style.opacity = '0.7';
+    waterStats.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+      waterStats.textContent = newStats;
+      waterStats.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+      waterStats.style.opacity = '1';
+      waterStats.style.transform = 'scale(1)';
+    }, 150);
+  }
+  
+  // Плавное обновление прогресс-бара
+  waterProgressFill.style.transition = 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
   waterProgressFill.style.width = `${Math.min(100, percentage)}%`;
-  waterCurrent.textContent = current;
+  
+  // Плавное обновление текущего значения
+  const currentValue = parseInt(waterCurrent.textContent) || 0;
+  if (currentValue !== current) {
+    animateWaterValue(waterCurrent, currentValue, current);
+  }
   
   // Добавляем класс completed если цель достигнута
   const waterTracker = document.querySelector('.water-tracker');
   if (waterTracker) {
     if (current >= target) {
-      waterTracker.classList.add('completed');
+      if (!waterTracker.classList.contains('completed')) {
+        waterTracker.classList.add('completed');
+        // Добавляем небольшую вибрацию при достижении цели
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
+        // Показываем уведомление о достижении цели
+        showWaterCompletionEffect();
+      }
     } else {
       waterTracker.classList.remove('completed');
     }
+  }
+}
+
+function animateWaterValue(element, from, to) {
+  const duration = 600;
+  const steps = Math.abs(to - from);
+  if (steps === 0) return;
+  
+  const stepDuration = duration / steps;
+  const increment = to > from ? 1 : -1;
+  let current = from;
+  
+  element.style.transform = 'scale(1.1)';
+  element.style.color = '#3b82f6';
+  
+  const timer = setInterval(() => {
+    current += increment;
+    element.textContent = current;
+    
+    if (current === to) {
+      clearInterval(timer);
+      // Возвращаем к нормальному состоянию
+      setTimeout(() => {
+        element.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        element.style.transform = 'scale(1)';
+        element.style.color = '';
+      }, 100);
+    }
+  }, stepDuration);
+}
+
+function showWaterCompletionEffect() {
+  // Создаем эффект капель воды при достижении цели
+  const waterTracker = document.querySelector('.water-tracker');
+  if (!waterTracker) return;
+  
+  for (let i = 0; i < 8; i++) {
+    const drop = document.createElement('div');
+    drop.style.cssText = `
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10;
+      left: ${50 + (Math.random() - 0.5) * 60}%;
+      top: ${30 + (Math.random() - 0.5) * 40}%;
+      animation: water-drop-fall ${1 + Math.random() * 0.5}s ease-out forwards;
+    `;
+    
+    drop.style.setProperty('--random-x', (Math.random() - 0.5) * 100 + 'px');
+    drop.style.setProperty('--random-y', (Math.random() + 1) * 50 + 'px');
+    
+    waterTracker.appendChild(drop);
+    
+    // Удаляем каплю через 2 секунды
+    setTimeout(() => {
+      if (drop.parentNode) {
+        drop.parentNode.removeChild(drop);
+      }
+    }, 2000);
   }
 }
 
@@ -4572,7 +5050,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   render();
   
-  // Добавляем CSS для конфетти
+  // Добавляем CSS для конфетти и капель воды
   const confettiStyle = document.createElement('style');
   confettiStyle.textContent = `
     @keyframes confetti-fall {
@@ -4582,6 +5060,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       100% {
         transform: translate(calc(-50% + var(--random-x)), calc(-50% + var(--random-y))) scale(1) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes water-drop-fall {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+      }
+      50% {
+        transform: translate(calc(-50% + var(--random-x) * 0.5), calc(-50% + var(--random-y) * 0.3)) scale(1.2);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(calc(-50% + var(--random-x)), calc(-50% + var(--random-y))) scale(0.8);
         opacity: 0;
       }
     }

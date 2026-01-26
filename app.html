@@ -260,6 +260,28 @@ body{
   font-weight:500;
 }
 
+/* DELETE BUTTON */
+.delete-plan-btn{
+  width:32px;
+  height:32px;
+  background:none;
+  border:none;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  color:#ff3b30;
+  font-size:16px;
+  margin-left:8px;
+  flex-shrink:0;
+  transition:all 0.2s ease;
+}
+.delete-plan-btn:active{
+  background:rgba(255,59,48,0.1);
+  opacity:0.7;
+}
+
 /* MODALS */
 .modal{
   position:fixed;
@@ -1015,12 +1037,13 @@ function render() {
     let html = '';
     todayPlans.forEach(plan => {
       html += `
-        <div class="plan ${plan.completed ? 'completed' : ''}" onclick="showPlanMenu('${plan.id}')">
+        <div class="plan ${plan.completed ? 'completed' : ''}">
           <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
-          <div class="plan-content">
+          <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
             <div class="plan-title">${escapeHtml(plan.title)}</div>
             ${plan.room ? `<div class="room">${escapeHtml(plan.room)}</div>` : ''}
           </div>
+          <button class="delete-plan-btn" onclick="quickDeletePlan('${plan.id}', event)">×</button>
         </div>
       `;
     });
@@ -1178,6 +1201,26 @@ function confirmDeletePlan() {
   savePlans();
   hidePopup();
   hideMenu();
+  render();
+}
+
+function quickDeletePlan(id, event) {
+  event.stopPropagation();
+  
+  showPopup(
+    'Удалить план?',
+    'Это действие нельзя отменить.',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Удалить', type: 'danger', action: () => confirmQuickDelete(id) }
+    ]
+  );
+}
+
+function confirmQuickDelete(id) {
+  plans = plans.filter(p => p.id !== id);
+  savePlans();
+  hidePopup();
   render();
 }
 

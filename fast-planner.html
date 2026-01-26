@@ -63,10 +63,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .form-group{margin-bottom:24px}
 .add-title{font-size:17px;font-weight:600;color:#000}
 .label{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block;margin-left:0;padding:0}
-.input,.select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box;margin:0;display:block}
+.input,.select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box;margin:0;display:block;-webkit-appearance:none;appearance:none}
 .input:focus,.select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
 .input::placeholder{color:#c7c7cc}
-.select{appearance:none;cursor:pointer}
+.input[type="date"]{position:relative;cursor:pointer}
+.input[type="date"]::-webkit-calendar-picker-indicator{position:absolute;right:16px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.6}
+.select{cursor:pointer}
 .select-wrapper{position:relative;width:100%;display:block}
 .select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#c7c7cc;font-size:18px;pointer-events:none}
 .row{display:flex;gap:12px}

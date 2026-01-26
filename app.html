@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.9.1-UNIQUE-PROGRESS-BAR">
-<title>Планер v6.9.1 Unique Progress Bar</title>
+<meta name="version" content="v6.10-CIRCULAR-PROGRESS">
+<title>Планер v6.10 Circular Progress</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -259,7 +259,7 @@ body{
     rgba(168, 85, 247, 0.1) 100%);
   backdrop-filter: blur(30px);
   border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
   border: 1px solid rgba(99, 102, 241, 0.2);
   box-shadow: 
     0 12px 40px rgba(99, 102, 241, 0.15),
@@ -267,6 +267,9 @@ body{
     0 0 0 1px rgba(99, 102, 241, 0.1) inset;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .progress-container::before {
   content: '';
@@ -290,9 +293,10 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:var(--spacing-lg);
+  margin-bottom:var(--spacing-xl);
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 .progress-label{
   font-size:16px;
@@ -313,51 +317,101 @@ body{
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.progress-bar{
-  height:16px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  overflow:hidden;
-  border: 2px solid rgba(99, 102, 241, 0.2);
-  position:relative;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* КРУГЛЫЙ ПРОГРЕСС-БАР */
+.progress-circle-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  z-index: 1;
+}
+.progress-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--accent-primary) 0deg,
+    var(--accent-secondary) 120deg,
+    var(--accent-soft) 240deg,
+    rgba(0, 0, 0, 0.2) 0deg
+  );
+  padding: 6px;
   box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.5) inset,
-    0 2px 0 rgba(255, 255, 255, 0.1);
+    0 8px 32px rgba(99, 102, 241, 0.3),
+    0 0 0 2px rgba(99, 102, 241, 0.2) inset;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.progress-fill{
-  height:100%;
-  background:linear-gradient(135deg, 
-    var(--accent-primary) 0%, 
-    var(--accent-secondary) 50%, 
-    var(--accent-soft) 100%);
-  border-radius: 10px;
-  transition:width 1s cubic-bezier(0.4, 0, 0.2, 1);
-  width:0%;
-  box-shadow:
-    0 0 24px rgba(99, 102, 241, 0.6),
-    0 2px 0 rgba(255, 255, 255, 0.3) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  position:relative;
-  transform: translateZ(0);
+.progress-circle-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
-.progress-fill::after{
-  content:'';
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  bottom:0;
-  background:linear-gradient(90deg, 
-    transparent, 
-    rgba(255,255,255,0.4), 
-    transparent);
-  animation:shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+.progress-percentage {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-@keyframes shimmer{
-  0%{transform:translateX(-100%)}
-  100%{transform:translateX(100%)}
+
+/* АНИМАЦИЯ ЗАВЕРШЕНИЯ */
+.progress-container.completed {
+  animation: celebration-pulse 2s infinite ease-in-out;
+}
+.progress-circle.completed {
+  background: conic-gradient(
+    from 0deg,
+    var(--accent-primary) 0deg,
+    var(--accent-secondary) 120deg,
+    var(--accent-soft) 240deg,
+    var(--accent-primary) 360deg
+  );
+  box-shadow: 
+    0 16px 48px rgba(99, 102, 241, 0.5),
+    0 0 0 4px rgba(99, 102, 241, 0.3) inset,
+    0 0 32px rgba(99, 102, 241, 0.4);
+  animation: completion-glow 3s infinite ease-in-out;
+}
+.progress-percentage.completed {
+  color: var(--accent-primary);
+  text-shadow: 0 0 16px rgba(99, 102, 241, 0.6);
+  animation: completion-text 2s infinite ease-in-out;
+}
+
+@keyframes celebration-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+@keyframes completion-glow {
+  0%, 100% { 
+    box-shadow: 
+      0 16px 48px rgba(99, 102, 241, 0.5),
+      0 0 0 4px rgba(99, 102, 241, 0.3) inset,
+      0 0 32px rgba(99, 102, 241, 0.4);
+  }
+  50% { 
+    box-shadow: 
+      0 20px 60px rgba(99, 102, 241, 0.7),
+      0 0 0 6px rgba(99, 102, 241, 0.5) inset,
+      0 0 48px rgba(99, 102, 241, 0.6);
+  }
+}
+@keyframes completion-text {
+  0%, 100% { 
+    transform: scale(1);
+    text-shadow: 0 0 16px rgba(99, 102, 241, 0.6);
+  }
+  50% { 
+    transform: scale(1.05);
+    text-shadow: 0 0 24px rgba(99, 102, 241, 0.8);
+  }
 }
 
 /* EMPTY STATE */
@@ -1540,13 +1594,17 @@ body{
   </div>
   
   <div class="content">
-    <div class="progress-container">
+    <div class="progress-container" id="progressContainer">
       <div class="progress-info">
-        <div class="progress-label">Прогресс дня</div>
+        <div class="progress-label" id="progressLabel">Прогресс дня</div>
         <div class="progress-stats" id="progressStats">0/0</div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
+      <div class="progress-circle-container">
+        <div class="progress-circle" id="progressCircle">
+          <div class="progress-circle-inner">
+            <div class="progress-percentage" id="progressPercentage">0%</div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -1835,19 +1893,7 @@ function render() {
   // Update progress
   const completedCount = todayPlans.filter(p => p.completed).length;
   const totalCount = todayPlans.length;
-  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-  document.getElementById('progressFill').style.width = `${progressPercent}%`;
-  document.getElementById('progressStats').textContent = `${completedCount}/${totalCount}`;
-  
-  // Update progress label based on completion
-  const progressLabel = document.querySelector('.progress-label');
-  if (totalCount === 0) {
-    progressLabel.textContent = 'Планов нет';
-  } else if (completedCount === totalCount) {
-    progressLabel.textContent = 'День завершён! 🎉';
-  } else {
-    progressLabel.textContent = 'Прогресс дня';
-  }
+  updateProgress();
   
   // Show/hide elements
   const empty = document.getElementById('empty');
@@ -2227,33 +2273,89 @@ function updateProgress() {
   const totalCount = todayPlans.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   
-  document.getElementById('progressFill').style.width = `${progressPercent}%`;
+  // Обновляем круглый прогресс-бар
+  const progressCircle = document.getElementById('progressCircle');
+  const progressPercentage = document.getElementById('progressPercentage');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressLabel = document.getElementById('progressLabel');
+  
+  // Устанавливаем градиент в зависимости от прогресса
+  const angle = (progressPercent / 100) * 360;
+  if (progressPercent > 0) {
+    progressCircle.style.background = `conic-gradient(
+      from 0deg,
+      var(--accent-primary) 0deg,
+      var(--accent-secondary) ${angle * 0.33}deg,
+      var(--accent-soft) ${angle * 0.66}deg,
+      var(--accent-primary) ${angle}deg,
+      rgba(0, 0, 0, 0.2) ${angle}deg
+    )`;
+  } else {
+    progressCircle.style.background = `conic-gradient(
+      from 0deg,
+      rgba(0, 0, 0, 0.2) 0deg
+    )`;
+  }
+  
+  // Анимируем процент
+  animateNumber(progressPercentage, Math.round(progressPercent));
+  
   document.getElementById('progressStats').textContent = `${completedCount}/${totalCount}`;
   
-  // Update progress label based on completion
-  const progressLabel = document.querySelector('.progress-label');
+  // Update progress label and animations based on completion
   if (totalCount === 0) {
     progressLabel.textContent = 'Планов нет';
-  } else if (completedCount === totalCount) {
+    removeCompletionAnimations();
+  } else if (completedCount === totalCount && totalCount > 0) {
     progressLabel.textContent = 'День завершён! 🎉';
-    
-    // Добавляем конфетти эффект при завершении всех задач
-    if (completedCount > 0) {
-      celebrateCompletion();
-    }
+    addCompletionAnimations();
   } else {
     progressLabel.textContent = 'Прогресс дня';
+    removeCompletionAnimations();
   }
 }
 
-function celebrateCompletion() {
-  // Простая анимация празднования
-  const progressContainer = document.querySelector('.progress-container');
-  progressContainer.style.animation = 'gentle-pulse 0.8s ease-out';
+function animateNumber(element, targetNumber) {
+  const currentNumber = parseInt(element.textContent) || 0;
+  const increment = targetNumber > currentNumber ? 1 : -1;
+  const duration = 800;
+  const steps = Math.abs(targetNumber - currentNumber);
+  const stepDuration = steps > 0 ? duration / steps : 0;
   
-  setTimeout(() => {
-    progressContainer.style.animation = '';
-  }, 800);
+  let current = currentNumber;
+  
+  const timer = setInterval(() => {
+    current += increment;
+    element.textContent = current + '%';
+    
+    if (current === targetNumber) {
+      clearInterval(timer);
+    }
+  }, stepDuration);
+}
+
+function addCompletionAnimations() {
+  const progressContainer = document.getElementById('progressContainer');
+  const progressCircle = document.getElementById('progressCircle');
+  const progressPercentage = document.getElementById('progressPercentage');
+  
+  progressContainer.classList.add('completed');
+  progressCircle.classList.add('completed');
+  progressPercentage.classList.add('completed');
+}
+
+function removeCompletionAnimations() {
+  const progressContainer = document.getElementById('progressContainer');
+  const progressCircle = document.getElementById('progressCircle');
+  const progressPercentage = document.getElementById('progressPercentage');
+  
+  progressContainer.classList.remove('completed');
+  progressCircle.classList.remove('completed');
+  progressPercentage.classList.remove('completed');
+}
+
+function celebrateCompletion() {
+  // Эта функция теперь не нужна, так как анимация постоянная
 }
 
 // CALENDAR
@@ -2548,7 +2650,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.9.1 Unique Progress Bar загружен');
+  console.log('🚀 Планер v6.10 Circular Progress загружен');
 });
 </script>
 </body>

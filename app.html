@@ -1592,6 +1592,24 @@ textarea.input {
 
 
 
+/* NUTRITION CONTAINER - НОВАЯ СТРУКТУРА ДЛЯ ПРАВИЛЬНОГО СКРОЛЛА */
+.nutrition-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.meals-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.meals-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
 /* NUTRITION STYLES - УЛУЧШЕННЫЕ СТИЛИ ПИТАНИЯ */
 .water-tracker{
   background: linear-gradient(135deg, 
@@ -1603,6 +1621,7 @@ textarea.input {
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
   margin: var(--spacing-xl);
+  margin-bottom: 0; /* Убираем нижний отступ для компактности */
   box-shadow: 
     0 12px 40px rgba(59, 130, 246, 0.15),
     0 1px 0 rgba(255, 255, 255, 0.05) inset;
@@ -1610,6 +1629,7 @@ textarea.input {
   position: relative;
   overflow: hidden;
   animation: slideInFromRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  flex-shrink: 0; /* Не сжимается при нехватке места */
 }
 .water-tracker::before {
   content: '';
@@ -1822,9 +1842,10 @@ textarea.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
   gap: var(--spacing-2xl);
   animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+  flex-shrink: 0; /* Не сжимается */
 }
 .day-arrow{
   background: var(--bg-card);
@@ -4230,6 +4251,12 @@ function showTabContent(tabName) {
         </div>
       `;
       
+      // Восстанавливаем правильные стили для content
+      content.style.overflow = 'hidden';
+      content.style.height = '';
+      content.style.display = 'flex';
+      content.style.flexDirection = 'column';
+      
       // Инициализируем прогресс-бар заново
       const progressCircle = document.getElementById('progressCircle');
       if (progressCircle) {
@@ -4255,51 +4282,59 @@ function showTabContent(tabName) {
 function showNutritionTab() {
   const content = document.querySelector('.content');
   content.innerHTML = `
-    <!-- WATER TRACKER -->
-    <div class="water-tracker">
-      <div class="water-header">
-        <div class="water-info">
-          <div class="water-label">💧 Вода сегодня</div>
-          <div class="water-stats" id="waterStats">0/8 стаканов</div>
+    <!-- NUTRITION CONTAINER WITH PROPER SCROLL -->
+    <div class="nutrition-container">
+      <!-- WATER TRACKER - FIXED AT TOP -->
+      <div class="water-tracker">
+        <div class="water-header">
+          <div class="water-info">
+            <div class="water-label">💧 Вода сегодня</div>
+            <div class="water-stats" id="waterStats">0/8 стаканов</div>
+          </div>
+          <button class="water-settings-btn" onclick="showWaterSettings()">⚙️</button>
         </div>
-        <button class="water-settings-btn" onclick="showWaterSettings()">⚙️</button>
+        <div class="water-progress">
+          <div class="water-progress-bar">
+            <div class="water-progress-fill" id="waterProgressFill" style="width: 0%"></div>
+          </div>
+          <div class="water-controls">
+            <button class="water-btn minus" onclick="changeWater(-1)">−</button>
+            <span class="water-current" id="waterCurrent" onclick="editWaterAmount()">0</span>
+            <button class="water-btn plus" onclick="changeWater(1)">+</button>
+          </div>
+        </div>
       </div>
-      <div class="water-progress">
-        <div class="water-progress-bar">
-          <div class="water-progress-fill" id="waterProgressFill" style="width: 0%"></div>
-        </div>
-        <div class="water-controls">
-          <button class="water-btn minus" onclick="changeWater(-1)">−</button>
-          <span class="water-current" id="waterCurrent" onclick="editWaterAmount()">0</span>
-          <button class="water-btn plus" onclick="changeWater(1)">+</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- DAY NAVIGATION -->
-    <div class="day-nav">
-      <button class="day-arrow" onclick="changeNutritionDay(-1)">‹</button>
-      <div class="day-title" id="nutritionDayTitle">Сегодня</div>
-      <button class="day-arrow" onclick="changeNutritionDay(1)">›</button>
-    </div>
-
-    <!-- SINGLE DAY MEALS -->
-    <div class="single-day-container">
-      <div class="day-card today" id="nutritionDayCard">
-        <div class="meals" id="nutritionMeals">
-          <!-- Приемы пищи будут добавлены динамически -->
+      <!-- SCROLLABLE MEALS SECTION -->
+      <div class="meals-scroll-container">
+        <!-- DAY NAVIGATION -->
+        <div class="day-nav">
+          <button class="day-arrow" onclick="changeNutritionDay(-1)">‹</button>
+          <div class="day-title" id="nutritionDayTitle">Сегодня</div>
+          <button class="day-arrow" onclick="changeNutritionDay(1)">›</button>
         </div>
-        <div class="meal add-meal" onclick="addNewMealType()">
-          <div class="meal-label">➕ Добавить прием пищи</div>
-          <div class="meal-content">Создать новый прием пищи</div>
+
+        <!-- SINGLE DAY MEALS -->
+        <div class="single-day-container">
+          <div class="day-card today" id="nutritionDayCard">
+            <div class="meals" id="nutritionMeals">
+              <!-- Приемы пищи будут добавлены динамически -->
+            </div>
+            <div class="meal add-meal" onclick="addNewMealType()">
+              <div class="meal-label">➕ Добавить прием пищи</div>
+              <div class="meal-content">Создать новый прием пищи</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `;
   
-  // Убеждаемся что контент может скроллиться
-  content.style.overflow = 'auto';
-  content.style.height = 'auto';
+  // Убеждаемся что контент имеет правильную структуру
+  content.style.overflow = 'hidden';
+  content.style.height = '100%';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
   
   // Добавляем анимации появления с задержками
   setTimeout(() => {

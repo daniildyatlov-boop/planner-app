@@ -34,8 +34,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .plans{flex:0}
 .group{margin-bottom:16px}
 .group-title{font-size:13px;color:var(--tg-theme-hint-color,#8e8e93);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;padding:0 4px}
-.progress-bar{height:4px;background:#f0f0f0;border-radius:2px;margin:16px 20px 0;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,#007aff,#34c759);border-radius:2px;transition:width 0.3s ease;width:0%}
+.progress-bar{height:8px;background:#f0f0f0;border-radius:4px;margin:0 20px 20px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.1)}
+.progress-fill{height:100%;background:linear-gradient(90deg,#007aff 0%,#34c759 100%);border-radius:4px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);width:0%;position:relative}
+.progress-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,0.3) 0%,transparent 50%,rgba(255,255,255,0.3) 100%);border-radius:4px}
 .plan{background:white;border-radius:12px;padding:16px;margin-bottom:8px;display:flex;align-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04);transition:all 0.2s ease}
 .plan:active{opacity:0.8;transform:scale(0.98)}
 .plan.completed{opacity:0.6;background:#f8f9fa}
@@ -102,6 +103,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <button class="rooms-btn" onclick="showTeams()">🚪</button>
 </div>
 <div class="content" id="content">
+<div class="progress-bar">
+<div class="progress-fill" id="progressFill"></div>
+</div>
 <div class="empty" id="empty">
 <h2>Планов нет</h2>
 <p>Добавьте первый план</p>
@@ -201,6 +205,12 @@ const today=getPlansForDate(date);
 document.getElementById('dayTitle').textContent=formatDate(date);
 document.getElementById('daySubtitle').textContent=formatDateSubtitle(date);
 
+// Обновляем прогресс-бар всегда
+const completedCount=today.filter(p=>p.completed).length;
+const totalCount=today.length;
+const progressPercent=totalCount>0?(completedCount/totalCount)*100:0;
+document.getElementById('progressFill').style.width=`${progressPercent}%`;
+
 const empty=document.getElementById('empty');
 const plansEl=document.getElementById('plans');
 const fixedBtn=document.querySelector('.add-btn-fixed');
@@ -218,14 +228,8 @@ fixedBtn.style.display='block';
 
 const withTime=today.filter(p=>p.time).sort((a,b)=>a.time.localeCompare(b.time));
 const withoutTime=today.filter(p=>!p.time);
-const allPlans=[...withTime,...withoutTime];
 
-// Прогресс бар
-const completedCount=allPlans.filter(p=>p.completed).length;
-const totalCount=allPlans.length;
-const progressPercent=totalCount>0?(completedCount/totalCount)*100:0;
-
-let html=`<div class="progress-bar"><div class="progress-fill" style="width:${progressPercent}%"></div></div>`;
+let html='';
 
 if(withTime.length>0){
 html+='<div class="group"><div class="group-title">С временем</div>';

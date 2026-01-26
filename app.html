@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.16.1-FIXED-TAB-SWITCHING">
-<title>Планер v6.16 Bottom Navigation</title>
+<meta name="version" content="v6.17.0-NUTRITION-TAB">
+<title>Планер v6.17 Nutrition Tab</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -1421,6 +1421,225 @@ body{
 }
 
 
+
+/* NUTRITION STYLES */
+.water-tracker{
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  margin: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.water-tracker.completed{
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(34, 197, 94, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+.water-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+.water-info{
+  flex: 1;
+}
+.water-label{
+  font-size: 16px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.water-stats{
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.water-settings-btn{
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--spacing-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.water-settings-btn:hover{
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+.water-progress{
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+.water-progress-bar{
+  flex: 1;
+  height: 8px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.water-progress-fill{
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.water-progress-fill::after{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: water-shimmer 2s infinite;
+}
+@keyframes water-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.water-controls{
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+.water-btn{
+  width: 32px;
+  height: 32px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.water-btn:hover{
+  background: var(--accent-primary);
+  color: white;
+  transform: scale(1.1);
+}
+.water-btn:active{
+  transform: scale(0.95);
+}
+.water-current{
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 24px;
+  text-align: center;
+}
+
+.week-nav{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  gap: var(--spacing-xl);
+}
+.week-arrow{
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.week-arrow:hover{
+  background: var(--accent-primary);
+  color: white;
+  transform: scale(1.05);
+}
+.week-title{
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.days-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
+}
+.day-card{
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.day-card.today{
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+}
+.day-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-secondary);
+}
+.day-name{
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.day-date{
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.meals{
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.meal{
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal:hover{
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+.meal-label{
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.meal-content{
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
 
 /* BOTTOM NAVIGATION */
 .bottom-nav{
@@ -3226,15 +3445,262 @@ function showTabContent(tabName) {
 function showNutritionTab() {
   const content = document.querySelector('.content');
   content.innerHTML = `
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
-      <div style="font-size: 48px; margin-bottom: 20px;">🍽️</div>
-      <h2 style="color: var(--text-primary); margin-bottom: 12px; font-size: 24px;">Питание</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;">Планирование питания на неделю скоро будет доступно</p>
-      <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border-primary);">
-        <p style="color: var(--text-muted); font-size: 14px;">🚀 В разработке</p>
+    <!-- WATER TRACKER -->
+    <div class="water-tracker">
+      <div class="water-header">
+        <div class="water-info">
+          <div class="water-label">💧 Вода сегодня</div>
+          <div class="water-stats" id="waterStats">0/8 стаканов</div>
+        </div>
+        <button class="water-settings-btn" onclick="showWaterSettings()">⚙️</button>
+      </div>
+      <div class="water-progress">
+        <div class="water-progress-bar">
+          <div class="water-progress-fill" id="waterProgressFill" style="width: 0%"></div>
+        </div>
+        <div class="water-controls">
+          <button class="water-btn minus" onclick="changeWater(-1)">-</button>
+          <span class="water-current" id="waterCurrent">0</span>
+          <button class="water-btn plus" onclick="changeWater(1)">+</button>
+        </div>
       </div>
     </div>
+
+    <!-- WEEK NAVIGATION -->
+    <div class="week-nav">
+      <button class="week-arrow" onclick="changeWeek(-1)">‹</button>
+      <div class="week-title" id="weekTitle">26 янв - 1 фев</div>
+      <button class="week-arrow" onclick="changeWeek(1)">›</button>
+    </div>
+
+    <!-- DAYS OF WEEK -->
+    <div class="days-grid" id="daysGrid">
+      <!-- Дни недели будут добавлены динамически -->
+    </div>
   `;
+  
+  // Инициализируем питание
+  initNutrition();
+}
+
+function initNutrition() {
+  // Загружаем данные питания
+  loadNutritionData();
+  
+  // Рендерим неделю
+  renderWeek();
+  
+  // Обновляем трекер воды
+  updateWaterTracker();
+}
+
+// Данные питания
+let nutritionData = {
+  water: {
+    target: 8,
+    current: 0,
+    date: new Date().toDateString()
+  },
+  meals: {} // {date: {breakfast: '', lunch: '', dinner: '', snack: ''}}
+};
+
+let currentWeekStart = getWeekStart(new Date());
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Понедельник как начало недели
+  return new Date(d.setDate(diff));
+}
+
+function loadNutritionData() {
+  try {
+    const saved = localStorage.getItem('planner_nutrition');
+    if (saved) {
+      nutritionData = JSON.parse(saved);
+    }
+    
+    // Проверяем, что данные воды за сегодня
+    const today = new Date().toDateString();
+    if (nutritionData.water.date !== today) {
+      nutritionData.water.current = 0;
+      nutritionData.water.date = today;
+    }
+  } catch (e) {
+    console.error('Error loading nutrition data:', e);
+  }
+}
+
+function saveNutritionData() {
+  try {
+    localStorage.setItem('planner_nutrition', JSON.stringify(nutritionData));
+  } catch (e) {
+    console.error('Error saving nutrition data:', e);
+  }
+}
+
+function changeWeek(direction) {
+  currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+  renderWeek();
+}
+
+function renderWeek() {
+  const weekTitle = document.getElementById('weekTitle');
+  const daysGrid = document.getElementById('daysGrid');
+  
+  // Обновляем заголовок недели
+  const weekEnd = new Date(currentWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  
+  const formatDate = (date) => {
+    const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    return \`\${date.getDate()} \${months[date.getMonth()]}\`;
+  };
+  
+  weekTitle.textContent = \`\${formatDate(currentWeekStart)} - \${formatDate(weekEnd)}\`;
+  
+  // Рендерим дни недели
+  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  let html = '';
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + i);
+    const dateStr = date.toDateString();
+    const dayMeals = nutritionData.meals[dateStr] || {};
+    
+    const isToday = date.toDateString() === new Date().toDateString();
+    
+    html += \`
+      <div class="day-card \${isToday ? 'today' : ''}" data-date="\${dateStr}">
+        <div class="day-header">
+          <div class="day-name">\${dayNames[i]}</div>
+          <div class="day-date">\${date.getDate()}</div>
+        </div>
+        <div class="meals">
+          <div class="meal" onclick="editMeal('\${dateStr}', 'breakfast')">
+            <div class="meal-label">🌅 Завтрак</div>
+            <div class="meal-content">\${dayMeals.breakfast || 'Не запланировано'}</div>
+          </div>
+          <div class="meal" onclick="editMeal('\${dateStr}', 'lunch')">
+            <div class="meal-label">☀️ Обед</div>
+            <div class="meal-content">\${dayMeals.lunch || 'Не запланировано'}</div>
+          </div>
+          <div class="meal" onclick="editMeal('\${dateStr}', 'dinner')">
+            <div class="meal-label">🌙 Ужин</div>
+            <div class="meal-content">\${dayMeals.dinner || 'Не запланировано'}</div>
+          </div>
+          <div class="meal" onclick="editMeal('\${dateStr}', 'snack')">
+            <div class="meal-label">🍎 Перекус</div>
+            <div class="meal-content">\${dayMeals.snack || 'Не запланировано'}</div>
+          </div>
+        </div>
+      </div>
+    \`;
+  }
+  
+  daysGrid.innerHTML = html;
+}
+
+// Трекер воды
+function changeWater(delta) {
+  const today = new Date().toDateString();
+  if (nutritionData.water.date !== today) {
+    nutritionData.water.current = 0;
+    nutritionData.water.date = today;
+  }
+  
+  nutritionData.water.current = Math.max(0, Math.min(nutritionData.water.target, nutritionData.water.current + delta));
+  saveNutritionData();
+  updateWaterTracker();
+}
+
+function updateWaterTracker() {
+  const waterStats = document.getElementById('waterStats');
+  const waterProgressFill = document.getElementById('waterProgressFill');
+  const waterCurrent = document.getElementById('waterCurrent');
+  
+  if (!waterStats || !waterProgressFill || !waterCurrent) return;
+  
+  const current = nutritionData.water.current;
+  const target = nutritionData.water.target;
+  const percentage = (current / target) * 100;
+  
+  waterStats.textContent = \`\${current}/\${target} стаканов\`;
+  waterProgressFill.style.width = \`\${Math.min(100, percentage)}%\`;
+  waterCurrent.textContent = current;
+  
+  // Добавляем класс completed если цель достигнута
+  const waterTracker = document.querySelector('.water-tracker');
+  if (waterTracker) {
+    if (current >= target) {
+      waterTracker.classList.add('completed');
+    } else {
+      waterTracker.classList.remove('completed');
+    }
+  }
+}
+
+function showWaterSettings() {
+  showPopup(
+    '💧 Настройки воды',
+    'Сколько стаканов воды в день вы хотите выпивать?',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: '6 стаканов', type: 'confirm', action: () => setWaterTarget(6) },
+      { text: '8 стаканов', type: 'confirm', action: () => setWaterTarget(8) },
+      { text: '10 стаканов', type: 'confirm', action: () => setWaterTarget(10) }
+    ]
+  );
+}
+
+function setWaterTarget(target) {
+  nutritionData.water.target = target;
+  saveNutritionData();
+  updateWaterTracker();
+  hidePopup();
+}
+
+// Редактирование приемов пищи
+function editMeal(dateStr, mealType) {
+  const mealNames = {
+    breakfast: 'Завтрак',
+    lunch: 'Обед', 
+    dinner: 'Ужин',
+    snack: 'Перекус'
+  };
+  
+  const currentMeal = nutritionData.meals[dateStr]?.[mealType] || '';
+  
+  showPopup(
+    \`🍽️ \${mealNames[mealType]}\`,
+    '',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Сохранить', type: 'confirm', action: () => saveMeal(dateStr, mealType) }
+    ],
+    true,
+    currentMeal
+  );
+}
+
+function saveMeal(dateStr, mealType) {
+  const input = document.querySelector('.popup-input');
+  const mealContent = input.value.trim();
+  
+  if (!nutritionData.meals[dateStr]) {
+    nutritionData.meals[dateStr] = {};
+  }
+  
+  if (mealContent) {
+    nutritionData.meals[dateStr][mealType] = mealContent;
+  } else {
+    delete nutritionData.meals[dateStr][mealType];
+  }
+  
+  saveNutritionData();
+  renderWeek();
+  hidePopup();
 }
 
 function showHabitsTab() {
@@ -3278,7 +3744,7 @@ document.addEventListener('DOMContentLoaded', () => {
   `;
   document.head.appendChild(confettiStyle);
   
-  console.log('🚀 Планер v6.16 Bottom Navigation загружен');
+  console.log('🚀 Планер v6.17 Nutrition Tab загружен');
 });
 </script>
 </body>

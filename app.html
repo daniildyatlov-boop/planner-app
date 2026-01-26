@@ -1544,14 +1544,14 @@ body{
   text-align: center;
 }
 
-.week-nav{
+.day-nav{
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-lg) var(--spacing-xl);
   gap: var(--spacing-xl);
 }
-.week-arrow{
+.day-arrow{
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
   border-radius: 12px;
@@ -1565,15 +1565,23 @@ body{
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.week-arrow:hover{
+.day-arrow:hover{
   background: var(--accent-primary);
   color: white;
   transform: scale(1.05);
 }
-.week-title{
+.day-title{
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.single-day-container{
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
+}
+.single-day-container .day-card{
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .days-grid{
@@ -3558,16 +3566,24 @@ function showNutritionTab() {
       </div>
     </div>
 
-    <!-- WEEK NAVIGATION -->
-    <div class="week-nav">
-      <button class="week-arrow" onclick="changeWeek(-1)">‹</button>
-      <div class="week-title" id="weekTitle">26 янв - 1 фев</div>
-      <button class="week-arrow" onclick="changeWeek(1)">›</button>
+    <!-- DAY NAVIGATION -->
+    <div class="day-nav">
+      <button class="day-arrow" onclick="changeNutritionDay(-1)">‹</button>
+      <div class="day-title" id="nutritionDayTitle">Сегодня</div>
+      <button class="day-arrow" onclick="changeNutritionDay(1)">›</button>
     </div>
 
-    <!-- DAYS OF WEEK -->
-    <div class="days-grid" id="daysGrid">
-      <!-- Дни недели будут добавлены динамически -->
+    <!-- SINGLE DAY MEALS -->
+    <div class="single-day-container">
+      <div class="day-card today" id="nutritionDayCard">
+        <div class="meals" id="nutritionMeals">
+          <!-- Приемы пищи будут добавлены динамически -->
+        </div>
+        <div class="meal add-meal" onclick="addNewMealType()">
+          <div class="meal-label">➕ Добавить прием пищи</div>
+          <div class="meal-content">Создать новый прием пищи</div>
+        </div>
+      </div>
     </div>
   `;
   
@@ -3583,8 +3599,8 @@ function initNutrition() {
   // Загружаем данные питания
   loadNutritionData();
   
-  // Рендерим неделю
-  renderWeek();
+  // Рендерим текущий день
+  renderNutritionDay();
   
   // Обновляем трекер воды
   updateWaterTracker();
@@ -3597,11 +3613,13 @@ let nutritionData = {
     current: 0,
     date: new Date().toDateString()
   },
-  meals: {}, // {date: {mealId: {name: '', content: ''}}}
+  meals: {}, // {date: {mealId: content}}
   mealTypes: { // Типы приемов пищи по дням
     // date: [{id: 'breakfast', name: '🌅 Завтрак', icon: '🌅'}]
   }
 };
+
+let currentNutritionDate = new Date(); // Текущий день для питания
 
 let currentWeekStart = getWeekStart(new Date());
 
@@ -3660,93 +3678,66 @@ function saveNutritionData() {
   }
 }
 
-function changeWeek(direction) {
-  currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
-  renderWeek();
+// Навигация по дням питания
+function changeNutritionDay(direction) {
+  currentNutritionDate.setDate(currentNutritionDate.getDate() + direction);
+  renderNutritionDay();
+  updateWaterTracker();
 }
 
-function renderWeek() {
-  const weekTitle = document.getElementById('weekTitle');
-  const daysGrid = document.getElementById('daysGrid');
+function renderNutritionDay() {
+  const dayTitle = document.getElementById('nutritionDayTitle');
+  const mealsContainer = document.getElementById('nutritionMeals');
   
-  // Обновляем заголовок недели
-  const weekEnd = new Date(currentWeekStart);
-  weekEnd.setDate(weekEnd.getDate() + 6);
+  if (!dayTitle || !mealsContainer) return;
   
-  const formatDate = (date) => {
-    const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-    return `${date.getDate()} ${months[date.getMonth()]}`;
-  };
+  const dateStr = currentNutritionDate.toDateString();
   
-  weekTitle.textContent = `${formatDate(currentWeekStart)} - ${formatDate(weekEnd)}`;
+  // Обновляем заголовок дня
+  dayTitle.textContent = formatNutritionDate(currentNutritionDate);
   
-  // Рендерим дни недели
-  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  // Получаем приемы пищи для этого дня (начинаем с пустого списка)
+  const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
+  const dayMeals = nutritionData.meals[dateStr] || {};
+  
   let html = '';
   
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(currentWeekStart);
-    date.setDate(date.getDate() + i);
-    const dateStr = date.toDateString();
-    
-    // Получаем приемы пищи для этого дня
-    const dayMealTypes = nutritionData.mealTypes[dateStr] || getDefaultMealTypes();
-    const dayMeals = nutritionData.meals[dateStr] || {};
-    
-    const isToday = date.toDateString() === new Date().toDateString();
+  // Рендерим существующие приемы пищи
+  dayMealTypes.forEach(mealType => {
+    const mealContent = dayMeals[mealType.id] || 'Не запланировано';
     
     html += `
-      <div class="day-card ${isToday ? 'today' : ''}" data-date="${dateStr}">
-        <div class="day-header">
-          <div class="day-name">${dayNames[i]}</div>
-          <div class="day-date">${date.getDate()}</div>
+      <div class="meal" onclick="editMeal('${dateStr}', '${mealType.id}')">
+        <div class="meal-header">
+          <div class="meal-label">${mealType.icon} ${mealType.name}</div>
+          <button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>
         </div>
-        <div class="meals">
-    `;
-    
-    // Рендерим существующие приемы пищи
-    dayMealTypes.forEach(mealType => {
-      const mealContent = dayMeals[mealType.id] || 'Не запланировано';
-      const isCustomMeal = !['breakfast', 'lunch', 'dinner', 'snack'].includes(mealType.id);
-      
-      html += `
-        <div class="meal" onclick="editMeal('${dateStr}', '${mealType.id}')">
-          <div class="meal-header">
-            <div class="meal-label">${mealType.icon} ${mealType.name}</div>
-            ${isCustomMeal ? `<button class="delete-meal-btn" onclick="event.stopPropagation(); deleteMealType('${dateStr}', '${mealType.id}')">×</button>` : ''}
-          </div>
-          <div class="meal-content">${mealContent}</div>
-        </div>
-      `;
-    });
-    
-    // Кнопка добавления нового приема пищи
-    html += `
-          <div class="meal add-meal" onclick="addNewMealType('${dateStr}')">
-            <div class="meal-label">➕ Добавить прием пищи</div>
-            <div class="meal-content">Новый прием пищи</div>
-          </div>
-        </div>
+        <div class="meal-content">${mealContent}</div>
       </div>
     `;
-  }
+  });
   
-  daysGrid.innerHTML = html;
+  mealsContainer.innerHTML = html;
 }
 
-// Получаем стандартные типы приемов пищи
-function getDefaultMealTypes() {
-  return [
-    {id: 'breakfast', name: 'Завтрак', icon: '🌅'},
-    {id: 'lunch', name: 'Обед', icon: '☀️'},
-    {id: 'dinner', name: 'Ужин', icon: '🌙'},
-    {id: 'snack', name: 'Перекус', icon: '🍎'}
-  ];
+function formatNutritionDate(date) {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return 'Сегодня';
+  if (date.toDateString() === tomorrow.toDateString()) return 'Завтра';
+  if (date.toDateString() === yesterday.toDateString()) return 'Вчера';
+  
+  const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  return `${date.getDate()} ${months[date.getMonth()]}`;
 }
 
 // Трекер воды
 function changeWater(delta) {
-  const today = new Date().toDateString();
+  const today = currentNutritionDate.toDateString();
   if (nutritionData.water.date !== today) {
     nutritionData.water.current = 0;
     nutritionData.water.date = today;
@@ -3763,6 +3754,13 @@ function updateWaterTracker() {
   const waterCurrent = document.getElementById('waterCurrent');
   
   if (!waterStats || !waterProgressFill || !waterCurrent) return;
+  
+  // Проверяем воду для текущего дня питания
+  const currentDay = currentNutritionDate.toDateString();
+  if (nutritionData.water.date !== currentDay) {
+    nutritionData.water.current = 0;
+    nutritionData.water.date = currentDay;
+  }
   
   const current = nutritionData.water.current;
   const target = nutritionData.water.target;
@@ -3825,7 +3823,9 @@ function saveWaterSettings() {
 }
 
 // Добавление нового типа приема пищи
-function addNewMealType(dateStr) {
+function addNewMealType() {
+  const dateStr = currentNutritionDate.toDateString();
+  
   showPopup(
     '🍽️ Новый прием пищи',
     '',
@@ -3840,7 +3840,7 @@ function addNewMealType(dateStr) {
   setTimeout(() => {
     const input = document.querySelector('.popup-input');
     if (input) {
-      input.placeholder = 'Название приема пищи (например: Второй завтрак)';
+      input.placeholder = 'Название приема пищи (например: Завтрак)';
     }
   }, 100);
 }
@@ -3866,12 +3866,12 @@ function saveNewMealType(dateStr) {
   
   // Добавляем к типам приемов пищи для этого дня
   if (!nutritionData.mealTypes[dateStr]) {
-    nutritionData.mealTypes[dateStr] = getDefaultMealTypes();
+    nutritionData.mealTypes[dateStr] = []; // Начинаем с пустого списка
   }
   nutritionData.mealTypes[dateStr].push(newMealType);
   
   saveNutritionData();
-  renderWeek();
+  renderNutritionDay();
   hidePopup();
 }
 
@@ -3904,14 +3904,14 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   }
   
   saveNutritionData();
-  renderWeek();
+  renderNutritionDay();
   hidePopup();
 }
 
 // Редактирование приемов пищи
 function editMeal(dateStr, mealType) {
   // Получаем название приема пищи
-  const dayMealTypes = nutritionData.mealTypes[dateStr] || getDefaultMealTypes();
+  const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
   const mealTypeObj = dayMealTypes.find(m => m.id === mealType);
   const mealName = mealTypeObj ? mealTypeObj.name : 'Прием пищи';
   
@@ -3944,7 +3944,7 @@ function saveMeal(dateStr, mealType) {
   }
   
   saveNutritionData();
-  renderWeek();
+  renderNutritionDay();
   hidePopup();
 }
 

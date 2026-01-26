@@ -7,8 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="cache-buster" content="<?php echo time(); ?>">
-<meta name="version" content="v6.27.0-CLEAN-UI">
-<title>Планер v6.27 CLEAN UI</title>
+<meta name="version" content="v6.28.0-STRIKETHROUGH-DELETE-FIX">
+<title>Планер v6.28 STRIKETHROUGH DELETE FIX</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -866,41 +866,9 @@ body{
 .plan.completed .plan-title {
   color: var(--text-muted);
   position: relative;
-  --text-width: 100%;
-}
-.plan.completed .plan-title::after{
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 0;
-  max-width: var(--text-width);
-  height: 2px;
-  background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
-  border-radius: 1px;
-  transform: translateY(-50%);
-  animation: strikethrough-text 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Анимация зачеркивания точно по тексту */
-@keyframes strikethrough-text {
-  0% {
-    width: 0;
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    width: var(--text-width);
-    opacity: 1;
-  }
-}
-
-/* Убираем старую анимацию */
-.plan.completed.animate-strike .plan-title::after {
-  animation: strikethrough-text 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+  text-decoration-thickness: 2px;
 }
 
 .checkbox{
@@ -3678,30 +3646,6 @@ function render() {
       console.log('Сгенерированный HTML:', html);
       plansEl.innerHTML = html;
       console.log('HTML установлен в элемент plans');
-      
-      // Устанавливаем ширину текста для уже выполненных задач
-      setTimeout(() => {
-        try {
-          todayPlans.forEach(plan => {
-            if (plan.completed) {
-              const planElements = plansEl.querySelectorAll('.plan.completed');
-              planElements.forEach(planElement => {
-                try {
-                  const planTitle = planElement.querySelector('.plan-title');
-                  if (planTitle && planTitle.textContent.trim() === plan.title) {
-                    const textWidth = getTextWidth(planTitle.textContent, planTitle);
-                    planTitle.style.setProperty('--text-width', textWidth + 'px');
-                  }
-                } catch (e) {
-                  console.error('Ошибка при установке ширины текста:', e);
-                }
-              });
-            }
-          });
-        } catch (e) {
-          console.error('Ошибка при обработке выполненных задач:', e);
-        }
-      }, 50);
     }
   } catch (e) {
     console.error('Ошибка в функции render:', e);
@@ -4148,9 +4092,20 @@ function savePlanEdit() {
 }
 
 function deletePlanFromEdit() {
+  if (!selectedPlanId) {
+    console.error('Нет выбранной задачи для удаления');
+    return;
+  }
+  
+  const plan = plans.find(p => p.id === selectedPlanId);
+  if (!plan) {
+    console.error('Задача не найдена:', selectedPlanId);
+    return;
+  }
+  
   showPopup(
     'Удалить задачу?',
-    'Это действие нельзя отменить.',
+    `Вы уверены, что хотите удалить задачу "${plan.title}"?`,
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
       { text: 'Удалить', type: 'danger', action: confirmDeleteFromEdit }
@@ -4159,11 +4114,30 @@ function deletePlanFromEdit() {
 }
 
 function confirmDeleteFromEdit() {
+  if (!selectedPlanId) {
+    console.error('Нет ID задачи для удаления');
+    return;
+  }
+  
+  console.log('Удаляем задачу с ID:', selectedPlanId);
+  console.log('Планы до удаления:', plans.length);
+  
+  const initialLength = plans.length;
   plans = plans.filter(p => p.id !== selectedPlanId);
+  
+  console.log('Планы после удаления:', plans.length);
+  
+  if (plans.length === initialLength) {
+    console.error('Задача не была удалена - не найдена в массиве');
+    return;
+  }
+  
   savePlans();
   hidePopup();
   hideEditPlan();
   render();
+  
+  console.log('Задача успешно удалена');
 }
 
 function hideMenu() {
@@ -4177,11 +4151,20 @@ function hideMenu() {
 }
 
 function deletePlan() {
-  if (!selectedPlanId) return;
+  if (!selectedPlanId) {
+    console.error('Нет выбранной задачи для удаления');
+    return;
+  }
+  
+  const plan = plans.find(p => p.id === selectedPlanId);
+  if (!plan) {
+    console.error('Задача не найдена:', selectedPlanId);
+    return;
+  }
   
   showPopup(
-    'Удалить план?',
-    'Это действие нельзя отменить.',
+    'Удалить задачу?',
+    `Вы уверены, что хотите удалить задачу "${plan.title}"?`,
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
       { text: 'Удалить', type: 'danger', action: confirmDeletePlan }
@@ -4190,11 +4173,30 @@ function deletePlan() {
 }
 
 function confirmDeletePlan() {
+  if (!selectedPlanId) {
+    console.error('Нет ID задачи для удаления');
+    return;
+  }
+  
+  console.log('Удаляем задачу с ID:', selectedPlanId);
+  console.log('Планы до удаления:', plans.length);
+  
+  const initialLength = plans.length;
   plans = plans.filter(p => p.id !== selectedPlanId);
+  
+  console.log('Планы после удаления:', plans.length);
+  
+  if (plans.length === initialLength) {
+    console.error('Задача не была удалена - не найдена в массиве');
+    return;
+  }
+  
   savePlans();
   hidePopup();
   hideMenu();
   render();
+  
+  console.log('Задача успешно удалена');
 }
 
 function toggleComplete(id, event) {
@@ -4204,27 +4206,22 @@ function toggleComplete(id, event) {
   
   const planElement = event.target.closest('.plan');
   const checkbox = event.target;
-  const planTitle = planElement.querySelector('.plan-title');
   
   if (plan.completed) {
     // Убираем выполнение - мгновенно
     plan.completed = false;
-    planElement.classList.remove('completed', 'animate-strike');
+    planElement.classList.remove('completed');
     checkbox.classList.remove('checked');
   } else {
     // Отмечаем как выполненное - с анимацией
     plan.completed = true;
     
-    // Измеряем точную ширину текста
-    const textWidth = getTextWidth(planTitle.textContent, planTitle);
-    planTitle.style.setProperty('--text-width', textWidth + 'px');
-    
     // Сначала анимируем чекбокс
     checkbox.classList.add('checked');
     
-    // Затем через небольшую задержку добавляем анимацию зачеркивания
+    // Затем через небольшую задержку добавляем класс completed
     setTimeout(() => {
-      planElement.classList.add('completed', 'animate-strike');
+      planElement.classList.add('completed');
       
       // Добавляем небольшую вибрацию для тактильной обратной связи
       if (navigator.vibrate) {
@@ -4237,20 +4234,6 @@ function toggleComplete(id, event) {
   
   // Обновляем только прогресс, не перерисовываем весь список
   updateProgress();
-}
-
-function getTextWidth(text, element) {
-  // Создаем временный элемент для измерения ширины текста
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  
-  // Получаем стили элемента
-  const styles = window.getComputedStyle(element);
-  context.font = `${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
-  
-  // Измеряем ширину текста
-  const metrics = context.measureText(text);
-  return metrics.width;
 }
 
 function updateProgress() {

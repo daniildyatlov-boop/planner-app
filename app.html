@@ -1717,13 +1717,76 @@ body{
   border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
-/* MEAL TYPE SELECTOR */
-.meal-type-selector{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-sm);
-  margin: var(--spacing-lg) 0;
+/* MEAL TYPE SELECTOR MODAL */
+.meal-type-modal{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.meal-type-modal.show{
+  opacity: 1;
+}
+.meal-type-modal-content{
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-xl);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
+  transform: scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-type-modal.show .meal-type-modal-content{
+  transform: scale(1);
+}
+.meal-type-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xl);
+  border-bottom: 1px solid var(--border-secondary);
+}
+.meal-type-header h3{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.meal-type-close{
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal-type-close:hover{
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.meal-type-options{
+  padding: var(--spacing-xl);
+  display: grid;
+  gap: var(--spacing-md);
+}
+
 .meal-type-option{
   display: flex;
   align-items: center;
@@ -3947,51 +4010,79 @@ function saveWaterSettings() {
 function addNewMealType() {
   const dateStr = currentNutritionDate.toDateString();
   
-  // Предустановленные типы приемов пищи
-  const mealTypeOptions = [
-    {id: 'breakfast', name: 'Завтрак', icon: '🌅', defaultTime: '08:00'},
-    {id: 'lunch', name: 'Обед', icon: '☀️', defaultTime: '13:00'},
-    {id: 'dinner', name: 'Ужин', icon: '🌙', defaultTime: '19:00'},
-    {id: 'snack', name: 'Перекус', icon: '🍎', defaultTime: ''},
-    {id: 'custom', name: 'Свой вариант', icon: '🍽️', defaultTime: ''}
-  ];
-  
-  // Создаем HTML для выбора типа
-  let optionsHTML = '<div class="meal-type-selector">';
-  mealTypeOptions.forEach(option => {
-    optionsHTML += `
-      <div class="meal-type-option" onclick="selectMealType('${option.id}', '${option.name}', '${option.icon}', '${option.defaultTime}')">
-        <span class="meal-type-icon">${option.icon}</span>
-        <span class="meal-type-name">${option.name}</span>
+  // Показываем специальный селектор типов приемов пищи
+  showMealTypeSelector(dateStr);
+}
+
+function showMealTypeSelector(dateStr) {
+  // Создаем модальное окно для выбора типа приема пищи
+  const modal = document.createElement('div');
+  modal.className = 'meal-type-modal';
+  modal.innerHTML = `
+    <div class="meal-type-modal-content">
+      <div class="meal-type-header">
+        <h3>🍽️ Выберите тип приема пищи</h3>
+        <button class="meal-type-close" onclick="closeMealTypeSelector()">×</button>
       </div>
-    `;
-  });
-  optionsHTML += '</div>';
+      <div class="meal-type-options">
+        <div class="meal-type-option" onclick="selectMealType('breakfast', 'Завтрак', '🌅', '08:00')">
+          <span class="meal-type-icon">🌅</span>
+          <span class="meal-type-name">Завтрак</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('lunch', 'Обед', '☀️', '13:00')">
+          <span class="meal-type-icon">☀️</span>
+          <span class="meal-type-name">Обед</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('dinner', 'Ужин', '🌙', '19:00')">
+          <span class="meal-type-icon">🌙</span>
+          <span class="meal-type-name">Ужин</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('snack', 'Перекус', '🍎', '')">
+          <span class="meal-type-icon">🍎</span>
+          <span class="meal-type-name">Перекус</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('custom', 'Свой вариант', '🍽️', '')">
+          <span class="meal-type-icon">🍽️</span>
+          <span class="meal-type-name">Свой вариант</span>
+        </div>
+      </div>
+    </div>
+  `;
   
-  showPopup(
-    '🍽️ Выберите тип приема пищи',
-    optionsHTML,
-    [
-      { text: 'Отмена', type: 'cancel', action: hidePopup }
-    ]
-  );
+  document.body.appendChild(modal);
+  
+  // Показываем модальное окно с анимацией
+  setTimeout(() => {
+    modal.classList.add('show');
+  }, 10);
+}
+
+function closeMealTypeSelector() {
+  const modal = document.querySelector('.meal-type-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      document.body.removeChild(modal);
+    }, 300);
+  }
 }
 
 function selectMealType(typeId, typeName, typeIcon, defaultTime) {
   const dateStr = currentNutritionDate.toDateString();
   
+  // Закрываем селектор типов
+  closeMealTypeSelector();
+  
   if (typeId === 'custom') {
     // Для кастомного типа показываем ввод названия
-    hidePopup();
     setTimeout(() => {
       showCustomMealTypeInput(dateStr);
-    }, 100);
+    }, 300);
   } else {
     // Для предустановленных типов показываем настройку времени
-    hidePopup();
     setTimeout(() => {
       showMealTimeInput(dateStr, typeId, typeName, typeIcon, defaultTime);
-    }, 100);
+    }, 300);
   }
 }
 

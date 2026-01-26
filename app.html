@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.12.1-FIXED-DATE-INPUT">
-<title>Планер v6.12 JS Smooth Circle Animation</title>
+<meta name="version" content="v6.13.0-ROOM-ICONS">
+<title>Планер v6.13 Room Icons Selector</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -1615,6 +1615,44 @@ body{
   background:#ef4444;
   color:white;
 }
+
+/* ICON SELECTOR */
+.icon-selector{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:var(--spacing-sm);
+  margin:var(--spacing-lg) 0;
+  max-height:200px;
+  overflow-y:auto;
+}
+.icon-option{
+  width:44px;
+  height:44px;
+  background:rgba(44,44,46,0.6);
+  border:2px solid transparent;
+  border-radius:var(--spacing-md);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+.icon-option:hover{
+  background:rgba(99,102,241,0.2);
+  border-color:rgba(99,102,241,0.4);
+  transform:scale(1.05);
+}
+.icon-option.selected{
+  background:linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color:#6366f1;
+  box-shadow:0 4px 16px rgba(99,102,241,0.4);
+  transform:scale(1.1);
+}
+.icon-option:active{
+  transform:scale(0.95);
+}
 </style>
 </head>
 <body>
@@ -1857,9 +1895,10 @@ if (tg) {
 // STATE
 let currentDate = new Date();
 let plans = [];
-let rooms = [];
+let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let selectedPlanId = null;
 let calendarDate = new Date();
+let selectedRoomIcon = '🏠'; // Выбранная иконка для новой комнаты
 
 // UTILS
 function escapeHtml(text) {
@@ -1888,6 +1927,20 @@ function formatDateSubtitle(date) {
   return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]}.`;
 }
 
+function getRoomIcon(roomName) {
+  const room = rooms.find(room => {
+    const name = typeof room === 'string' ? room : room.name;
+    return name === roomName;
+  });
+  
+  if (room && typeof room === 'object') {
+    return room.icon;
+  }
+  
+  // Если комната не найдена или в старом формате, возвращаем дефолтную иконку
+  return '🏠';
+}
+
 function getPlansForDate(date) {
   const dateStr = date.toDateString();
   return plans.filter(p => new Date(p.date).toDateString() === dateStr);
@@ -1898,6 +1951,16 @@ function loadData() {
   try {
     plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
     rooms = JSON.parse(localStorage.getItem('planner_rooms') || '[]');
+    
+    // Миграция старых комнат (строки) в новый формат (объекты)
+    if (rooms.length > 0 && typeof rooms[0] === 'string') {
+      const defaultIcons = ['🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧'];
+      rooms = rooms.map((roomName, index) => ({
+        name: roomName,
+        icon: defaultIcons[index % defaultIcons.length]
+      }));
+      saveRooms(); // Сохраняем в новом формате
+    }
   } catch (e) {
     console.error('Error loading data:', e);
     plans = [];
@@ -1954,7 +2017,7 @@ function render() {
           <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
           <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
             <div class="plan-title">${escapeHtml(plan.title)}</div>
-            ${plan.room ? `<div class="room">${escapeHtml(plan.room)}</div>` : ''}
+            ${plan.room ? `<div class="room">${getRoomIcon(plan.room)} ${escapeHtml(plan.room)}</div>` : ''}
           </div>
         </div>
       `;
@@ -1983,25 +2046,31 @@ function updateRoomsSelect() {
   const select = document.getElementById('planRoom');
   select.innerHTML = '<option value="">Без комнаты</option>';
   rooms.forEach(room => {
+    // Поддерживаем старый формат (строки) и новый (объекты)
+    const roomName = typeof room === 'string' ? room : room.name;
+    const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+    
     const option = document.createElement('option');
-    option.value = room;
-    option.textContent = room;
+    option.value = roomName;
+    option.textContent = `${roomIcon} ${roomName}`;
     select.appendChild(option);
   });
 }
 
 function renderRooms() {
   const roomsList = document.getElementById('roomsList');
-  const roomIcons = ['🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧'];
   
   let html = '';
-  rooms.forEach((room, index) => {
-    const icon = roomIcons[index % roomIcons.length];
+  rooms.forEach((room) => {
+    // Поддерживаем старый формат (строки) и новый (объекты)
+    const roomName = typeof room === 'string' ? room : room.name;
+    const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+    
     html += `
       <div class="room-item">
-        <div class="room-icon">${icon}</div>
-        <div class="room-name">${escapeHtml(room)}</div>
-        <button class="delete-room" onclick="deleteRoom('${escapeHtml(room)}')">Удалить</button>
+        <div class="room-icon">${roomIcon}</div>
+        <div class="room-name">${escapeHtml(roomName)}</div>
+        <button class="delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
       </div>
     `;
   });
@@ -2557,15 +2626,68 @@ function renderCalendar() {
 
 // ROOMS
 function showAddRoom() {
-  showPopup(
-    'Новая комната',
-    '',
-    [
-      { text: 'Отмена', type: 'cancel', action: hidePopup },
-      { text: 'Добавить', type: 'confirm', action: addRoom }
-    ],
-    true
-  );
+  selectedRoomIcon = '🏠'; // Сбрасываем выбор иконки
+  showRoomIconSelector();
+}
+
+function showRoomIconSelector() {
+  const roomIcons = [
+    '🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧',
+    '🎯', '🎨', '🎵', '🏋️', '🧘', '🍕', '☕', '🌟', '💡', '🔥',
+    '🎪', '🎭', '🎬', '📱', '💻', '🎸', '🎹', '🎤', '🎧', '📷',
+    '✈️', '🚗', '🏖️', '🏔️', '🌊', '🌙', '☀️', '🌈', '⚡', '❄️'
+  ];
+  
+  // Создаем HTML для селектора иконок
+  let iconSelectorHTML = '<div class="icon-selector">';
+  roomIcons.forEach(icon => {
+    const selectedClass = icon === selectedRoomIcon ? 'selected' : '';
+    iconSelectorHTML += `
+      <div class="icon-option ${selectedClass}" onclick="selectRoomIcon('${icon}')">
+        ${icon}
+      </div>
+    `;
+  });
+  iconSelectorHTML += '</div>';
+  
+  // Показываем попап с селектором иконок
+  document.getElementById('popupTitle').textContent = 'Выберите иконку';
+  document.getElementById('popupMessage').innerHTML = iconSelectorHTML;
+  
+  const buttonsContainer = document.getElementById('popupButtons');
+  buttonsContainer.innerHTML = `
+    <button class="popup-btn cancel" onclick="hidePopup()">Отмена</button>
+    <button class="popup-btn confirm" onclick="showRoomNameInput()">Далее</button>
+  `;
+  
+  document.getElementById('popup').classList.add('show');
+}
+
+function selectRoomIcon(icon) {
+  selectedRoomIcon = icon;
+  
+  // Обновляем визуальное выделение
+  document.querySelectorAll('.icon-option').forEach(el => {
+    el.classList.remove('selected');
+  });
+  event.target.classList.add('selected');
+}
+
+function showRoomNameInput() {
+  hidePopup();
+  
+  // Показываем попап с вводом названия
+  setTimeout(() => {
+    showPopup(
+      `${selectedRoomIcon} Новая комната`,
+      '',
+      [
+        { text: 'Отмена', type: 'cancel', action: hidePopup },
+        { text: 'Добавить', type: 'confirm', action: addRoom }
+      ],
+      true
+    );
+  }, 100);
 }
 
 function addRoom() {
@@ -2574,14 +2696,25 @@ function addRoom() {
   
   if (!roomName) return;
   
-  if (rooms.includes(roomName)) {
+  // Проверяем существование комнаты по имени
+  const existingRoom = rooms.find(room => {
+    const name = typeof room === 'string' ? room : room.name;
+    return name === roomName;
+  });
+  
+  if (existingRoom) {
     showPopup('Ошибка', 'Комната с таким названием уже существует.', [
       { text: 'OK', type: 'confirm', action: hidePopup }
     ]);
     return;
   }
   
-  rooms.push(roomName);
+  // Добавляем комнату как объект с иконкой
+  rooms.push({
+    name: roomName,
+    icon: selectedRoomIcon
+  });
+  
   saveRooms();
   renderRooms();
   updateRoomsSelect();
@@ -2600,7 +2733,10 @@ function deleteRoom(roomName) {
 }
 
 function confirmDeleteRoom(roomName) {
-  rooms = rooms.filter(r => r !== roomName);
+  rooms = rooms.filter(room => {
+    const name = typeof room === 'string' ? room : room.name;
+    return name !== roomName;
+  });
   saveRooms();
   renderRooms();
   updateRoomsSelect();
@@ -2802,7 +2938,7 @@ document.addEventListener('DOMContentLoaded', () => {
   `;
   document.head.appendChild(confettiStyle);
   
-  console.log('🚀 Планер v6.12 JS Smooth Circle Animation загружен');
+  console.log('🚀 Планер v6.13 Room Icons Selector загружен');
 });
 </script>
 </body>

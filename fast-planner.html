@@ -151,6 +151,13 @@ let plans=[];
 let teams=[];
 let selected=null;
 
+// Экранирование HTML
+function escapeHtml(text){
+const div=document.createElement('div');
+div.textContent=text;
+return div.innerHTML;
+}
+
 // Быстрая загрузка данных
 function loadPlans(){
 try{
@@ -194,8 +201,8 @@ withTime.forEach(p=>{
 html+=`<div class="plan" onclick="showMenu('${p.id}')">
 <div class="time">${p.time}</div>
 <div class="plan-content">
-<div class="plan-title">${p.title}</div>
-${p.room?`<div class="room">${p.room}</div>`:''}
+<div class="plan-title">${escapeHtml(p.title)}</div>
+${p.room?`<div class="room">${escapeHtml(p.room)}</div>`:''}
 </div>
 </div>`;
 });
@@ -207,8 +214,8 @@ html+='<div class="group"><div class="group-title">Без времени</div>';
 withoutTime.forEach(p=>{
 html+=`<div class="plan" onclick="showMenu('${p.id}')">
 <div class="plan-content">
-<div class="plan-title">${p.title}</div>
-${p.room?`<div class="room">${p.room}</div>`:''}
+<div class="plan-title">${escapeHtml(p.title)}</div>
+${p.room?`<div class="room">${escapeHtml(p.room)}</div>`:''}
 </div>
 </div>`;
 });
@@ -262,8 +269,8 @@ const teamsList=document.getElementById('teamsList');
 let html='';
 teams.forEach(team=>{
 html+=`<div class="team-item">
-<div class="team-name">${team}</div>
-<button class="delete-team" onclick="deleteTeam('${team}')">Удалить</button>
+<div class="team-name">${escapeHtml(team)}</div>
+<button class="delete-team" onclick="deleteTeam('${escapeHtml(team)}')">Удалить</button>
 </div>`;
 });
 teamsList.innerHTML=html;

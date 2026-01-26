@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.14.4-TIME-IN-CORNER">
+<meta name="version" content="v6.14.5-TIME-INLINE">
 <title>Планер v6.14 Time Support</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
@@ -844,26 +844,25 @@ body{
   transform: translateY(-1px);
 }
 
-.plan-time-corner{
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  font-size: 11px;
+.plan-time-inline{
+  font-size: 14px;
   color: var(--accent-primary);
   background: rgba(99, 102, 241, 0.12);
   backdrop-filter: blur(10px);
-  padding: 4px 8px;
-  border-radius: 6px;
-  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-right: 8px;
+  line-height: 1.2;
   font-weight: 600;
   border: 1px solid rgba(99, 102, 241, 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.15);
   transform: translateZ(0);
-  letter-spacing: 0.3px;
-  pointer-events: none; /* Не мешает клику по карточке */
+  letter-spacing: 0.2px;
+  vertical-align: baseline;
 }
-.plan:hover .plan-time-corner {
+.plan:hover .plan-time-inline {
   background: rgba(99, 102, 241, 0.18);
   border-color: rgba(99, 102, 241, 0.35);
   box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
@@ -2139,10 +2138,11 @@ function render() {
         <div class="plan ${plan.completed ? 'completed' : ''}">
           <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
           <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
-            <div class="plan-title">${escapeHtml(plan.title)}</div>
+            <div class="plan-title">
+              ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
+            </div>
             ${plan.room ? `<div class="room">${getRoomIcon(plan.room)} ${escapeHtml(plan.room)}</div>` : ''}
           </div>
-          ${plan.time ? `<div class="plan-time-corner">${plan.time}</div>` : ''}
         </div>
       `;
     });

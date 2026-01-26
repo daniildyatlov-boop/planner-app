@@ -76,6 +76,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#c7c7cc;font-size:18px;pointer-events:none}
 .row{display:flex;gap:12px}
 .row .form-group{flex:1}
+.calendar{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease}
+.calendar.show{display:flex;opacity:1}
+.calendar-content{background:white;border-radius:16px;padding:20px;margin:20px;max-width:320px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.2);transform:scale(0.8);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
+.calendar.show .calendar-content{transform:scale(1)}
+.calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.calendar-title{font-size:18px;font-weight:600;color:#000}
+.calendar-nav{background:none;border:none;font-size:20px;color:#007aff;cursor:pointer;width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.calendar-nav:active{opacity:0.6;background:rgba(0,122,255,0.1)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.calendar-day{background:none;border:none;padding:8px;font-size:14px;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:32px;transition:all 0.2s ease}
+.calendar-day:hover{background:#f0f0f0}
+.calendar-day.today{background:#007aff;color:white}
+.calendar-day.selected{background:#34c759;color:white}
+.calendar-day.other-month{color:#c7c7cc}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
 .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:150;display:none;opacity:0;transition:opacity 0.3s ease}
 .overlay.show{display:flex;opacity:1;align-items:center;justify-content:center}
 .menu{background:white;border-radius:16px;padding:0;z-index:200;display:none;min-width:280px;box-shadow:0 10px 30px rgba(0,0,0,0.2);transform:scale(0.8);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
@@ -157,6 +172,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </select>
 </div>
 </div>
+</div>
+</div>
+</div>
+
+<div class="calendar" id="calendar" onclick="hideCalendar()">
+<div class="calendar-content" onclick="event.stopPropagation()">
+<div class="calendar-header">
+<button class="calendar-nav" onclick="changeCalendarMonth(-1)">‹</button>
+<div class="calendar-title" id="calendarTitle">Январь 2026</div>
+<button class="calendar-nav" onclick="changeCalendarMonth(1)">›</button>
+</div>
+<div class="weekdays">
+<div class="weekday">Пн</div>
+<div class="weekday">Вт</div>
+<div class="weekday">Ср</div>
+<div class="weekday">Чт</div>
+<div class="weekday">Пт</div>
+<div class="weekday">Сб</div>
+<div class="weekday">Вс</div>
+</div>
+<div class="calendar-grid" id="calendarGrid">
+<!-- Дни будут добавлены динамически -->
 </div>
 </div>
 </div>
@@ -457,24 +494,68 @@ render();
 }
 }
 
+let calendarDate=new Date();
+
 function showDatePicker(){
-// Создаем скрытый input для календаря
-const dateInput=document.createElement('input');
-dateInput.type='date';
-dateInput.value=date.toISOString().split('T')[0];
-dateInput.style.position='absolute';
-dateInput.style.opacity='0';
-dateInput.style.pointerEvents='none';
-document.body.appendChild(dateInput);
+calendarDate=new Date(date);
+renderCalendar();
+document.getElementById('calendar').classList.add('show');
+}
 
-dateInput.addEventListener('change',function(){
-date=new Date(this.value);
+function hideCalendar(){
+document.getElementById('calendar').classList.remove('show');
+}
+
+function changeCalendarMonth(dir){
+calendarDate.setMonth(calendarDate.getMonth()+dir);
+renderCalendar();
+}
+
+function selectDate(selectedDate){
+date=new Date(selectedDate);
 render();
-document.body.removeChild(dateInput);
-});
+hideCalendar();
+}
 
-// Открываем календарь
-dateInput.click();
+function renderCalendar(){
+const year=calendarDate.getFullYear();
+const month=calendarDate.getMonth();
+
+const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+document.getElementById('calendarTitle').textContent=`${monthNames[month]} ${year}`;
+
+const firstDay=new Date(year,month,1);
+const lastDay=new Date(year,month+1,0);
+const startDate=new Date(firstDay);
+startDate.setDate(startDate.getDate()-(firstDay.getDay()||7)+1);
+
+const grid=document.getElementById('calendarGrid');
+grid.innerHTML='';
+
+const today=new Date();
+const selectedDate=new Date(date);
+
+for(let i=0;i<42;i++){
+const currentDate=new Date(startDate);
+currentDate.setDate(startDate.getDate()+i);
+
+const button=document.createElement('button');
+button.className='calendar-day';
+button.textContent=currentDate.getDate();
+button.onclick=()=>selectDate(currentDate);
+
+if(currentDate.getMonth()!==month){
+button.classList.add('other-month');
+}
+if(currentDate.toDateString()===today.toDateString()){
+button.classList.add('today');
+}
+if(currentDate.toDateString()===selectedDate.toDateString()){
+button.classList.add('selected');
+}
+
+grid.appendChild(button);
+}
 }
 
 // Pull to refresh

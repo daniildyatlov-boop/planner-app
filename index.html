@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="ngrok-skip-browser-warning" content="true">
+    <title>Планер</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            line-height: 1.4;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+        
+        .app {
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .header {
+            padding: 20px 20px 15px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #999999);
+            position: sticky;
+            top: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            z-index: 10;
+        }
+        
+        .day-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .content {
+            padding: 20px;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .time-section {
+            margin-bottom: 30px;
+        }
+        
+        .time-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999999);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .plan-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #f0f0f0);
+            position: relative;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .plan-item:last-child {
+            border-bottom: none;
+        }
+        
+        .plan-item.swiping {
+            transform: translateX(-80px);
+        }
+        
+        .plan-text {
+            font-size: 16px;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 4px;
+        }
+        
+        .plan-time {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-bottom: 4px;
+        }
+        
+        .room-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--tg-theme-button-color, #e8e8e8);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--tg-theme-button-text-color, #666666);
+        }
+        
+        .delete-zone {
+            position: absolute;
+            right: -80px;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            background: #ff3b30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            transition: right 0.2s ease;
+        }
+        
+        .plan-item.swiping .delete-zone {
+            right: 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+        
+        .add-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .add-overlay.show {
+            transform: translateY(0);
+        }
+        
+        .add-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        .add-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .add-input {
+            padding: 20px;
+        }
+        
+        .main-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--tg-theme-hint-color, #ddd);
+            background: transparent;
+            font-family: inherit;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .main-input:focus {
+            border-bottom-color: var(--tg-theme-button-color, #007aff);
+        }
+        
+        .input-hint {
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+        
+        .pull-indicator {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999999);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .pull-indicator.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <div class="pull-indicator" id="pullIndicator">Потяните для добавления плана</div>
+        
+        <div class="header">
+            <div class="day-title" id="dayTitle">Сегодня</div>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="empty-state" id="emptyState">
+                <div style="font-size: 18px; margin-bottom: 8px;">Планов нет</div>
+                <div style="font-size: 14px;">Потяните вниз, чтобы добавить</div>
+            </div>
+        </div>
+        
+        <div class="add-overlay" id="addOverlay">
+            <div class="add-header">
+                <div class="add-title">Новый план</div>
+            </div>
+            <div class="add-input">
+                <input type="text" class="main-input" id="planInput" placeholder="Что планируете?">
+                <div class="input-hint">
+                    Напишите план свободным текстом.<br>
+                    Например: "Встреча 15:00" или "Тренировка завтра 18:00 зал"
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -9,15 +9,17 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;color:var(--tg-theme-text-color,#000);line-height:1.4;overflow-x:hidden;min-height:100vh}
 .app{min-height:100vh;display:flex;flex-direction:column}
-.header{padding:20px;background:#f2f2f7;display:flex;align-items:center;justify-content:center}
+.header{padding:16px 20px;background:#f2f2f7;display:flex;align-items:center;justify-content:space-between}
 .teams-header{padding:0 0 16px 0;text-align:right}
 .teams-link{background:none;border:none;color:#007aff;font-size:15px;cursor:pointer;padding:8px 0}
 .teams-link:active{opacity:0.6}
-.date-nav{display:flex;align-items:center;gap:8px;background:white;border-radius:20px;padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-.date-title{font-size:16px;font-weight:600;color:#000;margin:0 8px}
-.date-subtitle{font-size:12px;color:#8e8e93}
-.menu-btn{width:40px;height:40px;background:white;border:none;border-radius:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-.menu-btn:active{opacity:0.8}
+.date-nav{display:flex;align-items:center;gap:8px;background:white;border-radius:16px;padding:6px 12px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.date-title{font-size:15px;font-weight:600;color:#000;margin:0 6px}
+.date-subtitle{font-size:11px;color:#8e8e93}
+.profile-btn{width:32px;height:32px;background:#007aff;border:none;border-radius:16px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:600;cursor:pointer}
+.profile-btn:active{opacity:0.8}
+.rooms-btn{width:32px;height:32px;background:white;border:none;border-radius:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);font-size:16px}
+.rooms-btn:active{opacity:0.8}
 .nav{background:white;border:none;font-size:18px;color:#000;cursor:pointer;width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
 .nav:active{opacity:0.6}
 .teams-btn{background:none;border:none;font-size:24px;cursor:pointer;padding:0}
@@ -80,6 +82,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <body>
 <div class="app">
 <div class="header">
+<button class="profile-btn" onclick="showProfile()">П</button>
 <div class="date-nav">
 <button class="nav" onclick="changeDay(-1)">‹</button>
 <div>
@@ -88,11 +91,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 <button class="nav" onclick="changeDay(1)">›</button>
 </div>
+<button class="rooms-btn" onclick="showTeams()">🚪</button>
 </div>
 <div class="content" id="content">
-<div class="teams-header">
-<button class="teams-link" onclick="showTeams()">Команды →</button>
-</div>
 <div class="empty" id="empty">
 <h2>Планов нет</h2>
 <p>Добавьте первый план</p>
@@ -285,7 +286,7 @@ renderTeams();
 
 function showProfile(){
 // Пока что просто показываем команды, позже настроим профиль
-showTeams();
+console.log('Профиль - пока не реализован');
 }
 
 function hideTeams(){

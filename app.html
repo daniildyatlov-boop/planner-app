@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.10-CIRCULAR-PROGRESS">
-<title>Планер v6.10 Circular Progress</title>
+<meta name="version" content="v6.10.1-FIX-PROGRESS-NUMBERS">
+<title>Планер v6.10.1 Fix Progress Numbers</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -2297,8 +2297,13 @@ function updateProgress() {
     )`;
   }
   
-  // Анимируем процент
-  animateNumber(progressPercentage, Math.round(progressPercent));
+  // Плавно обновляем процент только при изменении
+  const currentPercent = parseInt(progressPercentage.textContent) || 0;
+  const targetPercent = Math.round(progressPercent);
+  
+  if (currentPercent !== targetPercent) {
+    animatePercentage(progressPercentage, currentPercent, targetPercent);
+  }
   
   document.getElementById('progressStats').textContent = `${completedCount}/${totalCount}`;
   
@@ -2315,25 +2320,26 @@ function updateProgress() {
   }
 }
 
-function animateNumber(element, targetNumber) {
-  const currentNumber = parseInt(element.textContent) || 0;
-  const increment = targetNumber > currentNumber ? 1 : -1;
-  const duration = 800;
-  const steps = Math.abs(targetNumber - currentNumber);
-  const stepDuration = steps > 0 ? duration / steps : 0;
+function animatePercentage(element, from, to) {
+  const duration = 600;
+  const steps = Math.abs(to - from);
+  if (steps === 0) return;
   
-  let current = currentNumber;
+  const stepDuration = duration / steps;
+  const increment = to > from ? 1 : -1;
+  let current = from;
   
   const timer = setInterval(() => {
     current += increment;
     element.textContent = current + '%';
     
-    if (current === targetNumber) {
+    if (current === to) {
       clearInterval(timer);
     }
   }, stepDuration);
 }
 
+// Убираем функцию animateNumber, так как она вызывала проблемы
 function addCompletionAnimations() {
   const progressContainer = document.getElementById('progressContainer');
   const progressCircle = document.getElementById('progressCircle');
@@ -2650,7 +2656,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.10 Circular Progress загружен');
+  console.log('🚀 Планер v6.10.1 Fix Progress Numbers загружен');
 });
 </script>
 </body>

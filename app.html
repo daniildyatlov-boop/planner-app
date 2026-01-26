@@ -1092,11 +1092,13 @@ function hideRooms() {
 
 function showProfile() {
   document.getElementById('profileScreen').classList.add('show');
+  document.querySelector('.header').style.display = 'none';
   loadProfileData();
 }
 
 function hideProfile() {
   document.getElementById('profileScreen').classList.remove('show');
+  document.querySelector('.header').style.display = 'flex';
 }
 
 // PLANS

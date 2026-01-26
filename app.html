@@ -26,7 +26,75 @@ body{
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Специальные easing функции для разных типов анимаций */
+/* ENHANCED ANIMATIONS SYSTEM */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100px) scale(0.9);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-10deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) rotate(5deg);
+  }
+  70% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Улучшенные анимации для элементов */
+.animate-in {
+  animation: floatIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-bounce {
+  animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+}
 .ease-bounce { transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); }
 .ease-smooth { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
 .ease-swift { transition-timing-function: cubic-bezier(0.55, 0, 0.1, 1); }
@@ -466,8 +534,8 @@ body{
   font-size:var(--spacing-lg);
   font-weight:600;
   cursor:pointer;
-  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:0 4px var(--spacing-md) rgba(99,102,241,0.3);
+  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:0 8px 32px rgba(99,102,241,0.3);
   transform: translateZ(0);
   position: relative;
   overflow: hidden;
@@ -479,21 +547,21 @@ body{
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .btn:hover::before {
   left: 100%;
 }
 .btn:hover{
-  transform: translateY(-2px);
-  box-shadow:0 8px 24px rgba(99,102,241,0.4);
-  animation: soft-glow 2s infinite;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:0 16px 48px rgba(99,102,241,0.4);
+  animation: gentle-pulse 2s infinite;
 }
 .btn:active{
   opacity:0.9;
-  transform:scale(0.96);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transform:scale(0.96) translateY(-2px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-btn{
@@ -505,7 +573,7 @@ body{
   padding:var(--spacing-sm) var(--spacing-md);
   border-radius:var(--spacing-sm);
   font-weight:500;
-  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
   position: relative;
   overflow: hidden;
@@ -520,20 +588,20 @@ body{
   background: rgba(99,102,241,0.1);
   border-radius: var(--spacing-sm);
   transform: scale(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .header-btn:hover::before {
   transform: scale(1);
 }
 .header-btn:hover {
   color: #8b5cf6;
-  transform: translateY(-1px);
-  text-shadow: 0 0 8px rgba(99,102,241,0.3);
+  transform: translateY(-2px) scale(1.05);
+  text-shadow: 0 4px 12px rgba(99,102,241,0.4);
 }
 .header-btn:active{
   opacity:0.7;
   transform:scale(0.95);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-btn-primary{
@@ -545,11 +613,11 @@ body{
   padding:var(--spacing-sm) var(--spacing-lg);
   border-radius:var(--spacing-sm);
   font-weight:600;
-  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
   position: relative;
   overflow: hidden;
-  box-shadow:0 2px 8px rgba(99,102,241,0.3);
+  box-shadow:0 4px 16px rgba(99,102,241,0.3);
 }
 .header-btn-primary::before {
   content: '';
@@ -558,20 +626,20 @@ body{
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .header-btn-primary:hover::before {
   left: 100%;
 }
 .header-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow:0 4px 16px rgba(99,102,241,0.4);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:0 8px 24px rgba(99,102,241,0.5);
 }
 .header-btn-primary:active{
   opacity:0.9;
   transform:scale(0.95);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* PLANS LIST */
@@ -653,7 +721,7 @@ body{
 
 .plan{
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(30px);
   border: 1px solid var(--border-primary);
   border-radius: var(--border-radius);
   padding: var(--spacing-xl);
@@ -662,12 +730,12 @@ body{
   align-items: center;
   cursor: pointer;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.05) inset;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    0 12px 40px rgba(0, 0, 0, 0.2),
+    0 2px 0 rgba(255, 255, 255, 0.05) inset;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 72px;
   transform: translateZ(0);
-  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: floatIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
   position: relative;
   overflow: hidden;
 }
@@ -680,28 +748,28 @@ body{
   bottom: 0;
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .plan:nth-child(1) { animation-delay: 0.1s; }
-.plan:nth-child(2) { animation-delay: 0.15s; }
-.plan:nth-child(3) { animation-delay: 0.2s; }
-.plan:nth-child(4) { animation-delay: 0.25s; }
-.plan:nth-child(5) { animation-delay: 0.3s; }
+.plan:nth-child(2) { animation-delay: 0.2s; }
+.plan:nth-child(3) { animation-delay: 0.3s; }
+.plan:nth-child(4) { animation-delay: 0.4s; }
+.plan:nth-child(5) { animation-delay: 0.5s; }
 
 .plan:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.02);
   box-shadow: 
-    0 16px 48px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  border-color: rgba(99, 102, 241, 0.3);
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 4px 0 rgba(255, 255, 255, 0.1) inset;
+  border-color: rgba(99, 102, 241, 0.4);
 }
 .plan:hover::before {
   opacity: 1;
 }
 .plan:active {
   opacity: 0.9;
-  transform: scale(0.98) translateY(-2px);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.98) translateY(-3px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .plan.completed {
   opacity: 0.7;
@@ -724,7 +792,7 @@ body{
   background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
   border-radius: 1px;
   transform: translateY(-50%);
-  animation: strikethrough-text 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: strikethrough-text 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
@@ -898,40 +966,53 @@ body{
   left:0;
   right:0;
   bottom:0;
-  background:#0a0a0a;
+  background:rgba(10,10,10,0.95);
+  backdrop-filter: blur(30px);
   z-index:100;
   display:none;
   flex-direction:column;
   transform:translateY(100%);
-  transition:transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   height:100vh;
   overflow:hidden;
-  backdrop-filter: blur(20px);
 }
 .modal.show{
   display:flex;
   transform:translateY(0);
+  animation: slideInFromBottom 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 .modal.show .modal-content{
-  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  animation: floatIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
 }
 
 .modal-header{
   padding:var(--spacing-lg) var(--spacing-xl);
-  background:rgba(28,28,30,0.8);
-  backdrop-filter: blur(20px);
+  background:rgba(28,28,30,0.95);
+  backdrop-filter: blur(30px);
   border-bottom:1px solid rgba(44,44,46,0.6);
   display:flex;
   align-items:center;
   justify-content:space-between;
   flex-shrink:0;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -200px;
+  width: 200px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.1), transparent);
+  animation: shimmer 3s infinite;
 }
 .modal-title{
   font-size:var(--spacing-lg);
   font-weight:600;
   color:#ffffff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -976,6 +1057,11 @@ body{
   transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   transform: translateZ(0);
+  /* Исправляем проблему с курсором */
+  line-height: 1.5;
+  vertical-align: top;
+  text-align: left;
+  caret-color: var(--accent-primary);
 }
 .input[type="date"]{
   /* Убираем встроенные стили браузера для поля даты */
@@ -984,7 +1070,7 @@ body{
   appearance: none;
   /* Обеспечиваем одинаковую высоту с другими полями */
   height: auto;
-  line-height: normal;
+  line-height: 1.5;
   /* Убираем стандартный календарь браузера */
   position: relative;
   /* Принудительно задаем минимальную высоту как у других полей */
@@ -1011,7 +1097,7 @@ body{
   appearance: none;
   /* Обеспечиваем одинаковую высоту с другими полями */
   height: auto;
-  line-height: normal;
+  line-height: 1.5;
   position: relative;
   /* Принудительно задаем минимальную высоту как у других полей */
   min-height: 48px;
@@ -1030,12 +1116,24 @@ body{
   height: 100%;
   cursor: pointer;
 }
+.input[type="number"]{
+  /* Стабилизируем числовые поля */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+  line-height: 1.5;
+}
+.input[type="number"]::-webkit-outer-spin-button,
+.input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 .input:focus,.select:focus{
   outline:none;
   border-color:#6366f1;
   box-shadow:0 0 0 3px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.2);
   background:rgba(28,28,30,0.95);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
 }
 .input:hover,.select:hover{
   border-color:rgba(99,102,241,0.4);
@@ -1045,6 +1143,10 @@ body{
 .input::placeholder{
   color:#6b7280;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.input:focus::placeholder{
+  opacity: 0.7;
+  transform: translateY(-2px);
 }
 
 .select-wrapper{
@@ -1646,12 +1748,45 @@ body{
   border-radius: var(--spacing-sm);
   padding: var(--spacing-md);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  position: relative;
+  overflow: hidden;
+  animation: floatIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.02) inset;
 }
+.meal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(139, 92, 246, 0.03));
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meal:nth-child(1) { animation-delay: 0.1s; }
+.meal:nth-child(2) { animation-delay: 0.15s; }
+.meal:nth-child(3) { animation-delay: 0.2s; }
+.meal:nth-child(4) { animation-delay: 0.25s; }
+.meal:nth-child(5) { animation-delay: 0.3s; }
 .meal:hover{
   background: var(--bg-card-hover);
   border-color: var(--accent-primary);
-  transform: translateY(-1px);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 2px 0 rgba(255, 255, 255, 0.05) inset;
+}
+.meal:hover::before {
+  opacity: 1;
+}
+.meal:active {
+  transform: translateY(-1px) scale(0.99);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .meal.add-meal{
   background: rgba(99, 102, 241, 0.1);

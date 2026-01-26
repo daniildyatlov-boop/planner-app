@@ -12,6 +12,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 .header{padding:60px 20px 20px;background:var(--tg-theme-bg-color,#fff);border-bottom:0.5px solid var(--tg-theme-hint-color,rgba(0,0,0,0.1));display:flex;align-items:center;justify-content:space-between}
 .nav{background:none;border:none;font-size:17px;color:var(--tg-theme-link-color,#007aff);cursor:pointer;padding:8px 12px;border-radius:6px;min-width:44px;height:44px;display:flex;align-items:center;justify-content:center}
 .nav:active{opacity:0.6}
+.teams-btn{background:none;border:none;font-size:15px;color:var(--tg-theme-link-color,#007aff);cursor:pointer;padding:8px}
+.teams-btn:active{opacity:0.6}
 .title{font-size:17px;font-weight:600;flex:1;text-align:center}
 .content{flex:1;padding:20px;display:flex;flex-direction:column;padding-bottom:80px}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 20px}
@@ -50,6 +52,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 .overlay.show{display:block}
 .add-btn-fixed{position:fixed;bottom:20px;left:20px;right:20px;background:var(--tg-theme-button-color,#007aff);color:var(--tg-theme-button-text-color,#fff);border:none;border-radius:8px;padding:16px;font-size:17px;font-weight:600;cursor:pointer;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,0.1);display:none}
 .add-btn-fixed:active{opacity:0.8}
+.teams-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--tg-theme-bg-color,#fff);z-index:100;display:none;flex-direction:column}
+.teams-screen.show{display:flex}
+.teams-list{flex:1;padding:20px}
+.team-item{background:var(--tg-theme-secondary-bg-color,#f8f9fa);border-radius:8px;padding:16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.team-name{font-size:17px;flex:1}
+.delete-team{background:none;border:none;color:var(--tg-theme-destructive-text-color,#ff3b30);font-size:15px;cursor:pointer;padding:8px}
+.delete-team:active{opacity:0.6}
+.add-team-form{padding:20px;border-top:0.5px solid var(--tg-theme-hint-color,rgba(0,0,0,0.1))}
+.team-input{width:100%;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:none;border-radius:8px;padding:16px;font-size:17px;font-family:inherit;color:var(--tg-theme-text-color,#000);margin-bottom:12px}
+.team-input:focus{outline:none;background:rgba(0,122,255,0.1)}
+.team-input::placeholder{color:var(--tg-theme-hint-color,#8e8e93)}
+.select-wrapper{position:relative}
+.select{width:100%;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:none;border-radius:8px;padding:16px;font-size:17px;font-family:inherit;color:var(--tg-theme-text-color,#000);appearance:none;cursor:pointer}
+.select:focus{outline:none;background:rgba(0,122,255,0.1)}
 </style>
 </head>
 <body>
@@ -58,6 +74,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 <button class="nav" onclick="changeDay(-1)">‹</button>
 <div class="title" id="dayTitle">Сегодня</div>
 <button class="nav" onclick="changeDay(1)">›</button>
+<button class="teams-btn" onclick="showTeams()">Команды</button>
 </div>
 <div class="content" id="content">
 <div class="empty" id="empty">
@@ -92,8 +109,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 </div>
 <div class="form-group">
 <label class="label">Команда</label>
-<input class="input" id="room" placeholder="Введите или выберите команду" list="teams-list">
-<datalist id="teams-list"></datalist>
+<div class="select-wrapper">
+<select class="select" id="room">
+<option value="">Без команды</option>
+</select>
+</div>
 </div>
 </div>
 </div>
@@ -105,6 +125,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 </div>
 
 <button class="add-btn-fixed" onclick="showAdd()">Добавить план</button>
+
+<div class="teams-screen" id="teamsScreen">
+<div class="add-header">
+<button class="header-btn" onclick="hideTeams()">Готово</button>
+<div class="title">Команды</div>
+<div style="width:60px"></div>
+</div>
+<div class="teams-list" id="teamsList">
+<!-- Команды будут добавлены динамически -->
+</div>
+<div class="add-team-form">
+<input class="team-input" id="newTeam" placeholder="Название новой команды">
+<button class="btn" onclick="addTeam()">Добавить команду</button>
+</div>
+</div>
 
 <script>
 const tg=window.Telegram.WebApp;
@@ -209,8 +244,46 @@ render();
 function showAdd(){
 document.getElementById('add').classList.add('show');
 document.getElementById('date').value=date.toISOString().split('T')[0];
-updateTeamsList();
+updateTeamsSelect();
 setTimeout(()=>document.getElementById('title').focus(),50);
+}
+
+function showTeams(){
+document.getElementById('teamsScreen').classList.add('show');
+renderTeams();
+}
+
+function hideTeams(){
+document.getElementById('teamsScreen').classList.remove('show');
+}
+
+function renderTeams(){
+const teamsList=document.getElementById('teamsList');
+let html='';
+teams.forEach(team=>{
+html+=`<div class="team-item">
+<div class="team-name">${team}</div>
+<button class="delete-team" onclick="deleteTeam('${team}')">Удалить</button>
+</div>`;
+});
+teamsList.innerHTML=html;
+}
+
+function addTeam(){
+const input=document.getElementById('newTeam');
+const teamName=input.value.trim();
+if(!teamName||teams.includes(teamName))return;
+
+teams.push(teamName);
+localStorage.setItem('teams',JSON.stringify(teams));
+input.value='';
+renderTeams();
+}
+
+function deleteTeam(teamName){
+teams=teams.filter(t=>t!==teamName);
+localStorage.setItem('teams',JSON.stringify(teams));
+renderTeams();
 }
 
 function hideAdd(){
@@ -229,7 +302,8 @@ function save(){
 const title=document.getElementById('title').value.trim();
 if(!title)return;
 
-const roomValue=document.getElementById('room').value.trim();
+const roomSelect=document.getElementById('room');
+const roomValue=roomSelect.value;
 
 const plan={
 id:Date.now().toString(),
@@ -238,12 +312,6 @@ date:document.getElementById('date').value||date.toISOString().split('T')[0],
 time:document.getElementById('time').value||null,
 room:roomValue||null
 };
-
-// Добавить команду в список если новая
-if(roomValue&&!teams.includes(roomValue)){
-teams.push(roomValue);
-localStorage.setItem('teams',JSON.stringify(teams));
-}
 
 if(selected){
 const index=plans.findIndex(p=>p.id===selected);
@@ -284,6 +352,17 @@ hideMenu();
 showAdd();
 }
 
+function updateTeamsSelect(){
+const select=document.getElementById('room');
+select.innerHTML='<option value="">Без команды</option>';
+teams.forEach(team=>{
+const option=document.createElement('option');
+option.value=team;
+option.textContent=team;
+select.appendChild(option);
+});
+}
+
 function del(){
 plans=plans.filter(p=>p.id!==selected);
 localStorage.setItem('plans',JSON.stringify(plans));
@@ -300,20 +379,18 @@ if(e.changedTouches[0].clientY-startY>80&&window.scrollY===0)showAdd();
 
 // Telegram back button
 tg.onEvent('backButtonClicked',()=>{
-if(document.getElementById('add').classList.contains('show'))hideAdd();
+if(document.getElementById('teamsScreen').classList.contains('show'))hideTeams();
+else if(document.getElementById('add').classList.contains('show'))hideAdd();
 else if(document.getElementById('menu').classList.contains('show'))hideMenu();
 else tg.close();
 });
 
-function updateTeamsList(){
-const datalist=document.getElementById('teams-list');
-datalist.innerHTML='';
-teams.forEach(team=>{
-const option=document.createElement('option');
-option.value=team;
-datalist.appendChild(option);
-});
+// Обработка Enter для добавления команды
+document.addEventListener('keydown',e=>{
+if(e.key==='Enter'&&document.getElementById('newTeam')===document.activeElement){
+addTeam();
 }
+});
 
 // Мгновенный старт
 loadPlans();

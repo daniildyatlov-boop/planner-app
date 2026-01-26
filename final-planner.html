@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Планер</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            line-height: 1.4;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* ГЛАВНЫЙ ЭКРАН */
+        .main-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 60px 20px 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-bottom: 0.5px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .day-nav {
+            background: none;
+            border: none;
+            font-size: 17px;
+            color: var(--tg-theme-link-color, #007aff);
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            min-width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .day-nav:active {
+            background: var(--tg-theme-secondary-bg-color, rgba(0, 122, 255, 0.1));
+        }
+        
+        .day-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+            flex: 1;
+            text-align: center;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* ПУСТОЕ СОСТОЯНИЕ */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 8px;
+        }
+        
+        .empty-subtitle {
+            font-size: 15px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 32px;
+        }
+        
+        .add-button {
+            background: var(--tg-theme-button-color, #007aff);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 17px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .add-button:active {
+            opacity: 0.8;
+        }
+        
+        /* ПЛАНЫ */
+        .plans-list {
+            flex: 1;
+        }
+        
+        .time-group {
+            margin-bottom: 24px;
+        }
+        
+        .time-group-title {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+        
+        .plan-item {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .plan-item:active {
+            background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.05));
+        }
+        
+        .plan-time {
+            font-size: 15px;
+            color: var(--tg-theme-link-color, #007aff);
+            font-weight: 500;
+            min-width: 50px;
+            margin-right: 12px;
+        }
+        
+        .plan-content {
+            flex: 1;
+        }
+        
+        .plan-title {
+            font-size: 17px;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 2px;
+        }
+        
+        .plan-room {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+        
+        /* ЭКРАН ДОБАВЛЕНИЯ */
+        .add-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .add-screen.show {
+            display: flex;
+        }
+        
+        .add-header {
+            padding: 60px 20px 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-bottom: 0.5px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-button {
+            background: none;
+            border: none;
+            font-size: 17px;
+            color: var(--tg-theme-link-color, #007aff);
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        .header-button:active {
+            opacity: 0.6;
+        }
+        
+        .add-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .add-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 17px;
+            font-family: inherit;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            background: var(--tg-theme-hint-color, rgba(0, 122, 255, 0.1));
+        }
+        
+        .form-input::placeholder {
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        /* КОНТЕКСТНОЕ МЕНЮ */
+        .context-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-top: 0.5px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+            padding: 20px;
+            z-index: 200;
+            display: none;
+        }
+        
+        .context-menu.show {
+            display: block;
+        }
+        
+        .context-button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 16px;
+            font-size: 17px;
+            color: var(--tg-theme-text-color, #000000);
+            text-align: left;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .context-button:active {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+        }
+        
+        .context-button.destructive {
+            color: var(--tg-theme-destructive-text-color, #ff3b30);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 150;
+            display: none;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- ГЛАВНЫЙ ЭКРАН -->
+        <div class="main-screen" id="mainScreen">
+            <div class="header">
+                <button class="day-nav" onclick="changeDay(-1)">‹</button>
+                <div class="day-title" id="dayTitle">Сегодня</div>
+                <button class="day-nav" onclick="changeDay(1)">›</button>
+            </div>
+            
+            <div class="content" id="content">
+                <!-- Пустое состояние -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-title">Планов нет</div>
+                    <div class="empty-subtitle">Добавьте первый план</div>
+                    <button class="add-button" onclick="showAddScreen()">Добавить план</button>
+                </div>
+                
+                <!-- Список планов -->
+                <div class="plans-list" id="plansList" style="display: none;">
+                    <!-- Планы будут добавлены динамически -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- ЭКРАН ДОБАВЛЕНИЯ -->
+        <div class="add-screen" id="addScreen">
+            <div class="add-header">
+                <button class="header-button" onclick="hideAddScreen()">Отмена</button>
+                <div class="add-title">Новый план</div>
+                <button class="header-button" onclick="savePlan()">Готово</button>
+            </div>
+            
+            <div class="add-content">
+                <div class="form-group">
+                    <label class="form-label">Что планируете</label>
+                    <input type="text" class="form-input" id="planTitle" placeholder="Что вы планируете сделать?" autofocus>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Дата</label>
+                        <input type="date" class="form-input" id="planDate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Время</label>
+                        <input type="time" class="form-input" id="planTime">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Комната (необязательно)</label>
+                    <input type="text" class="form-input" id="planRoom" placeholder="Где будете">
+                </div>
+            </div>
+        </div>
+        
+        <!-- КОНТЕКСТНОЕ МЕНЮ -->
+        <div class="overlay" id="overlay" onclick="hideContextMenu()"></div>
+        <div class="context-menu" id="contextMenu">
+            <button class="context-button" onclick="editPlan()">Редактировать</button>
+            <button class="context-button destructive" onclick="deletePlan()">Удалить</button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        
+        // Состояние приложения
+        let currentDate = new Date();
+        let plans = JSON.parse(localStorage.getItem('plans') || '[]');
+        let selectedPlan = null;
+        
+        // Форматирование даты
+        function formatDate(date) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return 'Сегодня';
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return 'Завтра';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Вчера';
+            } else {
+                return date.toLocaleDateString('ru-RU', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                });
+            }
+        }
+        
+        // Получение планов на дату
+        function getPlansForDate(date) {
+            const dateStr = date.toDateString();
+            return plans.filter(plan => new Date(plan.date).toDateString() === dateStr);
+        }
+        
+        // Отрисовка планов
+        function renderPlans() {
+            const dayPlans = getPlansForDate(currentDate);
+            document.getElementById('dayTitle').textContent = formatDate(currentDate);
+            
+            const emptyState = document.getElementById('emptyState');
+            const plansList = document.getElementById('plansList');
+            
+            if (dayPlans.length === 0) {
+                emptyState.style.display = 'flex';
+                plansList.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            plansList.style.display = 'block';
+            
+            // Группировка планов
+            const withTime = dayPlans.filter(p => p.time).sort((a, b) => a.time.localeCompare(b.time));
+            const withoutTime = dayPlans.filter(p => !p.time);
+            
+            let html = '';
+            
+            if (withTime.length > 0) {
+                html += '<div class="time-group">';
+                html += '<div class="time-group-title">С временем</div>';
+                withTime.forEach(plan => {
+                    html += `
+                        <div class="plan-item" onclick="showContextMenu('${plan.id}')">
+                            <div class="plan-time">${plan.time}</div>
+                            <div class="plan-content">
+                                <div class="plan-title">${plan.title}</div>
+                                ${plan.room ? `<div class="plan-room">${plan.room}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            if (withoutTime.length > 0) {
+                html += '<div class="time-group">';
+                html += '<div class="time-group-title">Без времени</div>';
+                withoutTime.forEach(plan => {
+                    html += `
+                        <div class="plan-item" onclick="showContextMenu('${plan.id}')">
+                            <div class="plan-content">
+                                <div class="plan-title">${plan.title}</div>
+                                ${plan.room ? `<div class="plan-room">${plan.room}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            plansList.innerHTML = html;
+        }
+        
+        // Смена дня
+        function changeDay(direction) {
+            currentDate.setDate(currentDate.getDate() + direction);
+            renderPlans();
+        }
+        
+        // Показать экран добавления
+        function showAddScreen() {
+            document.getElementById('addScreen').classList.add('show');
+            
+            // Установить текущую дату
+            const today = new Date();
+            document.getElementById('planDate').value = today.toISOString().split('T')[0];
+            
+            // Фокус на поле ввода
+            setTimeout(() => {
+                document.getElementById('planTitle').focus();
+            }, 100);
+        }
+        
+        // Скрыть экран добавления
+        function hideAddScreen() {
+            document.getElementById('addScreen').classList.remove('show');
+            clearForm();
+        }
+        
+        // Очистить форму
+        function clearForm() {
+            document.getElementById('planTitle').value = '';
+            document.getElementById('planDate').value = '';
+            document.getElementById('planTime').value = '';
+            document.getElementById('planRoom').value = '';
+        }
+        
+        // Сохранить план
+        function savePlan() {
+            const title = document.getElementById('planTitle').value.trim();
+            if (!title) return;
+            
+            const plan = {
+                id: Date.now().toString(),
+                title: title,
+                date: document.getElementById('planDate').value || new Date().toISOString().split('T')[0],
+                time: document.getElementById('planTime').value || null,
+                room: document.getElementById('planRoom').value.trim() || null
+            };
+            
+            if (selectedPlan) {
+                // Редактирование
+                const index = plans.findIndex(p => p.id === selectedPlan);
+                if (index !== -1) {
+                    plans[index] = { ...plan, id: selectedPlan };
+                }
+                selectedPlan = null;
+            } else {
+                // Новый план
+                plans.push(plan);
+            }
+            
+            localStorage.setItem('plans', JSON.stringify(plans));
+            hideAddScreen();
+            
+            // Переключиться на дату плана
+            currentDate = new Date(plan.date);
+            renderPlans();
+        }
+        
+        // Показать контекстное меню
+        function showContextMenu(planId) {
+            selectedPlan = planId;
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('contextMenu').classList.add('show');
+        }
+        
+        // Скрыть контекстное меню
+        function hideContextMenu() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('contextMenu').classList.remove('show');
+            selectedPlan = null;
+        }
+        
+        // Редактировать план
+        function editPlan() {
+            const plan = plans.find(p => p.id === selectedPlan);
+            if (!plan) return;
+            
+            document.getElementById('planTitle').value = plan.title;
+            document.getElementById('planDate').value = plan.date;
+            document.getElementById('planTime').value = plan.time || '';
+            document.getElementById('planRoom').value = plan.room || '';
+            
+            hideContextMenu();
+            showAddScreen();
+        }
+        
+        // Удалить план
+        function deletePlan() {
+            plans = plans.filter(p => p.id !== selectedPlan);
+            localStorage.setItem('plans', JSON.stringify(plans));
+            hideContextMenu();
+            renderPlans();
+        }
+        
+        // Pull to refresh
+        let startY = 0;
+        let pullDistance = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (window.scrollY === 0) {
+                pullDistance = e.touches[0].clientY - startY;
+                if (pullDistance > 80) {
+                    e.preventDefault();
+                }
+            }
+        });
+        
+        document.addEventListener('touchend', () => {
+            if (pullDistance > 80 && window.scrollY === 0) {
+                showAddScreen();
+            }
+            pullDistance = 0;
+        });
+        
+        // Обработка кнопки "Назад" Telegram
+        tg.onEvent('backButtonClicked', () => {
+            if (document.getElementById('addScreen').classList.contains('show')) {
+                hideAddScreen();
+            } else if (document.getElementById('contextMenu').classList.contains('show')) {
+                hideContextMenu();
+            } else {
+                tg.close();
+            }
+        });
+        
+        // Инициализация
+        renderPlans();
+    </script>
+</body>
+</html>

@@ -609,16 +609,34 @@ document.getElementById('title').focus();
 
 function showRooms(){
 document.getElementById('roomsScreen').classList.add('show');
+// Заменяем кнопку профиля на кнопку назад
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideRooms;
+}
 renderRooms();
 }
 
 function showProfile(){
 document.getElementById('profileScreen').classList.add('show');
+// Заменяем кнопку профиля на кнопку назад
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideProfile;
+}
 loadProfileData();
 }
 
 function hideProfile(){
 document.getElementById('profileScreen').classList.remove('show');
+// Возвращаем кнопку профиля обратно
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='П';
+profileBtn.onclick=showProfile;
+}
 }
 
 function loadProfileData(){
@@ -713,11 +731,23 @@ window.open(telegramUrl,'_blank');
 
 function showAccount(){
 document.getElementById('accountScreen').classList.add('show');
+// Заменяем кнопку профиля на кнопку назад
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideAccount;
+}
 loadAccountData();
 }
 
 function hideAccount(){
 document.getElementById('accountScreen').classList.remove('show');
+// Возвращаем кнопку назад к профилю
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideProfile;
+}
 }
 
 function loadAccountData(){
@@ -739,11 +769,23 @@ document.getElementById('nextSubscription').textContent=nextSubscription;
 
 function showSettings(){
 document.getElementById('settingsScreen').classList.add('show');
+// Заменяем кнопку профиля на кнопку назад
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideSettings;
+}
 loadSettingsData();
 }
 
 function hideSettings(){
 document.getElementById('settingsScreen').classList.remove('show');
+// Возвращаем кнопку назад к профилю
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideProfile;
+}
 }
 
 function loadSettingsData(){
@@ -768,10 +810,22 @@ document.body.style.color='#000';
 
 function showSupport(){
 document.getElementById('supportScreen').classList.add('show');
+// Заменяем кнопку профиля на кнопку назад
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideSupport;
+}
 }
 
 function hideSupport(){
 document.getElementById('supportScreen').classList.remove('show');
+// Возвращаем кнопку назад к профилю
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='‹';
+profileBtn.onclick=hideProfile;
+}
 }
 
 function reportBug(){
@@ -786,6 +840,12 @@ alert('📱 Планер v5.0 FINAL\n\n✨ Простой и удобный пл
 
 function hideRooms(){
 document.getElementById('roomsScreen').classList.remove('show');
+// Возвращаем кнопку профиля обратно
+const profileBtn=document.querySelector('.profile-btn');
+if(profileBtn){
+profileBtn.textContent='П';
+profileBtn.onclick=showProfile;
+}
 }
 
 function renderRooms(){

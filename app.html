@@ -3598,6 +3598,12 @@ function render() {
       console.log('Элементы empty или plansContainer не найдены');
       console.log('empty:', empty);
       console.log('plansContainer:', plansContainer);
+      
+      // Попробуем еще раз через небольшую задержку
+      setTimeout(() => {
+        console.log('Повторная попытка render через 200ms');
+        render();
+      }, 200);
       return;
     }
     
@@ -6007,8 +6013,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     console.log('Перед render - планы:', plans);
-    render();
-    console.log('DOMContentLoaded - инициализация завершена');
+    
+    // КРИТИЧЕСКИ ВАЖНО: Добавляем небольшую задержку чтобы DOM успел инициализироваться
+    setTimeout(() => {
+      console.log('Вызываем render через setTimeout');
+      render();
+      console.log('DOMContentLoaded - инициализация завершена');
+    }, 100);
+    
   } catch (e) {
     console.error('Ошибка при инициализации приложения:', e);
   }

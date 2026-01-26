@@ -91,8 +91,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--tg
 </div>
 </div>
 <div class="form-group">
-<label class="label">Комната</label>
-<input class="input" id="room" placeholder="Где будете">
+<label class="label">Команда</label>
+<input class="input" id="room" placeholder="Введите или выберите команду" list="teams-list">
+<datalist id="teams-list"></datalist>
 </div>
 </div>
 </div>
@@ -112,14 +113,17 @@ tg.ready();
 
 let date=new Date();
 let plans=[];
+let teams=[];
 let selected=null;
 
 // Быстрая загрузка данных
 function loadPlans(){
 try{
 plans=JSON.parse(localStorage.getItem('plans')||'[]');
+teams=JSON.parse(localStorage.getItem('teams')||'[]');
 }catch(e){
 plans=[];
+teams=[];
 }
 render();
 }
@@ -205,6 +209,7 @@ render();
 function showAdd(){
 document.getElementById('add').classList.add('show');
 document.getElementById('date').value=date.toISOString().split('T')[0];
+updateTeamsList();
 setTimeout(()=>document.getElementById('title').focus(),50);
 }
 
@@ -224,13 +229,21 @@ function save(){
 const title=document.getElementById('title').value.trim();
 if(!title)return;
 
+const roomValue=document.getElementById('room').value.trim();
+
 const plan={
 id:Date.now().toString(),
 title:title,
 date:document.getElementById('date').value||date.toISOString().split('T')[0],
 time:document.getElementById('time').value||null,
-room:document.getElementById('room').value.trim()||null
+room:roomValue||null
 };
+
+// Добавить команду в список если новая
+if(roomValue&&!teams.includes(roomValue)){
+teams.push(roomValue);
+localStorage.setItem('teams',JSON.stringify(teams));
+}
 
 if(selected){
 const index=plans.findIndex(p=>p.id===selected);
@@ -291,6 +304,16 @@ if(document.getElementById('add').classList.contains('show'))hideAdd();
 else if(document.getElementById('menu').classList.contains('show'))hideMenu();
 else tg.close();
 });
+
+function updateTeamsList(){
+const datalist=document.getElementById('teams-list');
+datalist.innerHTML='';
+teams.forEach(team=>{
+const option=document.createElement('option');
+option.value=team;
+datalist.appendChild(option);
+});
+}
 
 // Мгновенный старт
 loadPlans();

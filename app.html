@@ -3620,9 +3620,9 @@ function render() {
         try {
           console.log('Рендерим план:', plan);
           html += `
-            <div class="plan ${plan.completed ? 'completed' : ''}">
+            <div class="plan ${plan.completed ? 'completed' : ''}" onclick="showPlanMenu('${plan.id}', event)">
               <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
-              <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
+              <div class="plan-content">
                 <div class="plan-title">
                   ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
                 </div>
@@ -3936,11 +3936,22 @@ function clearForm() {
   if (planRoom) planRoom.value = '';
 }
 
-function showPlanMenu(id) {
+function showPlanMenu(id, event) {
+  console.log('showPlanMenu вызвана для задачи:', id);
+  console.log('Event target:', event ? event.target : 'нет события');
+  console.log('Event type:', event ? event.type : 'нет события');
+  
+  // Останавливаем всплытие события
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  
   selectedPlanId = id;
   const overlay = document.getElementById('overlay');
   if (overlay) {
     overlay.classList.add('show');
+    console.log('Меню задачи показано для ID:', id);
   } else {
     console.error('Элемент overlay не найден');
   }
@@ -4200,28 +4211,44 @@ function confirmDeletePlan() {
 }
 
 function toggleComplete(id, event) {
-  event.stopPropagation();
-  const plan = plans.find(p => p.id === id);
-  if (!plan) return;
+  console.log('toggleComplete вызвана для задачи:', id);
+  console.log('Event target:', event ? event.target : 'нет события');
   
-  const planElement = event.target.closest('.plan');
-  const checkbox = event.target;
+  // КРИТИЧЕСКИ ВАЖНО: останавливаем всплытие события
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  
+  const plan = plans.find(p => p.id === id);
+  if (!plan) {
+    console.error('Задача не найдена:', id);
+    return;
+  }
+  
+  const planElement = event ? event.target.closest('.plan') : null;
+  const checkbox = event ? event.target : null;
+  
+  console.log('Plan element:', planElement);
+  console.log('Checkbox:', checkbox);
   
   if (plan.completed) {
     // Убираем выполнение - мгновенно
+    console.log('Убираем выполнение задачи:', plan.title);
     plan.completed = false;
-    planElement.classList.remove('completed');
-    checkbox.classList.remove('checked');
+    if (planElement) planElement.classList.remove('completed');
+    if (checkbox) checkbox.classList.remove('checked');
   } else {
     // Отмечаем как выполненное - с анимацией
+    console.log('Отмечаем задачу как выполненную:', plan.title);
     plan.completed = true;
     
     // Сначала анимируем чекбокс
-    checkbox.classList.add('checked');
+    if (checkbox) checkbox.classList.add('checked');
     
     // Затем через небольшую задержку добавляем класс completed
     setTimeout(() => {
-      planElement.classList.add('completed');
+      if (planElement) planElement.classList.add('completed');
       
       // Добавляем небольшую вибрацию для тактильной обратной связи
       if (navigator.vibrate) {
@@ -4234,6 +4261,8 @@ function toggleComplete(id, event) {
   
   // Обновляем только прогресс, не перерисовываем весь список
   updateProgress();
+  
+  console.log('toggleComplete завершена для задачи:', id);
 }
 
 function updateProgress() {

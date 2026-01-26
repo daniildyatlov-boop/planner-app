@@ -622,6 +622,13 @@ else if(document.getElementById('menu').classList.contains('show'))hideMenu();
 else tg.close();
 });
 
+// Обработка Enter для добавления комнаты
+document.addEventListener('keydown',e=>{
+if(e.key==='Enter'&&document.getElementById('newRoomModal')===document.activeElement){
+addRoomFromModal();
+}
+});
+
 // Мгновенный старт
 loadPlans();
 </script>

@@ -1925,6 +1925,12 @@ textarea.input {
   padding: 0 var(--spacing-xl) var(--spacing-xl); /* Убираем верхний отступ, так как он уже есть в meals-scroll-container */
   animation: slideInFromBottom 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
 }
+
+/* ADD MEAL CONTAINER - КОНТЕЙНЕР КНОПКИ ДОБАВЛЕНИЯ */
+.add-meal-container {
+  padding: var(--spacing-lg) 0;
+  margin-top: var(--spacing-lg);
+}
 .single-day-container .day-card{
   max-width: 600px;
   margin: 0 auto;
@@ -3553,8 +3559,17 @@ function renderRooms() {
 
 // NAVIGATION
 function changeDay(direction) {
-  currentDate.setDate(currentDate.getDate() + direction);
-  render();
+  if (currentTab === 'nutrition') {
+    // Для вкладки питания используем отдельную дату
+    currentNutritionDate.setDate(currentNutritionDate.getDate() + direction);
+    renderNutritionDay();
+    updateWaterTracker();
+    updateNutritionDayTitle();
+  } else {
+    // Для вкладки задач
+    currentDate.setDate(currentDate.getDate() + direction);
+    render();
+  }
 }
 
 // MODALS & SCREENS
@@ -4436,6 +4451,11 @@ function switchTab(tabName) {
   
   // Показываем соответствующий контент
   showTabContent(tabName);
+  
+  // Обновляем заголовок дня для питания
+  if (tabName === 'nutrition') {
+    updateNutritionDayTitle();
+  }
 }
 
 function showTabContent(tabName) {
@@ -4526,19 +4546,16 @@ function showNutritionTab() {
 
       <!-- SCROLLABLE MEALS SECTION -->
       <div class="meals-scroll-container">
-        <!-- DAY NAVIGATION -->
-        <div class="day-nav">
-          <button class="day-arrow" onclick="changeNutritionDay(-1)">‹</button>
-          <div class="day-title" id="nutritionDayTitle">Сегодня</div>
-          <button class="day-arrow" onclick="changeNutritionDay(1)">›</button>
-        </div>
-
         <!-- SINGLE DAY MEALS -->
         <div class="single-day-container">
           <div class="day-card today" id="nutritionDayCard">
             <div class="meals" id="nutritionMeals">
               <!-- Приемы пищи будут добавлены динамически -->
             </div>
+          </div>
+          
+          <!-- ADD MEAL BUTTON - ВЫНЕСЕНА ИЗ КАРТОЧКИ -->
+          <div class="add-meal-container">
             <div class="meal add-meal" onclick="addNewMealType()">
               <div class="meal-label">➕ Добавить прием пищи</div>
               <div class="meal-content">Создать новый прием пищи</div>
@@ -4558,11 +4575,9 @@ function showNutritionTab() {
   // Добавляем анимации появления с задержками
   setTimeout(() => {
     const waterTracker = document.querySelector('.water-tracker');
-    const dayNav = document.querySelector('.day-nav');
     const dayContainer = document.querySelector('.single-day-container');
     
     if (waterTracker) waterTracker.classList.add('animate-slide-right');
-    if (dayNav) dayNav.classList.add('animate-slide-left');
     if (dayContainer) dayContainer.classList.add('animate-in');
   }, 50);
   
@@ -4579,6 +4594,9 @@ function initNutrition() {
   
   // Обновляем трекер воды
   updateWaterTracker();
+  
+  // Обновляем заголовок дня
+  updateNutritionDayTitle();
 }
 
 // Данные питания
@@ -4662,31 +4680,14 @@ function saveNutritionData() {
   }
 }
 
-// Навигация по дням питания
-function changeNutritionDay(direction) {
-  currentNutritionDate.setDate(currentNutritionDate.getDate() + direction);
-  renderNutritionDay();
-  updateWaterTracker();
-}
+// Навигация по дням питания теперь использует общую функцию changeDay
 
 function renderNutritionDay() {
-  const dayTitle = document.getElementById('nutritionDayTitle');
   const mealsContainer = document.getElementById('nutritionMeals');
   
-  if (!dayTitle || !mealsContainer) return;
+  if (!mealsContainer) return;
   
   const dateStr = currentNutritionDate.toDateString();
-  
-  // Обновляем заголовок дня с анимацией
-  dayTitle.style.opacity = '0';
-  dayTitle.style.transform = 'translateY(-10px)';
-  
-  setTimeout(() => {
-    dayTitle.textContent = formatNutritionDate(currentNutritionDate);
-    dayTitle.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-    dayTitle.style.opacity = '1';
-    dayTitle.style.transform = 'translateY(0)';
-  }, 100);
   
   // Получаем приемы пищи для этого дня
   const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
@@ -4791,6 +4792,17 @@ function renderNutritionDay() {
     }, 100);
     
   }, 200);
+}
+
+// Функция обновления заголовка дня для питания
+function updateNutritionDayTitle() {
+  const dayTitle = document.getElementById('dayTitle');
+  const daySubtitle = document.getElementById('daySubtitle');
+  
+  if (dayTitle && daySubtitle && currentTab === 'nutrition') {
+    dayTitle.textContent = formatDate(currentNutritionDate);
+    daySubtitle.textContent = formatDateSubtitle(currentNutritionDate);
+  }
 }
 
 function formatNutritionDate(date) {

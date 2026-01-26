@@ -1,3 +1,4 @@
+<!-- Обновлено: кнопки в модальном окне добавления комнаты - 27.01.2025 -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -880,22 +881,17 @@ if(input)input.value='';
 }
 
 function addRoomFromModal(){
-console.log('Кнопка Добавить нажата!');
 const input=document.getElementById('newRoomModal');
 const roomName=input.value.trim();
-console.log('Название комнаты:', roomName);
 if(!roomName){
-console.log('Пустое название');
 return;
 }
 if(teams.includes(roomName)){
-console.log('Комната уже существует');
 return;
 }
 
 teams.push(roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
-console.log('Комната добавлена:', roomName);
 renderRooms();
 updateRoomsSelect();
 hideAddRoomModal();

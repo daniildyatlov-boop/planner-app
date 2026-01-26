@@ -104,17 +104,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .menu-btn.del{color:#ff3b30}
 .add-btn-fixed{position:fixed;bottom:20px;left:20px;right:20px;background:#007aff;color:white;border:none;border-radius:16px;padding:18px;font-size:17px;font-weight:600;cursor:pointer;z-index:50;box-shadow:0 8px 24px rgba(0,122,255,0.4);display:none;text-align:center}
 .add-btn-fixed:active{opacity:0.8;transform:translateY(1px)}
-.teams-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--tg-theme-bg-color,#fff);z-index:100;display:none;flex-direction:column}
-.teams-screen.show{display:flex}
-.teams-list{flex:1;padding:20px}
-.team-item{background:var(--tg-theme-secondary-bg-color,#f8f9fa);border-radius:8px;padding:16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.team-name{font-size:17px;flex:1}
-.delete-team{background:none;border:none;color:var(--tg-theme-destructive-text-color,#ff3b30);font-size:15px;cursor:pointer;padding:8px}
-.delete-team:active{opacity:0.6}
-.add-team-form{padding:20px;border-top:0.5px solid var(--tg-theme-hint-color,rgba(0,0,0,0.1))}
-.team-input{width:100%;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:none;border-radius:8px;padding:16px;font-size:17px;font-family:inherit;color:var(--tg-theme-text-color,#000);margin-bottom:12px}
-.team-input:focus{outline:none;background:rgba(0,122,255,0.1)}
-.team-input::placeholder{color:var(--tg-theme-hint-color,#8e8e93)}
+.rooms-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#f2f2f7;z-index:100;display:none;flex-direction:column;height:100vh;overflow:hidden}
+.rooms-screen.show{display:flex}
+.rooms-header{padding:12px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05);height:68px}
+.rooms-list{flex:1;padding:20px;overflow-y:auto}
+.rooms-list::-webkit-scrollbar{display:none}
+.room-item{background:white;border-radius:16px;padding:20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04);transition:all 0.2s ease}
+.room-item:active{opacity:0.8;transform:scale(0.98)}
+.room-name{font-size:17px;font-weight:500;color:#000;flex:1}
+.room-icon{font-size:20px;margin-right:12px}
+.delete-room{background:none;border:none;color:#ff3b30;font-size:15px;cursor:pointer;padding:8px;border-radius:8px;font-weight:500}
+.delete-room:active{opacity:0.6;background:rgba(255,59,48,0.1)}
+.add-room-section{padding:20px;background:white;border-top:0.5px solid rgba(0,0,0,0.1)}
+.room-input{width:100%;background:#f8f9fa;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;margin-bottom:12px;box-sizing:border-box;transition:all 0.2s ease}
+.room-input:focus{outline:none;border-color:#007aff;background:white;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
+.room-input::placeholder{color:#8e8e93}
+.add-room-btn{width:100%;background:#007aff;color:white;border:none;border-radius:12px;padding:16px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,122,255,0.3);transition:all 0.2s ease}
+.add-room-btn:active{opacity:0.8;transform:translateY(1px)}
 .select-wrapper{position:relative}
 .select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;appearance:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box}
 .select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
@@ -133,7 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 <button class="nav-arrow" onclick="changeDay(1)">›</button>
 </div>
-<button class="rooms-btn" onclick="showTeams()">🚪</button>
+<button class="rooms-btn" onclick="showRooms()">🏠</button>
 </div>
 <div class="content" id="content">
 <div class="progress-bar">
@@ -165,10 +171,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <input type="date" class="input" id="date">
 </div>
 <div class="form-group">
-<label class="label">Команда</label>
+<label class="label">Комната</label>
 <div class="select-wrapper">
 <select class="select" id="room">
-<option value="">Без команды</option>
+<option value="">Без комнаты</option>
 </select>
 </div>
 </div>
@@ -207,18 +213,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 
 <button class="add-btn-fixed" onclick="showAdd()">Добавить план</button>
 
-<div class="teams-screen" id="teamsScreen">
-<div class="add-header">
-<button class="header-btn" onclick="hideTeams()">Готово</button>
-<div class="title">Команды</div>
+<div class="rooms-screen" id="roomsScreen">
+<div class="rooms-header">
+<button class="header-btn" onclick="hideRooms()">Готово</button>
+<div class="add-title">Комнаты</div>
 <div style="width:60px"></div>
 </div>
-<div class="teams-list" id="teamsList">
-<!-- Команды будут добавлены динамически -->
+<div class="rooms-list" id="roomsList">
+<!-- Комнаты будут добавлены динамически -->
 </div>
-<div class="add-team-form">
-<input class="team-input" id="newTeam" placeholder="Название новой команды">
-<button class="btn" onclick="addTeam()">Добавить команду</button>
+<div class="add-room-section">
+<input class="room-input" id="newRoom" placeholder="Название новой комнаты">
+<button class="add-room-btn" onclick="addRoom()">Добавить комнату</button>
 </div>
 </div>
 
@@ -336,15 +342,15 @@ function showAdd(){
 const addScreen=document.getElementById('add');
 addScreen.classList.add('show');
 document.getElementById('date').value=date.toISOString().split('T')[0];
-updateTeamsSelect();
+updateRoomsSelect();
 setTimeout(()=>{
 document.getElementById('title').focus();
 },350);
 }
 
-function showTeams(){
-document.getElementById('teamsScreen').classList.add('show');
-renderTeams();
+function showRooms(){
+document.getElementById('roomsScreen').classList.add('show');
+renderRooms();
 }
 
 function showProfile(){
@@ -352,37 +358,40 @@ function showProfile(){
 console.log('Профиль - пока не реализован');
 }
 
-function hideTeams(){
-document.getElementById('teamsScreen').classList.remove('show');
+function hideRooms(){
+document.getElementById('roomsScreen').classList.remove('show');
 }
 
-function renderTeams(){
-const teamsList=document.getElementById('teamsList');
+function renderRooms(){
+const roomsList=document.getElementById('roomsList');
+const roomIcons=['🏠','🛏️','🍳','🛁','💼','🏃','📚','🎮','🌿','🔧'];
 let html='';
-teams.forEach(team=>{
-html+=`<div class="team-item">
-<div class="team-name">${escapeHtml(team)}</div>
-<button class="delete-team" onclick="deleteTeam('${escapeHtml(team)}')">Удалить</button>
+teams.forEach((room,index)=>{
+const icon=roomIcons[index%roomIcons.length];
+html+=`<div class="room-item">
+<div class="room-icon">${icon}</div>
+<div class="room-name">${escapeHtml(room)}</div>
+<button class="delete-room" onclick="deleteRoom('${escapeHtml(room)}')">Удалить</button>
 </div>`;
 });
-teamsList.innerHTML=html;
+roomsList.innerHTML=html;
 }
 
-function addTeam(){
-const input=document.getElementById('newTeam');
-const teamName=input.value.trim();
-if(!teamName||teams.includes(teamName))return;
+function addRoom(){
+const input=document.getElementById('newRoom');
+const roomName=input.value.trim();
+if(!roomName||teams.includes(roomName))return;
 
-teams.push(teamName);
+teams.push(roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
 input.value='';
-renderTeams();
+renderRooms();
 }
 
-function deleteTeam(teamName){
-teams=teams.filter(t=>t!==teamName);
+function deleteRoom(roomName){
+teams=teams.filter(t=>t!==roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
-renderTeams();
+renderRooms();
 }
 
 function hideAdd(){
@@ -466,13 +475,13 @@ hideMenu();
 showAdd();
 }
 
-function updateTeamsSelect(){
+function updateRoomsSelect(){
 const select=document.getElementById('room');
-select.innerHTML='<option value="">Без команды</option>';
-teams.forEach(team=>{
+select.innerHTML='<option value="">Без комнаты</option>';
+teams.forEach(room=>{
 const option=document.createElement('option');
-option.value=team;
-option.textContent=team;
+option.value=room;
+option.textContent=room;
 select.appendChild(option);
 });
 }
@@ -567,16 +576,16 @@ if(e.changedTouches[0].clientY-startY>80&&window.scrollY===0)showAdd();
 
 // Telegram back button
 tg.onEvent('backButtonClicked',()=>{
-if(document.getElementById('teamsScreen').classList.contains('show'))hideTeams();
+if(document.getElementById('roomsScreen').classList.contains('show'))hideRooms();
 else if(document.getElementById('add').classList.contains('show'))cancelAdd();
 else if(document.getElementById('menu').classList.contains('show'))hideMenu();
 else tg.close();
 });
 
-// Обработка Enter для добавления команды
+// Обработка Enter для добавления комнаты
 document.addEventListener('keydown',e=>{
-if(e.key==='Enter'&&document.getElementById('newTeam')===document.activeElement){
-addTeam();
+if(e.key==='Enter'&&document.getElementById('newRoom')===document.activeElement){
+addRoom();
 }
 });
 

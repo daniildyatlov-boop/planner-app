@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.15.0-SECTIONS-RENAME">
-<title>Планер v6.15 Sections Rename</title>
+<meta name="version" content="v6.16.0-BOTTOM-NAVIGATION">
+<title>Планер v6.16 Bottom Navigation</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -104,6 +104,7 @@ body{
   flex-direction:column;
   overflow:hidden;
   animation: fade-in-up 0.6s ease-smooth;
+  padding-bottom: 80px; /* Отступ для нижней навигации */
 }
 .header{
   padding:var(--spacing-lg) var(--spacing-xl);
@@ -1421,6 +1422,82 @@ body{
 
 
 
+/* BOTTOM NAVIGATION */
+.bottom-nav{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-secondary);
+  display: flex;
+  padding: var(--spacing-sm) 0 calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+  z-index: 50;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+.nav-item{
+  flex: 1;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: var(--spacing-md);
+  margin: var(--spacing-xs);
+  transform: scale(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-item:hover::before {
+  transform: scale(1);
+}
+.nav-item.active::before {
+  transform: scale(1);
+  background: rgba(99, 102, 241, 0.15);
+}
+.nav-icon{
+  font-size: 20px;
+  margin-bottom: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+}
+.nav-label{
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0.2px;
+}
+.nav-item.active .nav-label{
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+.nav-item:hover .nav-icon{
+  transform: scale(1.1);
+}
+.nav-item:active{
+  transform: scale(0.95);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* SCREENS */
 .screen{
   position:fixed;
@@ -1808,6 +1885,22 @@ body{
   </div>
 </div>
 
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="nav-item active" onclick="switchTab('tasks')" data-tab="tasks">
+    <div class="nav-icon">📝</div>
+    <div class="nav-label">Задачи</div>
+  </button>
+  <button class="nav-item" onclick="switchTab('nutrition')" data-tab="nutrition">
+    <div class="nav-icon">🍽️</div>
+    <div class="nav-label">Питание</div>
+  </button>
+  <button class="nav-item" onclick="switchTab('habits')" data-tab="habits">
+    <div class="nav-icon">🎯</div>
+    <div class="nav-label">Привычки</div>
+  </button>
+</div>
+
 <!-- ADD PLAN MODAL -->
 <div class="modal" id="addModal">
   <div class="modal-header">
@@ -2008,6 +2101,7 @@ let rooms = []; // Теперь будет массив объектов {name: 
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = '🏠'; // Выбранная иконка для нового раздела
+let currentTab = 'tasks'; // Текущая активная вкладка
 
 // UTILS
 function escapeHtml(text) {
@@ -2235,23 +2329,27 @@ function hideAdd() {
 function showRooms() {
   document.getElementById('roomsScreen').classList.add('show');
   document.querySelector('.header').style.display = 'none';
+  document.getElementById('bottomNav').style.display = 'none'; // Скрываем навигацию
   renderRooms();
 }
 
 function hideRooms() {
   document.getElementById('roomsScreen').classList.remove('show');
   document.querySelector('.header').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'flex'; // Показываем навигацию
 }
 
 function showProfile() {
   document.getElementById('profileScreen').classList.add('show');
   document.querySelector('.header').style.display = 'none';
+  document.getElementById('bottomNav').style.display = 'none'; // Скрываем навигацию
   loadProfileData();
 }
 
 function hideProfile() {
   document.getElementById('profileScreen').classList.remove('show');
   document.querySelector('.header').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'flex'; // Показываем навигацию
 }
 
 // PLANS
@@ -3048,6 +3146,72 @@ document.addEventListener('touchend', (e) => {
   }
 });
 
+// BOTTOM NAVIGATION
+function switchTab(tabName) {
+  // Убираем активный класс со всех кнопок
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // Добавляем активный класс к выбранной кнопке
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  
+  // Обновляем текущую вкладку
+  currentTab = tabName;
+  
+  // Показываем соответствующий контент
+  showTabContent(tabName);
+}
+
+function showTabContent(tabName) {
+  const content = document.querySelector('.content');
+  
+  switch(tabName) {
+    case 'tasks':
+      // Показываем обычный интерфейс задач
+      render();
+      break;
+      
+    case 'nutrition':
+      // Показываем интерфейс питания (пока заглушка)
+      showNutritionTab();
+      break;
+      
+    case 'habits':
+      // Показываем интерфейс привычек (пока заглушка)
+      showHabitsTab();
+      break;
+  }
+}
+
+function showNutritionTab() {
+  const content = document.querySelector('.content');
+  content.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 20px;">🍽️</div>
+      <h2 style="color: var(--text-primary); margin-bottom: 12px; font-size: 24px;">Питание</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;">Планирование питания на неделю скоро будет доступно</p>
+      <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border-primary);">
+        <p style="color: var(--text-muted); font-size: 14px;">🚀 В разработке</p>
+      </div>
+    </div>
+  `;
+}
+
+function showHabitsTab() {
+  const content = document.querySelector('.content');
+  content.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 20px;">🎯</div>
+      <h2 style="color: var(--text-primary); margin-bottom: 12px; font-size: 24px;">Привычки</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;">Трекинг привычек и целей скоро будет доступен</p>
+      <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border-primary);">
+        <p style="color: var(--text-muted); font-size: 14px;">🚀 В разработке</p>
+      </div>
+    </div>
+  `;
+}
+
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
@@ -3075,7 +3239,7 @@ document.addEventListener('DOMContentLoaded', () => {
   `;
   document.head.appendChild(confettiStyle);
   
-  console.log('🚀 Планер v6.15 Sections Rename загружен');
+  console.log('🚀 Планер v6.16 Bottom Navigation загружен');
 });
 </script>
 </body>

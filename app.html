@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.14.2-UNIFORM-INPUT-HEIGHT">
+<meta name="version" content="v6.14.3-COMPACT-TIME-BADGE">
 <title>Планер v6.14 Time Support</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
@@ -820,26 +820,27 @@ body{
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .plan-time{
-  font-size: 13px;
+  font-size: 11px;
   color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.12);
   backdrop-filter: blur(10px);
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
   display: inline-block;
-  margin-top: var(--spacing-xs);
-  margin-right: var(--spacing-md);
+  margin-top: 6px;
+  margin-right: var(--spacing-sm);
   line-height: 1;
   font-weight: 600;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.15);
   transform: translateZ(0);
+  letter-spacing: 0.3px;
 }
 .plan-time:hover {
-  background: rgba(99, 102, 241, 0.25);
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
   transform: translateY(-1px);
 }
 .room{

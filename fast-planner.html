@@ -54,11 +54,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .add-header{padding:16px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
 .header-btn{background:none;border:none;font-size:17px;color:#007aff;cursor:pointer;padding:8px 12px;border-radius:8px;font-weight:500}
 .header-btn:active{opacity:0.6;background:rgba(0,122,255,0.1)}
-.add-content{flex:1;padding:24px 20px;overflow-y:auto}
+.add-content{flex:1;padding:24px;overflow-y:auto}
 .form-group{margin-bottom:24px}
 .add-title{font-size:17px;font-weight:600;color:#000}
-.label{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block}
-.input{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease}
+.label{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:block;padding-left:4px}
+.input{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box}
 .input:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
 .input::placeholder{color:#c7c7cc}
 .row{display:flex;gap:12px}
@@ -89,7 +89,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .team-input:focus{outline:none;background:rgba(0,122,255,0.1)}
 .team-input::placeholder{color:var(--tg-theme-hint-color,#8e8e93)}
 .select-wrapper{position:relative}
-.select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;appearance:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease}
+.select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;appearance:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box}
 .select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
 .select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#c7c7cc;font-size:18px;pointer-events:none}
 </style>

@@ -9,8 +9,10 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;color:var(--tg-theme-text-color,#000);line-height:1.4;overflow-x:hidden;min-height:100vh}
 .app{min-height:100vh;display:flex;flex-direction:column}
-.header{padding:20px;background:#f2f2f7;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.avatar{width:40px;height:40px;background:#007aff;border-radius:20px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:600}
+.header{padding:20px;background:#f2f2f7;display:flex;align-items:center;justify-content:center}
+.teams-header{padding:0 0 16px 0;text-align:right}
+.teams-link{background:none;border:none;color:#007aff;font-size:15px;cursor:pointer;padding:8px 0}
+.teams-link:active{opacity:0.6}
 .date-nav{display:flex;align-items:center;gap:8px;background:white;border-radius:20px;padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
 .date-title{font-size:16px;font-weight:600;color:#000;margin:0 8px}
 .date-subtitle{font-size:12px;color:#8e8e93}
@@ -78,7 +80,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <body>
 <div class="app">
 <div class="header">
-<div class="avatar">П</div>
 <div class="date-nav">
 <button class="nav" onclick="changeDay(-1)">‹</button>
 <div>
@@ -87,9 +88,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 <button class="nav" onclick="changeDay(1)">›</button>
 </div>
-<button class="menu-btn teams-btn" onclick="showProfile()">👤</button>
 </div>
 <div class="content" id="content">
+<div class="teams-header">
+<button class="teams-link" onclick="showTeams()">Команды →</button>
+</div>
 <div class="empty" id="empty">
 <h2>Планов нет</h2>
 <p>Добавьте первый план</p>

@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.13.0-ROOM-ICONS">
+<meta name="version" content="v6.13.1-NO-ROTATION">
 <title>Планер v6.13 Room Icons Selector</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
@@ -377,7 +377,7 @@ body{
     0 16px 48px rgba(99, 102, 241, 0.5),
     0 0 0 4px rgba(99, 102, 241, 0.3) inset,
     0 0 32px rgba(99, 102, 241, 0.4);
-  animation: completion-glow 3s infinite ease-in-out, completion-rotate 8s infinite linear;
+  animation: completion-glow 3s infinite ease-in-out;
 }
 .progress-circle.completed::before {
   transform: scale(1);
@@ -407,10 +407,6 @@ body{
       0 0 0 6px rgba(99, 102, 241, 0.5) inset,
       0 0 48px rgba(99, 102, 241, 0.6);
   }
-}
-@keyframes completion-rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 @keyframes completion-shimmer {
   0%, 100% { 

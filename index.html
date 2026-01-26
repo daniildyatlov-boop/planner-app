@@ -293,9 +293,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <div class="add-room-content" onclick="event.stopPropagation()">
 <div class="add-room-title">Новая комната</div>
 <input class="room-input-modal" id="newRoomModal" placeholder="Название комнаты" autofocus>
-<div class="modal-buttons" style="display:flex !important; flex-direction:row !important; gap:12px !important;">
-<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()" style="display:block !important; background:#007aff !important; color:white !important; flex:1 !important; order:1 !important;">Добавить</button>
-<button class="modal-btn cancel" onclick="hideAddRoomModal()" style="display:block !important; background:#f0f0f0 !important; color:#000 !important; flex:1 !important; order:2 !important;">Отмена</button>
+<div class="modal-buttons" style="display:flex !important; flex-direction:row !important; gap:12px !important; width:100% !important;">
+<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()" style="display:block !important; background:#007aff !important; color:white !important; flex:1 !important; order:1 !important; border:none !important; padding:14px !important; border-radius:12px !important; font-size:16px !important; font-weight:600 !important; cursor:pointer !important;">Добавить</button>
+<button class="modal-btn cancel" onclick="hideAddRoomModal()" style="display:block !important; background:#f0f0f0 !important; color:#000 !important; flex:1 !important; order:2 !important; border:none !important; padding:14px !important; border-radius:12px !important; font-size:16px !important; font-weight:600 !important; cursor:pointer !important;">Отмена</button>
 </div>
 </div>
 </div>
@@ -880,17 +880,22 @@ if(input)input.value='';
 }
 
 function addRoomFromModal(){
+console.log('Кнопка Добавить нажата!');
 const input=document.getElementById('newRoomModal');
 const roomName=input.value.trim();
+console.log('Название комнаты:', roomName);
 if(!roomName){
+console.log('Пустое название');
 return;
 }
 if(teams.includes(roomName)){
+console.log('Комната уже существует');
 return;
 }
 
 teams.push(roomName);
 localStorage.setItem('teams',JSON.stringify(teams));
+console.log('Комната добавлена:', roomName);
 renderRooms();
 updateRoomsSelect();
 hideAddRoomModal();

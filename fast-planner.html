@@ -314,7 +314,6 @@ const roomSelect=document.getElementById('room');
 const roomValue=roomSelect.value;
 
 const plan={
-id:Date.now().toString(),
 title:title,
 date:document.getElementById('date').value||date.toISOString().split('T')[0],
 time:document.getElementById('time').value||null,
@@ -323,9 +322,12 @@ room:roomValue||null
 
 if(selected){
 const index=plans.findIndex(p=>p.id===selected);
-if(index!==-1)plans[index]={...plan,id:selected};
+if(index!==-1){
+plans[index]={...plan,id:selected};
+}
 selected=null;
 }else{
+plan.id=Date.now().toString();
 plans.push(plan);
 }
 

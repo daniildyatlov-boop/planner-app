@@ -197,6 +197,19 @@ function renderPlans() {
     content.innerHTML = html;
 }
 
+// Навигация по дням
+function prevDay() {
+    currentDate.setDate(currentDate.getDate() - 1);
+    renderPlans();
+    tg.HapticFeedback.impactOccurred('light');
+}
+
+function nextDay() {
+    currentDate.setDate(currentDate.getDate() + 1);
+    renderPlans();
+    tg.HapticFeedback.impactOccurred('light');
+}
+
 // Удаление плана
 function deletePlan(planId) {
     plans = plans.filter(p => p.id !== planId);
@@ -234,42 +247,31 @@ function hideAddScreen() {
 }
 
 // Обработчики кнопок
-addButton.addEventListener('click', () => {
-    showAddScreen();
-    tg.HapticFeedback.impactOccurred('light');
-});
+document.addEventListener('DOMContentLoaded', () => {
+    addButton.addEventListener('click', () => {
+        showAddScreen();
+        tg.HapticFeedback.impactOccurred('light');
+    });
 
-cancelButton.addEventListener('click', () => {
-    hideAddScreen();
-});
+    cancelButton.addEventListener('click', () => {
+        hideAddScreen();
+    });
 
-saveButton.addEventListener('click', () => {
-    addPlan(planInput.value);
-    hideAddScreen();
-});
-
-planInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+    saveButton.addEventListener('click', () => {
         addPlan(planInput.value);
         hideAddScreen();
-    }
-});
+    });
 
-// Навигация по дням
-prevDayButton.addEventListener('click', () => {
-    currentDate.setDate(currentDate.getDate() - 1);
+    planInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            addPlan(planInput.value);
+            hideAddScreen();
+        }
+    });
+
+    // Инициализация
     renderPlans();
-    tg.HapticFeedback.impactOccurred('light');
 });
-
-nextDayButton.addEventListener('click', () => {
-    currentDate.setDate(currentDate.getDate() + 1);
-    renderPlans();
-    tg.HapticFeedback.impactOccurred('light');
-});
-
-// Инициализация
-renderPlans();
 
 // Обработка кнопки "Назад" Telegram
 tg.onEvent('backButtonClicked', () => {

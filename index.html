@@ -184,6 +184,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .menu-btn-title{font-size:17px;font-weight:600;color:#000;margin-bottom:2px}
 .menu-btn-desc{font-size:13px;color:#8e8e93}
 .menu-btn-arrow{font-size:18px;color:#c7c7cc}
+.account-screen,.settings-screen,.support-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#f2f2f7;z-index:100;display:none;flex-direction:column;height:100vh;overflow:hidden}
+.account-screen.show,.settings-screen.show,.support-screen.show{display:flex}
+.account-header,.settings-header,.support-header{padding:12px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05);height:68px}
+.account-content,.settings-content,.support-content{flex:1;padding:0 0 20px;overflow-y:auto}
+.account-content::-webkit-scrollbar,.settings-content::-webkit-scrollbar,.support-content::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
@@ -337,6 +342,150 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 </div>
 <div class="menu-btn-arrow">›</div>
 </button>
+</div>
+</div>
+</div>
+
+<div class="account-screen" id="accountScreen">
+<div class="account-header">
+<div style="width:60px"></div>
+<div class="add-title">Аккаунт</div>
+<button class="header-btn" onclick="hideAccount()">Готово</button>
+</div>
+<div class="account-content">
+<div class="profile-section">
+<div class="section-title">Личные данные</div>
+<div class="profile-list">
+<div class="profile-item" onclick="editEmail()">
+<div class="profile-info">
+<div class="profile-label">Email</div>
+<div class="profile-value" id="userEmail">user@example.com</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+<div class="profile-item" onclick="editTimezone()">
+<div class="profile-info">
+<div class="profile-label">Часовой пояс</div>
+<div class="profile-value" id="userTimezone">GMT+3 (Москва)</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+<div class="profile-item" onclick="editLanguage()">
+<div class="profile-info">
+<div class="profile-label">Язык</div>
+<div class="profile-value" id="userLanguage">Русский</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Подписка</div>
+<div class="profile-list">
+<div class="profile-item">
+<div class="profile-info">
+<div class="profile-label">Дата регистрации</div>
+<div class="profile-value" id="registrationDate">27 января 2025</div>
+</div>
+</div>
+<div class="profile-item" onclick="manageSubscription()">
+<div class="profile-info">
+<div class="profile-label">Текущий план</div>
+<div class="profile-value" id="nextSubscription">Бесплатный план</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="settings-screen" id="settingsScreen">
+<div class="settings-header">
+<div style="width:60px"></div>
+<div class="add-title">Настройки</div>
+<button class="header-btn" onclick="hideSettings()">Готово</button>
+</div>
+<div class="settings-content">
+<div class="profile-section">
+<div class="section-title">Уведомления</div>
+<div class="profile-list">
+<div class="profile-item">
+<div class="profile-info">
+<div class="profile-label">Напоминания о задачах</div>
+<div class="profile-desc">Получать уведомления</div>
+</div>
+<label class="toggle">
+<input type="checkbox" id="notifications" checked onchange="saveNotificationSettings()">
+<span class="toggle-slider"></span>
+</label>
+</div>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Интерфейс</div>
+<div class="profile-list">
+<div class="profile-item">
+<div class="profile-info">
+<div class="profile-label">Темная тема</div>
+<div class="profile-desc">Темное оформление</div>
+</div>
+<label class="toggle">
+<input type="checkbox" id="darkTheme" onchange="toggleDarkTheme()">
+<span class="toggle-slider"></span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="support-screen" id="supportScreen">
+<div class="support-header">
+<div style="width:60px"></div>
+<div class="add-title">Поддержка</div>
+<button class="header-btn" onclick="hideSupport()">Готово</button>
+</div>
+<div class="support-content">
+<div class="profile-section">
+<div class="section-title">Связаться с нами</div>
+<div class="profile-list">
+<div class="profile-item" onclick="contactSupport()">
+<div class="profile-info">
+<div class="profile-label">Написать в поддержку</div>
+<div class="profile-desc">Telegram чат</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+<div class="profile-item" onclick="reportBug()">
+<div class="profile-info">
+<div class="profile-label">Сообщить об ошибке</div>
+<div class="profile-desc">Баг репорт</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Информация</div>
+<div class="profile-list">
+<div class="profile-item">
+<div class="profile-info">
+<div class="profile-label">Версия приложения</div>
+<div class="profile-value">v5.0 FINAL</div>
+</div>
+</div>
+<div class="profile-item" onclick="showAbout()">
+<div class="profile-info">
+<div class="profile-label">О приложении</div>
+<div class="profile-desc">Информация и лицензии</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -562,20 +711,76 @@ window.open(telegramUrl,'_blank');
 }
 
 function showAccount(){
-alert('Аккаунт:\n\nEmail: ' + (localStorage.getItem('userEmail')||'user@example.com') + '\nДата регистрации: 27 января 2025\nПодписка: Бесплатный план');
+document.getElementById('accountScreen').classList.add('show');
+loadAccountData();
+}
+
+function hideAccount(){
+document.getElementById('accountScreen').classList.remove('show');
+}
+
+function loadAccountData(){
+const userEmail=localStorage.getItem('userEmail')||'user@example.com';
+document.getElementById('userEmail').textContent=userEmail;
+
+const userTimezone=localStorage.getItem('userTimezone')||'GMT+3 (Москва)';
+document.getElementById('userTimezone').textContent=userTimezone;
+
+const userLanguage=localStorage.getItem('userLanguage')||'Русский';
+document.getElementById('userLanguage').textContent=userLanguage;
+
+const registrationDate=localStorage.getItem('registrationDate')||'27 января 2025';
+document.getElementById('registrationDate').textContent=registrationDate;
+
+const nextSubscription=localStorage.getItem('nextSubscription')||'Бесплатный план';
+document.getElementById('nextSubscription').textContent=nextSubscription;
 }
 
 function showSettings(){
+document.getElementById('settingsScreen').classList.add('show');
+loadSettingsData();
+}
+
+function hideSettings(){
+document.getElementById('settingsScreen').classList.remove('show');
+}
+
+function loadSettingsData(){
 const notifications=localStorage.getItem('notifications')!=='false';
-const timezone=localStorage.getItem('userTimezone')||'GMT+3 (Москва)';
-const language=localStorage.getItem('userLanguage')||'Русский';
-alert('Настройки:\n\nУведомления: ' + (notifications?'Включены':'Выключены') + '\nЧасовой пояс: ' + timezone + '\nЯзык: ' + language);
+document.getElementById('notifications').checked=notifications;
+
+const darkTheme=localStorage.getItem('darkTheme')==='true';
+document.getElementById('darkTheme').checked=darkTheme;
+}
+
+function toggleDarkTheme(){
+const enabled=document.getElementById('darkTheme').checked;
+localStorage.setItem('darkTheme',enabled.toString());
+if(enabled){
+document.body.style.background='#1c1c1e';
+document.body.style.color='white';
+}else{
+document.body.style.background='#f2f2f7';
+document.body.style.color='#000';
+}
 }
 
 function showSupport(){
-if(confirm('Обратиться в поддержку?\n\nВы будете перенаправлены в Telegram для отправки сообщения.')){
-contactSupport();
+document.getElementById('supportScreen').classList.add('show');
 }
+
+function hideSupport(){
+document.getElementById('supportScreen').classList.remove('show');
+}
+
+function reportBug(){
+const message='🐛 Сообщение об ошибке:\n\nОпишите проблему:\n\nШаги для воспроизведения:\n1.\n2.\n3.\n\nОжидаемый результат:\n\nФактический результат:';
+const telegramUrl=`https://t.me/share/url?url=${encodeURIComponent(message)}`;
+window.open(telegramUrl,'_blank');
+}
+
+function showAbout(){
+alert('📱 Планер v5.0 FINAL\n\n✨ Простой и удобный планировщик задач для Telegram\n\n👨‍💻 Разработано специально для Mini Apps\n\n📅 Функции:\n• Создание и управление задачами\n• Система комнат\n• Прогресс выполнения\n• Календарь\n• Профиль пользователя');
 }
 
 function hideRooms(){

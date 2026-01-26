@@ -7,8 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="cache-buster" content="<?php echo time(); ?>">
-<meta name="version" content="v6.23.0-DIRECT-HTML">
-<title>Планер v6.23 DIRECT HTML</title>
+<meta name="version" content="v6.24.0-FORCE-LOAD-BUTTON">
+<title>Планер v6.24 FORCE LOAD BUTTON</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -3144,6 +3144,11 @@ textarea.input {
       <h2>Планов нет</h2>
       <p>Добавьте первую задачу</p>
       <button class="btn" onclick="showAdd()">Добавить задачу</button>
+      
+      <!-- КНОПКА ПРИНУДИТЕЛЬНОЙ ЗАГРУЗКИ ЗАДАЧ -->
+      <button class="btn" onclick="forceLoadTasks()" style="margin-top: 16px; background: #ff6b6b;">
+        🔄 Загрузить задачи из хранилища
+      </button>
     </div>
     
     <div class="plans-container" id="plansContainer" style="display:none">
@@ -6028,6 +6033,77 @@ function showHabitsTab() {
       </div>
     </div>
   `;
+}
+
+// ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ЗАДАЧ
+function forceLoadTasks() {
+  console.log('=== ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ЗАДАЧ ===');
+  
+  const saved = localStorage.getItem('planner_plans');
+  console.log('Данные в localStorage:', saved);
+  
+  if (saved) {
+    try {
+      const savedPlans = JSON.parse(saved);
+      console.log('Распарсенные планы:', savedPlans);
+      
+      if (savedPlans.length > 0) {
+        // Принудительно устанавливаем планы
+        plans = savedPlans;
+        console.log('Планы установлены:', plans);
+        
+        // Принудительно показываем интерфейс
+        const empty = document.getElementById('empty');
+        const plansContainer = document.getElementById('plansContainer');
+        const plansEl = document.getElementById('plans');
+        
+        if (empty && plansContainer && plansEl) {
+          empty.style.display = 'none';
+          plansContainer.style.display = 'flex';
+          
+          // Генерируем HTML для сегодняшних задач
+          const today = new Date().toDateString();
+          let html = '';
+          
+          savedPlans.forEach(plan => {
+            if (new Date(plan.date).toDateString() === today) {
+              html += `
+                <div class="plan ${plan.completed ? 'completed' : ''}">
+                  <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
+                  <div class="plan-content" onclick="showPlanMenu('${plan.id}')">
+                    <div class="plan-title">
+                      ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${plan.title}
+                    </div>
+                    ${plan.room ? `<div class="room">🏠 ${plan.room}</div>` : ''}
+                  </div>
+                </div>
+              `;
+            }
+          });
+          
+          html += `
+            <button class="add-task-btn" onclick="showAdd()">
+              <span class="add-icon">+</span>
+              Добавить задачу
+            </button>
+          `;
+          
+          plansEl.innerHTML = html;
+          console.log('HTML задач вставлен принудительно!');
+          
+          // Обновляем прогресс
+          updateProgress();
+        }
+      } else {
+        alert('В хранилище нет задач');
+      }
+    } catch (e) {
+      console.error('Ошибка при загрузке задач:', e);
+      alert('Ошибка при загрузке задач: ' + e.message);
+    }
+  } else {
+    alert('В localStorage нет сохраненных задач');
+  }
 }
 
 // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ

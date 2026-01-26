@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.16.0-BOTTOM-NAVIGATION">
+<meta name="version" content="v6.16.1-FIXED-TAB-SWITCHING">
 <title>Планер v6.16 Bottom Navigation</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
@@ -2202,11 +2202,16 @@ function saveRooms() {
 
 // RENDER
 function render() {
+  // Проверяем, что мы на вкладке задач
+  if (currentTab !== 'tasks') return;
+  
   const todayPlans = getPlansForDate(currentDate);
   
   // Update date display
-  document.getElementById('dayTitle').textContent = formatDate(currentDate);
-  document.getElementById('daySubtitle').textContent = formatDateSubtitle(currentDate);
+  const dayTitle = document.getElementById('dayTitle');
+  const daySubtitle = document.getElementById('daySubtitle');
+  if (dayTitle) dayTitle.textContent = formatDate(currentDate);
+  if (daySubtitle) daySubtitle.textContent = formatDateSubtitle(currentDate);
   
   // Update progress
   const completedCount = todayPlans.filter(p => p.completed).length;
@@ -2216,6 +2221,8 @@ function render() {
   // Show/hide elements
   const empty = document.getElementById('empty');
   const plansContainer = document.getElementById('plansContainer');
+  
+  if (!empty || !plansContainer) return; // Элементы не найдены
   
   if (todayPlans.length === 0) {
     empty.style.display = 'flex';
@@ -2611,6 +2618,9 @@ function getTextWidth(text, element) {
 }
 
 function updateProgress() {
+  // Проверяем, что мы на вкладке задач
+  if (currentTab !== 'tasks') return;
+  
   const todayPlans = getPlansForDate(currentDate);
   const completedCount = todayPlans.filter(p => p.completed).length;
   const totalCount = todayPlans.length;
@@ -2621,6 +2631,9 @@ function updateProgress() {
   const progressPercentage = document.getElementById('progressPercentage');
   const progressContainer = document.getElementById('progressContainer');
   const progressLabel = document.getElementById('progressLabel');
+  
+  // Проверяем наличие элементов
+  if (!progressCircle || !progressPercentage || !progressContainer || !progressLabel) return;
   
   // Анимируем заполнение круга
   animateCircleProgress(progressCircle, progressPercent);
@@ -3168,7 +3181,33 @@ function showTabContent(tabName) {
   
   switch(tabName) {
     case 'tasks':
-      // Показываем обычный интерфейс задач
+      // Восстанавливаем оригинальную структуру задач
+      content.innerHTML = `
+        <div class="progress-container" id="progressContainer">
+          <div class="progress-info">
+            <div class="progress-label" id="progressLabel">Прогресс дня</div>
+            <div class="progress-stats" id="progressStats">0/0</div>
+          </div>
+          <div class="progress-circle-container">
+            <div class="progress-circle" id="progressCircle">
+              <div class="progress-circle-inner">
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty" id="empty">
+          <h2>Планов нет</h2>
+          <p>Добавьте первую задачу</p>
+          <button class="btn" onclick="showAdd()">Добавить задачу</button>
+        </div>
+        
+        <div class="plans-container" id="plansContainer" style="display:none">
+          <div class="plans" id="plans"></div>
+        </div>
+      `;
+      // Перерендериваем задачи
       render();
       break;
       

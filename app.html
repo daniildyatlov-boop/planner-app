@@ -39,13 +39,36 @@
             left: 0;
             right: 0;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .day-nav-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--tg-theme-link-color, #007aff);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            min-width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .day-nav-button:active {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
         
         .day-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--tg-theme-text-color, #000000);
             text-align: center;
+            flex: 1;
         }
         
         .content {
@@ -282,7 +305,9 @@
 <body>
     <div class="app" id="app">
         <div class="header">
+            <button class="day-nav-button" id="prevDayButton">‹</button>
             <div class="day-title" id="dayTitle">Сегодня</div>
+            <button class="day-nav-button" id="nextDayButton">›</button>
         </div>
         
         <div class="content" id="content">

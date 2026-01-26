@@ -53,6 +53,8 @@ const planInput = document.getElementById('planInput');
 const addButton = document.getElementById('addButton');
 const cancelButton = document.getElementById('cancelButton');
 const saveButton = document.getElementById('saveButton');
+const prevDayButton = document.getElementById('prevDayButton');
+const nextDayButton = document.getElementById('nextDayButton');
 
 // Форматирование даты
 function formatDate(date) {
@@ -251,6 +253,19 @@ planInput.addEventListener('keydown', (e) => {
         addPlan(planInput.value);
         hideAddScreen();
     }
+});
+
+// Навигация по дням
+prevDayButton.addEventListener('click', () => {
+    currentDate.setDate(currentDate.getDate() - 1);
+    renderPlans();
+    tg.HapticFeedback.impactOccurred('light');
+});
+
+nextDayButton.addEventListener('click', () => {
+    currentDate.setDate(currentDate.getDate() + 1);
+    renderPlans();
+    tg.HapticFeedback.impactOccurred('light');
 });
 
 // Инициализация

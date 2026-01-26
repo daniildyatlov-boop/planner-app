@@ -20,7 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .date-subtitle{font-size:10px;color:#8e8e93;line-height:1.1;margin:0}
 .nav-arrow{background:none;border:none;font-size:16px;color:#007aff;cursor:pointer;width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease}
 .nav-arrow:active{opacity:0.6;background:rgba(0,122,255,0.1)}
-.profile-btn{width:36px;height:36px;background:#007aff;border:none;border-radius:18px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:600;cursor:pointer;flex-shrink:0;line-height:1}
+.profile-btn{width:50px;height:50px;background:#007aff;border:none;border-radius:25px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:600;cursor:pointer;flex-shrink:0;line-height:1;z-index:1000;position:relative;margin:4px}
 .profile-btn:active{opacity:0.8}
 .rooms-btn{width:36px;height:36px;background:white;border:none;border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);font-size:18px;flex-shrink:0;line-height:1}
 .rooms-btn:active{opacity:0.8}
@@ -135,12 +135,53 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 .select{width:100%;background:white;border:2px solid transparent;border-radius:12px;padding:16px;font-size:17px;font-family:inherit;color:#000;appearance:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all 0.2s ease;box-sizing:border-box}
 .select:focus{outline:none;border-color:#007aff;box-shadow:0 4px 12px rgba(0,122,255,0.15)}
 .select-wrapper::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(90deg);color:#c7c7cc;font-size:18px;pointer-events:none}
+.profile-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#f2f2f7;z-index:100;display:none;flex-direction:column;height:100vh;overflow:hidden}
+.profile-screen.show{display:flex}
+.profile-header{padding:12px 20px;background:white;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,0.05);height:68px}
+.profile-content{flex:1;padding:0 0 20px;overflow-y:auto}
+.profile-content::-webkit-scrollbar{display:none}
+.profile-section{background:white;margin:20px 20px 0;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:0.5px solid rgba(0,0,0,0.04)}
+.profile-section:first-child{margin-top:20px}
+.profile-avatar{display:flex;flex-direction:column;align-items:center;text-align:center}
+.avatar-circle{width:80px;height:80px;background:#007aff;border-radius:40px;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:600;margin-bottom:16px}
+.profile-name{font-size:20px;font-weight:600;color:#000;margin-bottom:8px}
+.edit-name-btn{background:none;border:none;color:#007aff;font-size:15px;cursor:pointer;padding:8px 16px;border-radius:8px;font-weight:500}
+.edit-name-btn:active{opacity:0.6;background:rgba(0,122,255,0.1)}
+.section-title{font-size:17px;font-weight:600;color:#000;margin-bottom:20px}
+.profile-list{display:flex;flex-direction:column}
+.profile-item{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:0.5px solid rgba(0,0,0,0.1);cursor:pointer;transition:all 0.2s ease}
+.profile-item:last-child{border-bottom:none}
+.profile-item:active{opacity:0.6}
+.profile-info{flex:1}
+.profile-label{font-size:16px;font-weight:500;color:#000;margin-bottom:2px}
+.profile-value{font-size:14px;color:#8e8e93}
+.profile-desc{font-size:13px;color:#8e8e93}
+.profile-arrow{font-size:18px;color:#c7c7cc;transform:rotate(0deg)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat-item{text-align:center}
+.stat-number{font-size:24px;font-weight:700;color:#007aff;margin-bottom:4px}
+.stat-label{font-size:12px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.settings-list{display:flex;flex-direction:column;gap:16px}
+.setting-item{display:flex;align-items:center;justify-content:space-between}
+.setting-info{flex:1}
+.setting-name{font-size:16px;font-weight:500;color:#000;margin-bottom:2px}
+.setting-desc{font-size:13px;color:#8e8e93}
+.toggle{position:relative;display:inline-block;width:50px;height:30px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e5e5ea;transition:0.3s;border-radius:15px}
+.toggle-slider:before{position:absolute;content:"";height:26px;width:26px;left:2px;bottom:2px;background:white;transition:0.3s;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.toggle input:checked+.toggle-slider{background:#007aff}
+.toggle input:checked+.toggle-slider:before{transform:translateX(20px)}
+.app-info{display:flex;flex-direction:column;gap:12px}
+.info-item{display:flex;justify-content:space-between;align-items:center}
+.info-label{font-size:16px;color:#000}
+.info-value{font-size:16px;color:#8e8e93}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="header">
-<button class="profile-btn" onclick="showProfile()">П</button>
+<button class="profile-btn" id="profileButton">П</button>
 <div class="date-nav">
 <button class="nav-arrow" onclick="changeDay(-1)">‹</button>
 <div class="date-content" onclick="showDatePicker()">
@@ -241,7 +282,99 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f2f7;
 <input class="room-input-modal" id="newRoomModal" placeholder="Название комнаты" autofocus>
 <div class="modal-buttons">
 <button class="modal-btn cancel" onclick="hideAddRoomModal()">Отмена</button>
-<button class="modal-btn add" onclick="addRoomFromModal()">Добавить</button>
+<button class="modal-btn add" id="addRoomBtn" onclick="addRoomFromModal()">Добавить комнату</button>
+</div>
+</div>
+</div>
+
+<div class="profile-screen" id="profileScreen">
+<div class="profile-header">
+<button class="header-btn" onclick="hideProfile()">Готово</button>
+<div class="add-title">Профиль</div>
+<div style="width:60px"></div>
+</div>
+<div class="profile-content">
+<div class="profile-section">
+<div class="profile-avatar">
+<div class="avatar-circle">П</div>
+<div class="profile-name" id="profileName">Пользователь</div>
+<button class="edit-name-btn" onclick="editName()">Изменить имя</button>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Профиль</div>
+<div class="profile-list">
+<div class="profile-item" onclick="editEmail()">
+<div class="profile-info">
+<div class="profile-label">Email</div>
+<div class="profile-value" id="userEmail">user@example.com</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+<div class="profile-item" onclick="editTimezone()">
+<div class="profile-info">
+<div class="profile-label">Часовой пояс</div>
+<div class="profile-value" id="userTimezone">GMT+3 (Москва)</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+<div class="profile-item" onclick="editLanguage()">
+<div class="profile-info">
+<div class="profile-label">Язык</div>
+<div class="profile-value" id="userLanguage">Русский</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Аккаунт</div>
+<div class="profile-list">
+<div class="profile-item">
+<div class="profile-info">
+<div class="profile-label">Дата регистрации</div>
+<div class="profile-value" id="registrationDate">27 января 2025</div>
+</div>
+</div>
+<div class="profile-item" onclick="manageSubscription()">
+<div class="profile-info">
+<div class="profile-label">Следующая подписка</div>
+<div class="profile-value" id="nextSubscription">Бесплатный план</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Настройки</div>
+<div class="profile-list">
+<div class="profile-item">
+<div class="profile-info">
+<div class="profile-label">Уведомления</div>
+<div class="profile-desc">Напоминания о задачах</div>
+</div>
+<label class="toggle">
+<input type="checkbox" id="notifications" checked onchange="saveNotificationSettings()">
+<span class="toggle-slider"></span>
+</label>
+</div>
+</div>
+</div>
+
+<div class="profile-section">
+<div class="section-title">Поддержка</div>
+<div class="profile-list">
+<div class="profile-item" onclick="contactSupport()">
+<div class="profile-info">
+<div class="profile-label">Обратиться в поддержку</div>
+<div class="profile-desc">Помощь и вопросы</div>
+</div>
+<div class="profile-arrow">›</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -372,8 +505,116 @@ renderRooms();
 }
 
 function showProfile(){
-// Пока что просто показываем команды, позже настроим профиль
-console.log('Профиль - пока не реализован');
+console.log('Кнопка профиля нажата');
+const profileScreen=document.getElementById('profileScreen');
+if(profileScreen){
+profileScreen.classList.add('show');
+console.log('Профиль должен открыться');
+// Загружаем базовые данные
+const userName=localStorage.getItem('userName')||'Пользователь';
+const profileNameEl=document.getElementById('profileName');
+if(profileNameEl){
+profileNameEl.textContent=userName;
+}
+}else{
+console.log('Элемент profileScreen не найден!');
+}
+}
+
+function hideProfile(){
+document.getElementById('profileScreen').classList.remove('show');
+}
+
+function loadProfileData(){
+console.log('Загружаем данные профиля');
+const userName=localStorage.getItem('userName')||'Пользователь';
+document.getElementById('profileName').textContent=userName;
+
+const userEmail=localStorage.getItem('userEmail')||'user@example.com';
+document.getElementById('userEmail').textContent=userEmail;
+
+const userTimezone=localStorage.getItem('userTimezone')||'GMT+3 (Москва)';
+document.getElementById('userTimezone').textContent=userTimezone;
+
+const userLanguage=localStorage.getItem('userLanguage')||'Русский';
+document.getElementById('userLanguage').textContent=userLanguage;
+
+const registrationDate=localStorage.getItem('registrationDate')||'27 января 2025';
+document.getElementById('registrationDate').textContent=registrationDate;
+
+const nextSubscription=localStorage.getItem('nextSubscription')||'Бесплатный план';
+document.getElementById('nextSubscription').textContent=nextSubscription;
+
+const notifications=localStorage.getItem('notifications')!=='false';
+document.getElementById('notifications').checked=notifications;
+console.log('Данные профиля загружены');
+}
+
+function editName(){
+const currentName=document.getElementById('profileName').textContent;
+const newName=prompt('Введите ваше имя:',currentName);
+if(newName&&newName.trim()){
+const trimmedName=newName.trim();
+document.getElementById('profileName').textContent=trimmedName;
+localStorage.setItem('userName',trimmedName);
+const firstLetter=trimmedName.charAt(0).toUpperCase();
+document.querySelector('.avatar-circle').textContent=firstLetter;
+document.querySelector('.profile-btn').textContent=firstLetter;
+}
+}
+
+function editEmail(){
+const currentEmail=document.getElementById('userEmail').textContent;
+const newEmail=prompt('Введите ваш email:',currentEmail);
+if(newEmail&&newEmail.trim()){
+document.getElementById('userEmail').textContent=newEmail.trim();
+localStorage.setItem('userEmail',newEmail.trim());
+}
+}
+
+function editTimezone(){
+const timezones=[
+'GMT+3 (Москва)',
+'GMT+2 (Киев)',
+'GMT+1 (Берлин)',
+'GMT+0 (Лондон)',
+'GMT-5 (Нью-Йорк)',
+'GMT+8 (Пекин)',
+'GMT+9 (Токио)'
+];
+const current=document.getElementById('userTimezone').textContent;
+const choice=prompt('Выберите часовой пояс:\n'+timezones.map((tz,i)=>`${i+1}. ${tz}`).join('\n'),timezones.indexOf(current)+1);
+const index=parseInt(choice)-1;
+if(index>=0&&index<timezones.length){
+document.getElementById('userTimezone').textContent=timezones[index];
+localStorage.setItem('userTimezone',timezones[index]);
+}
+}
+
+function editLanguage(){
+const languages=['Русский','English','Español','Français','Deutsch'];
+const current=document.getElementById('userLanguage').textContent;
+const choice=prompt('Выберите язык:\n'+languages.map((lang,i)=>`${i+1}. ${lang}`).join('\n'),languages.indexOf(current)+1);
+const index=parseInt(choice)-1;
+if(index>=0&&index<languages.length){
+document.getElementById('userLanguage').textContent=languages[index];
+localStorage.setItem('userLanguage',languages[index]);
+}
+}
+
+function manageSubscription(){
+alert('Управление подпиской будет доступно в следующих версиях приложения.');
+}
+
+function saveNotificationSettings(){
+const enabled=document.getElementById('notifications').checked;
+localStorage.setItem('notifications',enabled.toString());
+}
+
+function contactSupport(){
+const message='Здравствуйте! У меня есть вопрос по приложению Планер.';
+const telegramUrl=`https://t.me/share/url?url=${encodeURIComponent(message)}`;
+window.open(telegramUrl,'_blank');
 }
 
 function hideRooms(){
@@ -398,10 +639,14 @@ roomsList.innerHTML=html;
 function showAddRoomModal(){
 console.log('Показываем модальное окно добавления комнаты');
 const modal=document.getElementById('addRoomModal');
+const input=document.getElementById('newRoomModal');
+
+// Сбрасываем поле ввода
+if(input)input.value='';
+  
 modal.classList.add('show');
 console.log('Модальное окно показано');
 setTimeout(()=>{
-const input=document.getElementById('newRoomModal');
 if(input){
 input.focus();
 console.log('Фокус установлен на поле ввода');
@@ -411,9 +656,14 @@ console.log('Поле ввода не найдено!');
 },300);
 }
 
+function toggleAddButton(){
+// Кнопка теперь всегда видна, функция не нужна
+}
+
 function hideAddRoomModal(){
 document.getElementById('addRoomModal').classList.remove('show');
-document.getElementById('newRoomModal').value='';
+const input=document.getElementById('newRoomModal');
+if(input)input.value='';
 }
 
 function addRoomFromModal(){
@@ -426,6 +676,7 @@ return;
 }
 if(teams.includes(roomName)){
 console.log('Комната уже существует');
+alert('Комната с таким названием уже существует');
 return;
 }
 
@@ -633,13 +884,34 @@ else tg.close();
 
 // Обработка Enter для добавления комнаты
 document.addEventListener('keydown',e=>{
-if(e.key==='Enter'&&document.getElementById('newRoomModal')===document.activeElement){
+if(e.key==='Enter'){
+const activeElement=document.activeElement;
+if(activeElement&&activeElement.id==='newRoomModal'){
+e.preventDefault();
+const roomName=activeElement.value.trim();
+if(roomName){
 addRoomFromModal();
+}
+}
 }
 });
 
 // Мгновенный старт
 loadPlans();
+
+// Добавляем обработчик для кнопки профиля
+document.addEventListener('DOMContentLoaded',function(){
+const profileBtn=document.getElementById('profileButton');
+if(profileBtn){
+profileBtn.addEventListener('click',function(){
+console.log('Профиль нажат!');
+showProfile();
+});
+console.log('Обработчик профиля добавлен');
+}else{
+console.log('Кнопка профиля не найдена!');
+}
+});
 </script>
 </body>
 </html>

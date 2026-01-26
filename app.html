@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="v6.8-ANIMATED-COMPLETION">
-<title>Планер v6.8 Animated Completion</title>
+<meta name="version" content="v6.8.1-PRECISE-STRIKETHROUGH">
+<title>Планер v6.8.1 Precise Strikethrough</title>
 <script src="https://telegram.org/js/telegram-web-app.js?v=7"></script>
 <style>
 /* RESET & BASE */
@@ -492,38 +492,40 @@ body{
 .plan.completed .plan-title{
   color:#8e8e93;
   position: relative;
+  --text-width: 100%; /* Значение по умолчанию */
 }
 .plan.completed .plan-title::after{
   content: '';
   position: absolute;
   top: 50%;
   left: 0;
-  width: 100%;
+  width: 0;
+  max-width: var(--text-width);
   height: 2px;
   background: linear-gradient(90deg, #8e8e93, #6b7280);
   border-radius: 1px;
-  transform: translateY(-50%) scaleX(1);
-  animation: strikethrough 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform: translateY(-50%);
+  animation: strikethrough-text 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Анимация зачеркивания */
-@keyframes strikethrough {
+/* Анимация зачеркивания точно по тексту */
+@keyframes strikethrough-text {
   0% {
-    transform: translateY(-50%) scaleX(0);
+    width: 0;
     opacity: 0;
   }
-  50% {
+  20% {
     opacity: 1;
   }
   100% {
-    transform: translateY(-50%) scaleX(1);
+    width: var(--text-width);
     opacity: 1;
   }
 }
 
-/* Анимация появления зачеркивания при загрузке */
+/* Убираем старую анимацию */
 .plan.completed.animate-strike .plan-title::after {
-  animation: strikethrough 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: strikethrough-text 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .checkbox{
@@ -1747,6 +1749,22 @@ function render() {
       `;
     });
     plansEl.innerHTML = html;
+    
+    // Устанавливаем ширину текста для уже выполненных задач
+    setTimeout(() => {
+      todayPlans.forEach(plan => {
+        if (plan.completed) {
+          const planElements = plansEl.querySelectorAll('.plan.completed');
+          planElements.forEach(planElement => {
+            const planTitle = planElement.querySelector('.plan-title');
+            if (planTitle && planTitle.textContent.trim() === plan.title) {
+              const textWidth = getTextWidth(planTitle.textContent, planTitle);
+              planTitle.style.setProperty('--text-width', textWidth + 'px');
+            }
+          });
+        }
+      });
+    }, 50);
   }
 }
 
@@ -2039,6 +2057,10 @@ function toggleComplete(id, event) {
     // Отмечаем как выполненное - с анимацией
     plan.completed = true;
     
+    // Измеряем точную ширину текста
+    const textWidth = getTextWidth(planTitle.textContent, planTitle);
+    planTitle.style.setProperty('--text-width', textWidth + 'px');
+    
     // Сначала анимируем чекбокс
     checkbox.classList.add('checked');
     
@@ -2057,6 +2079,20 @@ function toggleComplete(id, event) {
   
   // Обновляем только прогресс, не перерисовываем весь список
   updateProgress();
+}
+
+function getTextWidth(text, element) {
+  // Создаем временный элемент для измерения ширины текста
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  // Получаем стили элемента
+  const styles = window.getComputedStyle(element);
+  context.font = `${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+  
+  // Измеряем ширину текста
+  const metrics = context.measureText(text);
+  return metrics.width;
 }
 
 function updateProgress() {
@@ -2386,7 +2422,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   render();
   
-  console.log('🚀 Планер v6.8 Animated Completion загружен');
+  console.log('🚀 Планер v6.8.1 Precise Strikethrough загружен');
 });
 </script>
 </body>

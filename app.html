@@ -5062,19 +5062,56 @@ function initApp() {
     // 3. Migrate old data
     migrateData();
     
-    // 4. Initialize daily state
+    // 4. Initialize sections sync
+    initializeSections();
+    
+    // 5. Initialize daily state
     initDailyState();
     
-    // 5. Bind UI events
+    // 6. Initialize nutrition and habits
+    initializeModules();
+    
+    // 7. Bind UI events
     bindUIEvents();
     
-    // 6. Render app
+    // 8. Render app
     renderApp();
     
     console.log('✅ App initialized successfully');
   } catch (error) {
     console.error('❌ App initialization failed:', error);
     showErrorState(error);
+  }
+}
+
+function initializeSections() {
+  try {
+    console.log('🔧 Initializing sections system');
+    
+    // Create demo sections if needed
+    createDemoSections();
+    
+    console.log('✅ Sections initialized');
+  } catch (error) {
+    console.error('❌ Error initializing sections:', error);
+  }
+}
+
+function initializeModules() {
+  try {
+    // Initialize nutrition
+    if (typeof loadNutritionData === 'function') {
+      loadNutritionData();
+    }
+    
+    // Initialize habits
+    if (typeof loadHabits === 'function') {
+      loadHabits();
+    }
+    
+    console.log('✅ Modules initialized');
+  } catch (error) {
+    console.error('❌ Error initializing modules:', error);
   }
 }
 
@@ -5813,19 +5850,23 @@ function syncSectionsToPlans(date, force = false) {
   }
 }
 
-// РЕФАКТОРИНГ: Упрощенная инициализация разделов
-function initSectionsSync() {
+// ================================
+// SECTIONS MANAGEMENT
+// ================================
+function createDemoSections() {
   console.log('🔧 Инициализация системы разделов');
   
   // Загружаем разделы
-  loadSections();
+  if (typeof loadSections === 'function') {
+    loadSections();
+  }
   
   // Создаем демонстрационные разделы если их нет
-  if (sections.length === 0) {
+  if (appState.sections.length === 0) {
     console.log('📝 Создаем демонстрационные разделы');
     
     // Утренняя зарядка - каждый день
-    sections.push({
+    appState.sections.push({
       id: Date.now() + 1,
       name: 'Утренняя зарядка',
       icon: ICONS.rooms[5], // 🏃
@@ -5869,9 +5910,11 @@ function initSectionsSync() {
   }
   
   // Очищаем старые записи об удаленных задачах
-  cleanupOldDeletedTasks();
+  if (typeof cleanupOldDeletedTasks === 'function') {
+    cleanupOldDeletedTasks();
+  }
   
-  console.log(`✅ Система разделов инициализирована: ${sections.length} разделов`);
+  console.log(`✅ Система разделов инициализирована: ${appState.sections.length} разделов`);
 }
 
 // RENDER
@@ -8781,19 +8824,9 @@ function showNutritionTab() {
   initNutrition();
 }
 
-function initNutrition() {
-  // Загружаем данные питания
-  loadNutritionData();
-  
-  // Рендерим текущий день
-  renderNutritionDay();
-  
-  // Обновляем трекер воды
-  updateWaterTracker();
-  
-  // Обновляем заголовок дня
-  updateHeaderForTab('nutrition');
-}
+// ================================
+// NUTRITION MODULE
+// ================================
 
 // ОТДЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ВКЛАДКИ ПРИВЫЧЕК
 function showHabitsTab() {
@@ -8852,17 +8885,9 @@ function showHabitsTab() {
   initHabits();
 }
 
-function initHabits() {
-  // Загружаем данные привычек
-  loadHabits();
-  loadHabitLogs();
-  
-  // Рендерим привычки
-  renderHabits();
-  
-  // Обновляем заголовок
-  updateHeaderForTab('habits');
-}
+// ================================
+// HABITS MODULE
+// ================================
 
 // ================================
 // STATE ACCESS HELPERS

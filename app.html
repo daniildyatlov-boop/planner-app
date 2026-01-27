@@ -3126,7 +3126,7 @@ textarea.input {
       </div>
       <button class="nav-arrow" onclick="changeDay(1)">›</button>
     </div>
-    <button class="rooms-btn" onclick="showRooms()">${ICONS.navigation.home}</button>
+    <button class="rooms-btn" onclick="showRooms()" id="roomsBtn">🏠</button>
   </div>
   
   <div class="content">
@@ -3159,15 +3159,15 @@ textarea.input {
 <!-- BOTTOM NAVIGATION -->
 <div class="bottom-nav" id="bottomNav">
   <button class="nav-item active" onclick="switchTab('tasks')" data-tab="tasks">
-    <div class="nav-icon">${ICONS.navigation.tasks}</div>
+    <div class="nav-icon" id="tasksIcon">📝</div>
     <div class="nav-label">Задачи</div>
   </button>
   <button class="nav-item" onclick="switchTab('nutrition')" data-tab="nutrition">
-    <div class="nav-icon">🍽️</div>
+    <div class="nav-icon" id="nutritionIcon">🍽️</div>
     <div class="nav-label">Питание</div>
   </button>
   <button class="nav-item" onclick="switchTab('habits')" data-tab="habits">
-    <div class="nav-icon">${ICONS.navigation.habits}</div>
+    <div class="nav-icon" id="habitsIcon">🎯</div>
     <div class="nav-label">Привычки</div>
   </button>
 </div>
@@ -3264,7 +3264,7 @@ textarea.input {
     </div>
     
     <div class="premium-notice">
-      <div class="premium-icon">${ICONS.navigation.premium}</div>
+      <div class="premium-icon" id="premiumIcon">⭐</div>
       <span>Уведомления и пометка «Важная» доступны только с подпиской </span>
       <span class="premium-link">Премиум Трекер</span>
     </div>
@@ -3344,7 +3344,7 @@ textarea.input {
             font-size: 24px;
             box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
             animation: sections-icon-pulse 3s infinite ease-in-out;
-          ">${ICONS.navigation.sections}</div>
+          " id="sectionsIcon">⚙️</div>
           
           <div style="flex: 1;">
             <h3 style="
@@ -3460,7 +3460,7 @@ textarea.input {
     
     <div class="profile-menu">
       <button class="profile-menu-btn" onclick="showAccount()">
-        <div class="menu-btn-icon">${ICONS.navigation.profile}</div>
+        <div class="menu-btn-icon" id="profileIcon">👤</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Аккаунт</div>
           <div class="menu-btn-desc">Личные данные и подписка</div>
@@ -3469,7 +3469,7 @@ textarea.input {
       </button>
       
       <button class="profile-menu-btn" onclick="showSettings()">
-        <div class="menu-btn-icon">${ICONS.navigation.settings}</div>
+        <div class="menu-btn-icon" id="settingsIcon">⚙️</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Настройки</div>
           <div class="menu-btn-desc">Уведомления и предпочтения</div>
@@ -3478,7 +3478,7 @@ textarea.input {
       </button>
       
       <button class="profile-menu-btn" onclick="showSupport()">
-        <div class="menu-btn-icon">${ICONS.navigation.support}</div>
+        <div class="menu-btn-icon" id="supportIcon">💬</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Поддержка</div>
           <div class="menu-btn-desc">Помощь и обратная связь</div>
@@ -3597,6 +3597,44 @@ let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
 let currentTab = 'tasks'; // Текущая активная вкладка
+
+// ИНИЦИАЛИЗАЦИЯ ИКОНОК - УСТАНАВЛИВАЕМ ИКОНКИ ЧЕРЕЗ JAVASCRIPT
+function initializeIcons() {
+  try {
+    // Навигационные иконки
+    const roomsBtn = document.getElementById('roomsBtn');
+    if (roomsBtn) roomsBtn.textContent = ICONS.navigation.home;
+    
+    const tasksIcon = document.getElementById('tasksIcon');
+    if (tasksIcon) tasksIcon.textContent = ICONS.navigation.tasks;
+    
+    const habitsIcon = document.getElementById('habitsIcon');
+    if (habitsIcon) habitsIcon.textContent = ICONS.navigation.habits;
+    
+    const nutritionIcon = document.getElementById('nutritionIcon');
+    if (nutritionIcon) nutritionIcon.textContent = ICONS.navigation.nutrition;
+    
+    const premiumIcon = document.getElementById('premiumIcon');
+    if (premiumIcon) premiumIcon.textContent = ICONS.navigation.premium;
+    
+    const sectionsIcon = document.getElementById('sectionsIcon');
+    if (sectionsIcon) sectionsIcon.textContent = ICONS.navigation.sections;
+    
+    // Иконки профиля
+    const profileIcon = document.getElementById('profileIcon');
+    if (profileIcon) profileIcon.textContent = ICONS.navigation.profile;
+    
+    const settingsIcon = document.getElementById('settingsIcon');
+    if (settingsIcon) settingsIcon.textContent = ICONS.navigation.settings;
+    
+    const supportIcon = document.getElementById('supportIcon');
+    if (supportIcon) supportIcon.textContent = ICONS.navigation.support;
+    
+    console.log('✅ Иконки успешно инициализированы');
+  } catch (e) {
+    console.error('❌ Ошибка при инициализации иконок:', e);
+  }
+}
 
 // UTILS
 function escapeHtml(text) {
@@ -4432,20 +4470,6 @@ function showProfile() {
     loadProfileData();
     console.log('✅ Экран профиля успешно показан');
   }, 200);
-}
-  }
-  if (bottomNav) {
-    bottomNav.style.opacity = '0';
-    setTimeout(() => bottomNav.style.display = 'none', 300);
-  }
-  
-  currentModal = 'profile';
-  if (tg) tg.BackButton.show();
-  
-  // Загружаем данные профиля после анимации
-  setTimeout(() => {
-    loadProfileData();
-  }, 100);
 }
 
 function hideProfile() {
@@ -7221,6 +7245,9 @@ function showHabitsTab() {
 document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('DOMContentLoaded - начинаем инициализацию приложения');
+    
+    // КРИТИЧЕСКИ ВАЖНО: Сначала инициализируем иконки
+    initializeIcons();
     
     // КРИТИЧЕСКИ ВАЖНО: Сначала загружаем данные
     loadData();

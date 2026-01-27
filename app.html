@@ -487,21 +487,21 @@ body{
 /* КРУГЛЫЙ ПРОГРЕСС-БАР */
 .progress-circle-container {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   z-index: 1;
 }
 .progress-circle {
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
     rgba(0, 0, 0, 0.2) 0deg
   );
-  padding: 6px;
+  padding: 5px;
   box-shadow: 
-    0 8px 32px rgba(99, 102, 241, 0.3),
+    0 6px 24px rgba(99, 102, 241, 0.3),
     0 0 0 2px rgba(99, 102, 241, 0.2) inset;
   position: relative;
   overflow: hidden;
@@ -520,7 +520,7 @@ body{
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5) inset;
 }
 .progress-percentage {
-  font-size: 28px; /* Увеличено с 24px */
+  font-size: 20px; /* Уменьшено с 28px */
   font-weight: 900; /* Увеличен вес шрифта */
   color: var(--text-primary);
   text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
@@ -565,15 +565,15 @@ body{
 @keyframes completion-glow {
   0%, 100% { 
     box-shadow: 
-      0 16px 48px rgba(99, 102, 241, 0.5),
-      0 0 0 4px rgba(99, 102, 241, 0.3) inset,
-      0 0 32px rgba(99, 102, 241, 0.4);
+      0 12px 36px rgba(99, 102, 241, 0.5),
+      0 0 0 3px rgba(99, 102, 241, 0.3) inset,
+      0 0 24px rgba(99, 102, 241, 0.4);
   }
   50% { 
     box-shadow: 
-      0 20px 60px rgba(99, 102, 241, 0.7),
-      0 0 0 6px rgba(99, 102, 241, 0.5) inset,
-      0 0 48px rgba(99, 102, 241, 0.6);
+      0 16px 48px rgba(99, 102, 241, 0.7),
+      0 0 0 4px rgba(99, 102, 241, 0.5) inset,
+      0 0 36px rgba(99, 102, 241, 0.6);
   }
 }
 @keyframes completion-shimmer {

@@ -2882,6 +2882,33 @@ textarea.input {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.edit-room{
+  background:rgba(99,102,241,0.1);
+  backdrop-filter: blur(10px);
+  border:1px solid rgba(99,102,241,0.2);
+  color:#6366f1;
+  font-size:14px;
+  cursor:pointer;
+  padding:var(--spacing-xs);
+  border-radius:var(--spacing-xs);
+  font-weight:500;
+  margin-right:var(--spacing-xs);
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+}
+.edit-room:hover{
+  background:rgba(99,102,241,0.2);
+  border-color:rgba(99,102,241,0.4);
+  color:#8b5cf6;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.edit-room:active{
+  opacity:0.7;
+  transform:scale(0.95);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .add-room-fab{
   position:fixed;
   bottom:var(--spacing-2xl);
@@ -3923,6 +3950,27 @@ function syncSectionsToPlans(date) {
     if (isSectionActiveOnDate(section, date)) {
       console.log(`Раздел "${section.name}" активен на ${dateStr}`);
       
+      // Убеждаемся что раздел существует в rooms с правильной иконкой
+      const existingRoom = rooms.find(room => {
+        const roomName = typeof room === 'string' ? room : room.name;
+        return roomName === section.name;
+      });
+      
+      if (!existingRoom) {
+        // Создаем раздел в rooms с иконкой из рутинного раздела
+        rooms.push({
+          name: section.name,
+          icon: section.icon
+        });
+        saveRooms();
+        console.log(`Создан раздел "${section.name}" с иконкой ${section.icon}`);
+      } else if (typeof existingRoom === 'object' && existingRoom.icon !== section.icon) {
+        // Синхронизируем иконку если она отличается
+        existingRoom.icon = section.icon;
+        saveRooms();
+        console.log(`Синхронизирована иконка раздела "${section.name}" на ${section.icon}`);
+      }
+      
       // Проверяем каждую шаблонную задачу из раздела
       section.templateTasks.forEach(template => {
         // Проверяем, не существует ли уже такая задача
@@ -3947,7 +3995,7 @@ function syncSectionsToPlans(date) {
           };
           
           plans.push(newTask);
-          console.log(`Создана задача из раздела: "${newTask.title}"`);
+          console.log(`Создана задача из раздела: "${newTask.title}" с разделом "${section.name}"`);
         }
       });
     } else {
@@ -3970,6 +4018,11 @@ function syncSectionsToPlans(date) {
   
   // Сохраняем изменения
   savePlans();
+  
+  // Обновляем интерфейс если нужно
+  if (typeof updateRoomsSelect === 'function') {
+    updateRoomsSelect();
+  }
 }
 
 // Инициализирует синхронизацию разделов при старте приложения
@@ -4164,6 +4217,7 @@ function renderRooms() {
           <div class="room-item">
             <div class="room-icon">${roomIcon}</div>
             <div class="room-name">${escapeHtml(roomName)}</div>
+            <button class="edit-room" onclick="editRoom('${escapeHtml(roomName)}')">Редактировать</button>
             <button class="delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
           </div>
         `;
@@ -5347,6 +5401,118 @@ function addRoom() {
   saveRooms();
   renderRooms();
   updateRoomsSelect();
+  hidePopup();
+}
+
+function editRoom(roomName) {
+  console.log('Редактируем раздел:', roomName);
+  
+  // Находим раздел
+  const room = rooms.find(r => {
+    const name = typeof r === 'string' ? r : r.name;
+    return name === roomName;
+  });
+  
+  if (!room) {
+    console.error('Раздел не найден:', roomName);
+    return;
+  }
+  
+  const currentName = typeof room === 'string' ? room : room.name;
+  const currentIcon = typeof room === 'string' ? ICONS.navigation.home : room.icon;
+  
+  // Устанавливаем текущую иконку для редактирования
+  selectedRoomIcon = currentIcon;
+  
+  // Показываем селектор иконок с текущей иконкой
+  const roomIcons = ICONS.getAllForSelection();
+  
+  // Создаем HTML для селектора иконок
+  let iconSelectorHTML = '<div class="icon-selector">';
+  roomIcons.forEach(icon => {
+    const selectedClass = icon === selectedRoomIcon ? 'selected' : '';
+    iconSelectorHTML += `
+      <div class="icon-option ${selectedClass}" onclick="selectRoomIcon('${icon}')">
+        ${icon}
+      </div>
+    `;
+  });
+  iconSelectorHTML += '</div>';
+  
+  // Показываем попап с редактированием
+  document.getElementById('popupTitle').textContent = 'Редактировать раздел';
+  document.getElementById('popupMessage').innerHTML = `
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">Название:</label>
+      <input type="text" id="editRoomName" value="${escapeHtml(currentName)}" 
+             style="width: 100%; padding: 12px; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg-card);">
+    </div>
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">Иконка:</label>
+      ${iconSelectorHTML}
+    </div>
+  `;
+  
+  const buttonsContainer = document.getElementById('popupButtons');
+  buttonsContainer.innerHTML = `
+    <button class="popup-btn cancel" onclick="hidePopup()">Отмена</button>
+    <button class="popup-btn confirm" onclick="saveEditedRoom('${escapeHtml(currentName)}')">Сохранить</button>
+  `;
+  
+  document.getElementById('popup').classList.add('show');
+}
+
+function saveEditedRoom(oldName) {
+  const newName = document.getElementById('editRoomName').value.trim();
+  
+  if (!newName) {
+    alert('Введите название раздела');
+    return;
+  }
+  
+  // Проверяем, не существует ли уже раздел с таким именем (кроме текущего)
+  const existingRoom = rooms.find(r => {
+    const name = typeof r === 'string' ? r : r.name;
+    return name === newName && name !== oldName;
+  });
+  
+  if (existingRoom) {
+    alert('Раздел с таким названием уже существует');
+    return;
+  }
+  
+  // Находим и обновляем раздел
+  const roomIndex = rooms.findIndex(r => {
+    const name = typeof r === 'string' ? r : r.name;
+    return name === oldName;
+  });
+  
+  if (roomIndex !== -1) {
+    // Обновляем раздел
+    rooms[roomIndex] = {
+      name: newName,
+      icon: selectedRoomIcon
+    };
+    
+    // Обновляем все планы, которые используют этот раздел
+    plans.forEach(plan => {
+      if (plan.room === oldName) {
+        plan.room = newName;
+      }
+    });
+    
+    // Сохраняем изменения
+    saveRooms();
+    savePlans();
+    
+    // Обновляем интерфейс
+    renderRooms();
+    updateRoomsSelect();
+    renderPlans();
+    
+    console.log(`✅ Раздел "${oldName}" переименован в "${newName}" с иконкой ${selectedRoomIcon}`);
+  }
+  
   hidePopup();
 }
 

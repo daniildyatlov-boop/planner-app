@@ -3635,6 +3635,7 @@ let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
 let deletedSectionTasks = {}; // НОВАЯ СИСТЕМА: запоминаем удаленные пользователем задачи из разделов
+let deletedTaskIds = new Set(); // НОВАЯ СИСТЕМА: запоминаем ID всех удаленных задач
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
@@ -3797,6 +3798,18 @@ function loadData() {
       savePlans();
     }
     
+    // НОВАЯ СИСТЕМА: Фильтруем удаленные задачи после загрузки данных об удаленных ID
+    // Эта функция будет вызвана после loadDeletedTaskIds() в инициализации
+    window.filterDeletedTasksAfterLoad = function() {
+      const initialLength = plans.length;
+      plans = plans.filter(plan => !deletedTaskIds.has(plan.id));
+      const filteredCount = initialLength - plans.length;
+      if (filteredCount > 0) {
+        console.log(`🗑️ Отфильтровано ${filteredCount} удаленных задач при загрузке`);
+        savePlans(); // Сохраняем очищенный список
+      }
+    };
+    
     // Миграция старых разделов (строки) в новый формат (объекты)
     if (rooms.length > 0 && typeof rooms[0] === 'string') {
       const defaultIcons = ICONS.rooms;
@@ -3911,6 +3924,25 @@ function loadDeletedSectionTasks() {
   }
 }
 
+// НОВАЯ СИСТЕМА: Управление удаленными ID задач
+function saveDeletedTaskIds() {
+  try {
+    localStorage.setItem('planner_deleted_task_ids', JSON.stringify([...deletedTaskIds]));
+  } catch (e) {
+    console.error('Ошибка при сохранении удаленных ID задач:', e);
+  }
+}
+
+function loadDeletedTaskIds() {
+  try {
+    const saved = localStorage.getItem('planner_deleted_task_ids');
+    deletedTaskIds = saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch (e) {
+    console.error('Ошибка при загрузке удаленных ID задач:', e);
+    deletedTaskIds = new Set();
+  }
+}
+
 // Помечает задачу раздела как удаленную пользователем
 function markSectionTaskAsDeleted(dateStr, sectionId, templateId) {
   if (!deletedSectionTasks[dateStr]) {
@@ -3964,6 +3996,8 @@ function cleanupOldDeletedTasks() {
   const cutoffDateStr = thirtyDaysAgo.toISOString().split('T')[0];
   
   let hasChanges = false;
+  
+  // Очищаем удаленные задачи разделов
   Object.keys(deletedSectionTasks).forEach(dateStr => {
     if (dateStr < cutoffDateStr) {
       delete deletedSectionTasks[dateStr];
@@ -3973,6 +4007,18 @@ function cleanupOldDeletedTasks() {
   
   if (hasChanges) {
     saveDeletedSectionTasks();
+  }
+  
+  // Очищаем удаленные ID задач (удаляем ID задач старше 30 дней)
+  // Для этого нужно проверить, есть ли еще задачи с этими ID в актуальных данных
+  const currentTaskIds = new Set(plans.map(p => p.id));
+  const oldDeletedIds = [...deletedTaskIds].filter(id => !currentTaskIds.has(id));
+  
+  // Если есть старые ID, которых уже нет в актуальных задачах, можем их удалить
+  if (oldDeletedIds.length > 0) {
+    oldDeletedIds.forEach(id => deletedTaskIds.delete(id));
+    saveDeletedTaskIds();
+    console.log(`🧹 Очищено ${oldDeletedIds.length} старых удаленных ID задач`);
   }
 }
 
@@ -4030,7 +4076,9 @@ function syncSectionsToPlans(date) {
       // Проверяем каждую шаблонную задачу из раздела
       section.templateTasks.forEach(template => {
         // НОВАЯ ЛОГИКА: Проверяем, не была ли задача удалена пользователем
-        if (isSectionTaskDeleted(dateStr, section.id, template.id)) {
+        const isDeleted = isSectionTaskDeleted(dateStr, section.id, template.id);
+        
+        if (isDeleted) {
           return; // Пропускаем удаленные пользователем задачи
         }
         
@@ -4069,6 +4117,9 @@ function syncSectionsToPlans(date) {
       ));
       
       const removedCount = initialCount - plans.length;
+      if (removedCount > 0) {
+        console.log(`🗑️ Удалено ${removedCount} задач неактивного раздела "${section.name}"`);
+      }
     }
   });
   
@@ -4085,12 +4136,6 @@ function syncSectionsToPlans(date) {
 function initSectionsSync() {
   // Загружаем разделы
   loadSections();
-  
-  // НОВАЯ СИСТЕМА: Загружаем данные об удаленных задачах
-  loadDeletedSectionTasks();
-  
-  // Очищаем старые записи об удаленных задачах
-  cleanupOldDeletedTasks();
   
   // Создаем демонстрационные разделы если их нет
   if (sections.length === 0) {
@@ -4138,7 +4183,10 @@ function initSectionsSync() {
     saveSections();
   }
   
-  // Синхронизируем на текущую дату
+  // Очищаем старые записи об удаленных задачах
+  cleanupOldDeletedTasks();
+  
+  // Синхронизируем на текущую дату (данные об удаленных задачах уже загружены)
   syncSectionsToPlans(currentDate);
 }
 
@@ -5128,9 +5176,16 @@ function confirmDeleteFromEdit() {
   
   // НОВАЯ ЛОГИКА: Находим задачу и проверяем, создана ли она из раздела
   const planToDelete = plans.find(p => p.id === selectedPlanId);
-  if (planToDelete && planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
-    // Помечаем задачу раздела как удаленную пользователем
-    markSectionTaskAsDeleted(planToDelete.date, planToDelete.sectionId, planToDelete.templateId);
+  
+  if (planToDelete) {
+    // Добавляем ID в список удаленных задач
+    deletedTaskIds.add(selectedPlanId);
+    saveDeletedTaskIds();
+    
+    // Если задача создана из раздела, помечаем ее специально
+    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
+      markSectionTaskAsDeleted(planToDelete.date, planToDelete.sectionId, planToDelete.templateId);
+    }
   }
   
   const initialLength = plans.length;
@@ -5201,9 +5256,16 @@ function confirmDeletePlan() {
   
   // НОВАЯ ЛОГИКА: Находим задачу и проверяем, создана ли она из раздела
   const planToDelete = plans.find(p => p.id === selectedPlanId);
-  if (planToDelete && planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
-    // Помечаем задачу раздела как удаленную пользователем
-    markSectionTaskAsDeleted(planToDelete.date, planToDelete.sectionId, planToDelete.templateId);
+  
+  if (planToDelete) {
+    // Добавляем ID в список удаленных задач
+    deletedTaskIds.add(selectedPlanId);
+    saveDeletedTaskIds();
+    
+    // Если задача создана из раздела, помечаем ее специально
+    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
+      markSectionTaskAsDeleted(planToDelete.date, planToDelete.sectionId, planToDelete.templateId);
+    }
   }
   
   const initialLength = plans.length;
@@ -8100,6 +8162,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // КРИТИЧЕСКИ ВАЖНО: Загружаем данные
     loadData();
+    
+    // НОВАЯ СИСТЕМА: Загружаем данные об удаленных задачах ПЕРЕД синхронизацией
+    loadDeletedSectionTasks();
+    loadDeletedTaskIds();
+    
+    // НОВАЯ СИСТЕМА: Фильтруем удаленные задачи после загрузки ID
+    if (typeof window.filterDeletedTasksAfterLoad === 'function') {
+      window.filterDeletedTasksAfterLoad();
+    }
     
     // НОВАЯ СИСТЕМА: Инициализируем синхронизацию разделов
     initSectionsSync();

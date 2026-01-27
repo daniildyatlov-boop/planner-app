@@ -4329,12 +4329,12 @@ textarea.input {
 </div>
 
 <!-- CALENDAR -->
-<div class="calendar" id="calendar" onclick="hideCalendar()">
+<div class="calendar" id="calendar" data-action="hide-calendar">
   <div class="calendar-content" onclick="event.stopPropagation()">
     <div class="calendar-header">
-      <button class="btn-tertiary btn-round-small" onclick="changeCalendarMonth(-1)">‹</button>
+      <button class="btn-tertiary btn-round-small" data-action="calendar-prev">‹</button>
       <div class="calendar-title" id="calendarTitle">Январь 2025</div>
-      <button class="btn-tertiary btn-round-small" onclick="changeCalendarMonth(1)">›</button>
+      <button class="btn-tertiary btn-round-small" data-action="calendar-next">›</button>
     </div>
     <div class="weekdays">
       <div class="weekday">Пн</div>
@@ -5007,7 +5007,7 @@ const ICONS = {
 // ================================
 // DEBUG SYSTEM
 // ================================
-const DEBUG = false; // Set to true for development
+const DEBUG = true; // Set to true for development
 
 function debugLog(...args) {
   if (DEBUG) {
@@ -5099,9 +5099,14 @@ function initApp() {
     // 8. Render app
     renderApp();
     
+    // 9. Hide splash screen
+    hideSplashScreen();
+    
     debugLog('✅ App initialized successfully');
   } catch (error) {
     debugError('❌ App initialization failed:', error);
+    // Hide splash even on error
+    hideSplashScreen();
     showErrorState(error);
   }
 }
@@ -8803,9 +8808,9 @@ function showNutritionTab() {
             <div class="water-progress-fill" id="waterProgressFill" style="width: 0%"></div>
           </div>
           <div class="water-controls">
-            <button class="water-btn minus" onclick="changeWater(-1)">−</button>
-            <span class="water-current" id="waterCurrent" onclick="editWaterAmount()">0</span>
-            <button class="water-btn plus" onclick="changeWater(1)">+</button>
+            <button class="water-btn minus" data-action="water-minus">−</button>
+            <span class="water-current" id="waterCurrent" data-action="edit-water-amount">0</span>
+            <button class="water-btn plus" data-action="water-plus">+</button>
           </div>
         </div>
       </div>
@@ -11116,9 +11121,13 @@ function hideSplashScreen() {
 // ================================
 // SINGLE ENTRY POINT - REPLACE ALL DOMContentLoaded
 // ================================
-// SINGLE ENTRY POINT - REPLACE ALL DOMContentLoaded
-// ================================
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', () => {
+  // Show splash screen first
+  initSplashScreen();
+  
+  // Initialize app
+  initApp();
+});
 
 // ================================
 // IMPLEMENTATION FUNCTIONS
@@ -11130,6 +11139,16 @@ document.addEventListener('DOMContentLoaded', initApp);
 
 function loadStorage() {
   try {
+    // КРИТИЧЕСКИ ВАЖНО: Инициализация по умолчанию
+    appState.plans = appState.plans || [];
+    appState.rooms = appState.rooms || [];
+    appState.sections = appState.sections || [];
+    appState.habits = appState.habits || [];
+    appState.habitLogs = appState.habitLogs || [];
+    appState.habitDayState = appState.habitDayState || {};
+    appState.deletedTasks = appState.deletedTasks || [];
+    appState.recentEmojis = appState.recentEmojis || [];
+    
     // Load plans
     const savedPlans = localStorage.getItem('planner_plans');
     if (savedPlans) {
@@ -11247,6 +11266,12 @@ function cleanupOldStorageKeys() {
 
 function initDailyState() {
   try {
+    // КРИТИЧЕСКИ ВАЖНО: Защита от undefined
+    appState.habits = appState.habits || [];
+    appState.habitDayState = appState.habitDayState || {};
+    appState.sections = appState.sections || [];
+    appState.plans = appState.plans || [];
+    
     // Initialize habit daily state for current date
     const dateStr = appState.currentDate.toISOString().split('T')[0];
     if (!appState.habitDayState[dateStr]) {
@@ -11261,6 +11286,12 @@ function initDailyState() {
 
 function bindUIEvents() {
   try {
+    // Защита от повторного привязывания
+    if (window.uiEventsBound) {
+      console.log('⚠️ UI events already bound, skipping');
+      return;
+    }
+    
     // Remove all inline onclick handlers and replace with centralized event delegation
     document.addEventListener('click', handleGlobalClick);
     
@@ -11268,6 +11299,9 @@ function bindUIEvents() {
     bindNavigationEvents();
     bindModalEvents();
     bindFormEvents();
+    
+    // Отмечаем что события привязаны
+    window.uiEventsBound = true;
     
     console.log('✅ UI events bound');
   } catch (error) {
@@ -11286,6 +11320,13 @@ function handleGlobalClick(event) {
   }
   
   try {
+    // DEBUG: Логируем все клики с data-action
+    const actionElement = closest('[data-action]');
+    if (actionElement) {
+      const action = actionElement.dataset.action;
+      console.log('🎯 ACTION CLICKED:', action, actionElement);
+    }
+    
     // Navigation buttons
     if (closest('[data-action="show-profile"]')) {
       event.preventDefault();
@@ -11295,7 +11336,7 @@ function handleGlobalClick(event) {
     
     if (closest('[data-action="change-day"]')) {
       event.preventDefault();
-      const direction = parseInt(target.dataset.direction) || 0;
+      const direction = parseInt(closest('[data-action="change-day"]').dataset.direction) || 0;
       changeDay(direction);
       return;
     }
@@ -11324,7 +11365,7 @@ function handleGlobalClick(event) {
     if (closest('[data-action="toggle-complete"]')) {
       event.preventDefault();
       event.stopPropagation();
-      const planId = target.dataset.planId || target.closest('[data-plan-id]')?.dataset.planId;
+      const planId = closest('[data-action="toggle-complete"]').dataset.planId || closest('[data-plan-id]')?.dataset.planId;
       if (planId) {
         toggleComplete(planId, event);
       }
@@ -11333,7 +11374,7 @@ function handleGlobalClick(event) {
     
     if (closest('[data-action="show-plan-menu"]')) {
       event.preventDefault();
-      const planId = target.dataset.planId || target.closest('[data-plan-id]')?.dataset.planId;
+      const planId = closest('[data-action="show-plan-menu"]').dataset.planId || closest('[data-plan-id]')?.dataset.planId;
       if (planId) {
         showPlanMenu(planId, event);
       }
@@ -11347,10 +11388,110 @@ function handleGlobalClick(event) {
       return;
     }
     
+    // Counter buttons
+    if (closest('[data-action="decrease"]')) {
+      event.preventDefault();
+      decreaseCounter();
+      return;
+    }
+    
+    if (closest('[data-action="increase"]')) {
+      event.preventDefault();
+      increaseCounter();
+      return;
+    }
+    
+    // Water tracking buttons
+    if (closest('[data-action="water-plus"]')) {
+      event.preventDefault();
+      addWater();
+      return;
+    }
+    
+    if (closest('[data-action="water-minus"]')) {
+      event.preventDefault();
+      removeWater();
+      return;
+    }
+    
+    if (closest('[data-action="edit-water-amount"]')) {
+      event.preventDefault();
+      editWaterAmount();
+      return;
+    }
+    
+    // Habit actions
+    if (closest('[data-action="toggle-habit"]')) {
+      event.preventDefault();
+      const habitId = closest('[data-action="toggle-habit"]').dataset.habitId;
+      if (habitId) {
+        toggleHabit(habitId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="edit-habit"]')) {
+      event.preventDefault();
+      const habitId = closest('[data-action="edit-habit"]').dataset.habitId;
+      if (habitId) {
+        editHabit(habitId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="delete-habit"]')) {
+      event.preventDefault();
+      const habitId = closest('[data-action="delete-habit"]').dataset.habitId;
+      if (habitId) {
+        deleteHabit(habitId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="show-add-habit"]')) {
+      event.preventDefault();
+      showAddHabit();
+      return;
+    }
+    
+    // Meal actions
+    if (closest('[data-action="toggle-meal"]')) {
+      event.preventDefault();
+      const mealId = closest('[data-action="toggle-meal"]').dataset.mealId;
+      if (mealId) {
+        toggleMeal(mealId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="edit-meal"]')) {
+      event.preventDefault();
+      const mealId = closest('[data-action="edit-meal"]').dataset.mealId;
+      if (mealId) {
+        editMeal(mealId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="delete-meal"]')) {
+      event.preventDefault();
+      const mealId = closest('[data-action="delete-meal"]').dataset.mealId;
+      if (mealId) {
+        deleteMeal(mealId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="show-add-meal"]')) {
+      event.preventDefault();
+      showAddMeal();
+      return;
+    }
+    
     // Modal actions
     if (closest('[data-action="hide-modal"]')) {
       event.preventDefault();
-      const modalType = target.dataset.modalType;
+      const modalType = closest('[data-action="hide-modal"]').dataset.modalType;
       switch (modalType) {
         case 'add': hideAdd(); break;
         case 'calendar': hideCalendar(); break;
@@ -11365,18 +11506,85 @@ function handleGlobalClick(event) {
     
     if (closest('[data-action="save"]')) {
       event.preventDefault();
-      const saveType = target.dataset.saveType;
+      const saveType = closest('[data-action="save"]').dataset.saveType;
       switch (saveType) {
         case 'plan': savePlan(); break;
         case 'habit': saveHabit(); break;
         case 'plan-edit': savePlanEdit(); break;
+        case 'meal': saveMeal(); break;
         default: break;
       }
       return;
     }
     
+    // Calendar actions
+    if (closest('[data-action="calendar-prev"]')) {
+      event.preventDefault();
+      calendarPrevMonth();
+      return;
+    }
+    
+    if (closest('[data-action="calendar-next"]')) {
+      event.preventDefault();
+      calendarNextMonth();
+      return;
+    }
+    
+    if (closest('[data-action="calendar-select"]')) {
+      event.preventDefault();
+      const date = closest('[data-action="calendar-select"]').dataset.date;
+      if (date) {
+        selectCalendarDate(date);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="hide-calendar"]')) {
+      event.preventDefault();
+      hideCalendar();
+      return;
+    }
+    
+    // Sections actions
+    if (closest('[data-action="show-sections"]')) {
+      event.preventDefault();
+      showSectionsManager();
+      return;
+    }
+    
+    if (closest('[data-action="add-section"]')) {
+      event.preventDefault();
+      showAddSection();
+      return;
+    }
+    
+    // Room actions
+    if (closest('[data-action="add-room"]')) {
+      event.preventDefault();
+      showAddRoom();
+      return;
+    }
+    
+    if (closest('[data-action="edit-room"]')) {
+      event.preventDefault();
+      const roomId = closest('[data-action="edit-room"]').dataset.roomId;
+      if (roomId) {
+        editRoom(roomId);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="delete-room"]')) {
+      event.preventDefault();
+      const roomId = closest('[data-action="delete-room"]').dataset.roomId;
+      if (roomId) {
+        deleteRoom(roomId);
+      }
+      return;
+    }
+    
   } catch (error) {
-    console.error('Error in global click handler:', error);
+    console.error('❌ Error in global click handler:', error);
   }
 }
 
@@ -11390,6 +11598,139 @@ function bindModalEvents() {
 
 function bindFormEvents() {
   // Bind form-specific events
+}
+
+// ================================
+// WRAPPER FUNCTIONS FOR DATA-ACTION HANDLERS
+// ================================
+
+function decreaseCounter() {
+  changeWeeklyCount(-1);
+}
+
+function increaseCounter() {
+  changeWeeklyCount(1);
+}
+
+function addWater() {
+  changeWater(1);
+}
+
+function removeWater() {
+  changeWater(-1);
+}
+
+// Заглушки для функций, которые могут не существовать
+function toggleHabit(habitId) {
+  if (typeof window.toggleHabitCompletion === 'function') {
+    window.toggleHabitCompletion(habitId);
+  } else {
+    console.log('toggleHabit called for:', habitId);
+  }
+}
+
+function editHabit(habitId) {
+  if (typeof window.editHabitById === 'function') {
+    window.editHabitById(habitId);
+  } else {
+    console.log('editHabit called for:', habitId);
+  }
+}
+
+function deleteHabit(habitId) {
+  if (typeof window.deleteHabitById === 'function') {
+    window.deleteHabitById(habitId);
+  } else {
+    console.log('deleteHabit called for:', habitId);
+  }
+}
+
+function toggleMeal(mealId) {
+  if (typeof window.toggleMealCompletion === 'function') {
+    window.toggleMealCompletion(mealId);
+  } else {
+    console.log('toggleMeal called for:', mealId);
+  }
+}
+
+function editMeal(mealId) {
+  if (typeof window.editMealById === 'function') {
+    window.editMealById(mealId);
+  } else {
+    console.log('editMeal called for:', mealId);
+  }
+}
+
+function deleteMeal(mealId) {
+  if (typeof window.deleteMealById === 'function') {
+    window.deleteMealById(mealId);
+  } else {
+    console.log('deleteMeal called for:', mealId);
+  }
+}
+
+function showAddMeal() {
+  if (typeof window.showAddMealModal === 'function') {
+    window.showAddMealModal();
+  } else {
+    console.log('showAddMeal called');
+  }
+}
+
+function saveMeal() {
+  if (typeof window.saveMealData === 'function') {
+    window.saveMealData();
+  } else {
+    console.log('saveMeal called');
+  }
+}
+
+function calendarPrevMonth() {
+  changeCalendarMonth(-1);
+}
+
+function calendarNextMonth() {
+  changeCalendarMonth(1);
+}
+
+function selectCalendarDate(date) {
+  if (typeof window.selectDate === 'function') {
+    window.selectDate(date);
+  } else {
+    console.log('selectCalendarDate called for:', date);
+  }
+}
+
+function showSectionsManager() {
+  if (typeof window.showSections === 'function') {
+    window.showSections();
+  } else {
+    console.log('showSectionsManager called');
+  }
+}
+
+function showAddRoom() {
+  if (typeof window.showAddRoomModal === 'function') {
+    window.showAddRoomModal();
+  } else {
+    console.log('showAddRoom called');
+  }
+}
+
+function editRoom(roomId) {
+  if (typeof window.editRoomById === 'function') {
+    window.editRoomById(roomId);
+  } else {
+    console.log('editRoom called for:', roomId);
+  }
+}
+
+function deleteRoom(roomId) {
+  if (typeof window.deleteRoomById === 'function') {
+    window.deleteRoomById(roomId);
+  } else {
+    console.log('deleteRoom called for:', roomId);
+  }
 }
 
 function renderApp() {

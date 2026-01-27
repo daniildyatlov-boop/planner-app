@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Init Debug Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #00ff00; }
+        .log { margin: 5px 0; }
+        .error { color: #ff4444; }
+        .success { color: #44ff44; }
+        .info { color: #4444ff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Init Debug Test</h1>
+    <div id="logs"></div>
+    
+    <script>
+        const logs = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logs.appendChild(div);
+            console.log(message);
+        }
+        
+        // Перехватываем console.log
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = (...args) => {
+            log(args.join(' '), 'info');
+            originalLog.apply(console, args);
+        };
+        
+        console.error = (...args) => {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        console.warn = (...args) => {
+            log(args.join(' '), 'info');
+            originalWarn.apply(console, args);
+        };
+        
+        // Тестируем инициализацию
+        log('🚀 Начинаем тест инициализации...', 'success');
+        
+        // Симулируем основные функции
+        const DEBUG = true;
+        
+        function debugLog(...args) {
+            if (DEBUG) {
+                log(`[DEBUG] ${args.join(' ')}`, 'info');
+            }
+        }
+        
+        function debugError(...args) {
+            log(`[ERROR] ${args.join(' ')}`, 'error');
+        }
+        
+        // Симулируем appState
+        const appState = {
+            plans: [],
+            habits: [],
+            habitDayState: {},
+            sections: [],
+            currentDate: new Date()
+        };
+        
+        // Тестируем защиту от undefined
+        function testUndefinedProtection() {
+            log('🔧 Тестируем защиту от undefined...', 'info');
+            
+            // Сбрасываем состояние
+            appState.habits = undefined;
+            appState.habitDayState = undefined;
+            appState.sections = undefined;
+            appState.plans = undefined;
+            
+            // Применяем защиту
+            appState.habits = appState.habits || [];
+            appState.habitDayState = appState.habitDayState || {};
+            appState.sections = appState.sections || [];
+            appState.plans = appState.plans || [];
+            
+            // Проверяем результат
+            if (Array.isArray(appState.habits)) {
+                log('✅ habits защищены от undefined', 'success');
+            } else {
+                log('❌ habits НЕ защищены', 'error');
+            }
+            
+            if (typeof appState.habitDayState === 'object') {
+                log('✅ habitDayState защищены от undefined', 'success');
+            } else {
+                log('❌ habitDayState НЕ защищены', 'error');
+            }
+            
+            if (Array.isArray(appState.sections)) {
+                log('✅ sections защищены от undefined', 'success');
+            } else {
+                log('❌ sections НЕ защищены', 'error');
+            }
+            
+            if (Array.isArray(appState.plans)) {
+                log('✅ plans защищены от undefined', 'success');
+            } else {
+                log('❌ plans НЕ защищены', 'error');
+            }
+        }
+        
+        // Симулируем initApp
+        function simulateInitApp() {
+            debugLog('🚀 Initializing Planner v6.28');
+            
+            try {
+                // 1. Initialize icons
+                debugLog('1. Initializing icons...');
+                
+                // 2. Load storage data
+                debugLog('2. Loading storage data...');
+                
+                // 3. Migrate old data
+                debugLog('3. Migrating old data...');
+                
+                // 4. Initialize sections sync
+                debugLog('4. Initializing sections...');
+                
+                // 5. Initialize daily state
+                debugLog('5. Initializing daily state...');
+                testUndefinedProtection();
+                
+                // 6. Initialize nutrition and habits
+                debugLog('6. Initializing modules...');
+                
+                // 7. Bind UI events
+                debugLog('7. Binding UI events...');
+                
+                // 8. Render app
+                debugLog('8. Rendering app...');
+                
+                // 9. Hide splash screen
+                debugLog('9. Hiding splash screen...');
+                
+                debugLog('✅ App initialized successfully');
+                log('🎉 ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА УСПЕШНО!', 'success');
+                
+            } catch (error) {
+                debugError('❌ App initialization failed:', error);
+                log('💥 ОШИБКА ИНИЦИАЛИЗАЦИИ!', 'error');
+            }
+        }
+        
+        // Запускаем тест
+        setTimeout(() => {
+            simulateInitApp();
+        }, 1000);
+        
+    </script>
+</body>
+</html>

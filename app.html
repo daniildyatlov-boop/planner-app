@@ -3930,7 +3930,7 @@ function renderRooms() {
     }
     
     let html = '';
-    rooms.forEach((room) => {
+    rooms.forEach((room, index) => {
       try {
         // Поддерживаем старый формат (строки) и новый (объекты)
         const roomName = typeof room === 'string' ? room : room.name;
@@ -3943,8 +3943,8 @@ function renderRooms() {
               <div class="room-name">${escapeHtml(roomName)}</div>
             </div>
             <div class="room-actions">
-              <button class="room-action-btn configure-room" onclick="configureRoom('${escapeHtml(roomName)}')" title="Настроить шаблоны">⚙️</button>
-              <button class="room-action-btn delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')" title="Удалить раздел">🗑️</button>
+              <button class="room-action-btn configure-room" data-room-name="${escapeHtml(roomName)}" title="Настроить шаблоны">⚙️</button>
+              <button class="room-action-btn delete-room" data-room-name="${escapeHtml(roomName)}" title="Удалить раздел">🗑️</button>
             </div>
           </div>
         `;
@@ -3952,7 +3952,29 @@ function renderRooms() {
         console.error('Ошибка при рендеринге раздела:', e);
       }
     });
+    
     roomsList.innerHTML = html;
+    
+    // Добавляем обработчики событий
+    const configureButtons = roomsList.querySelectorAll('.configure-room');
+    const deleteButtons = roomsList.querySelectorAll('.delete-room');
+    
+    configureButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const roomName = e.target.getAttribute('data-room-name');
+        console.log('Клик по кнопке настроек для раздела:', roomName);
+        configureRoom(roomName);
+      });
+    });
+    
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const roomName = e.target.getAttribute('data-room-name');
+        console.log('Клик по кнопке удаления для раздела:', roomName);
+        deleteRoom(roomName);
+      });
+    });
+    
   } catch (e) {
     console.error('Ошибка в renderRooms:', e);
   }

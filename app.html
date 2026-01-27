@@ -3943,7 +3943,7 @@ function renderRooms() {
               <div class="room-name">${escapeHtml(roomName)}</div>
             </div>
             <div class="room-actions">
-              <button class="room-action-btn configure-room" onclick="alert('Настройка раздела: ${roomName}'); window.configureRoom('${roomName}')" title="Настроить шаблоны">⚙️</button>
+              <button class="room-action-btn configure-room" onclick="window.configureRoom('${roomName}')" title="Настроить шаблоны">⚙️</button>
               <button class="room-action-btn delete-room" onclick="deleteRoom('${roomName}')" title="Удалить раздел">🗑️</button>
             </div>
           </div>
@@ -4032,10 +4032,14 @@ function showRoomConfigScreen(roomName) {
             <p class="templates-description">Создайте шаблоны планов, которые будут автоматически добавляться по расписанию</p>
             
             <div class="templates-list" id="templatesList">
-              ${renderTemplates(templates)}
+              <div class="empty-templates">
+                <div class="empty-icon">📋</div>
+                <p>Пока нет шаблонов</p>
+                <small>Добавьте первый шаблон плана</small>
+              </div>
             </div>
             
-            <button class="btn add-template-btn" onclick="addTemplate('${roomName}')">
+            <button class="btn add-template-btn" onclick="alert('Добавление шаблона для раздела: ${roomName}')">
               <span class="add-icon">+</span>
               Добавить шаблон
             </button>

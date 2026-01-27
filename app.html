@@ -2793,6 +2793,18 @@ textarea.input {
 .room-item:nth-child(2) { animation-delay: 0.15s; }
 .room-item:nth-child(3) { animation-delay: 0.2s; }
 
+.room-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.room-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .room-item:hover{
   transform: translateY(-2px);
   box-shadow:0 8px 32px rgba(0,0,0,0.3);
@@ -2822,24 +2834,230 @@ textarea.input {
   backdrop-filter: blur(10px);
   border:1px solid rgba(239,68,68,0.2);
   color:#ef4444;
-  font-size:14px;
+  font-size:16px;
   cursor:pointer;
-  padding:var(--spacing-xs);
-  border-radius:var(--spacing-xs);
+  padding:8px;
+  border-radius:8px;
   font-weight:500;
   transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .delete-room:hover{
   background:rgba(239,68,68,0.2);
   border-color:rgba(239,68,68,0.4);
-  transform: scale(1.05);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239,68,68,0.3);
 }
 .delete-room:active{
   opacity:0.7;
   transform:scale(0.95);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.configure-room {
+  background: rgba(99, 102, 241, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--accent-primary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.configure-room:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.configure-room:active {
+  opacity: 0.7;
+  transform: scale(0.95);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ROOM CONFIG SCREEN */
+.room-config-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.room-config-header {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: var(--bg-modal);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.room-config-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.room-config-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xl);
+}
+
+.room-config-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-3xl);
+  padding: var(--spacing-xl);
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.room-config-icon {
+  font-size: 32px;
+  margin-right: var(--spacing-lg);
+}
+
+.room-config-title h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.templates-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.templates-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2xl);
+  line-height: 1.5;
+}
+
+.empty-templates {
+  text-align: center;
+  padding: var(--spacing-3xl);
+  color: var(--text-secondary);
+}
+
+.empty-templates .empty-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.template-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--border-primary);
+}
+
+.template-info {
+  flex: 1;
+}
+
+.template-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.template-schedule {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.template-time {
+  font-size: 13px;
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.template-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.template-action-btn {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.template-action-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.delete-template {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.delete-template:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.add-template-btn {
+  width: 100%;
+  margin-top: var(--spacing-lg);
 }
 
 .add-room-fab{
@@ -3355,6 +3573,7 @@ if (tg) {
 let currentDate = new Date();
 let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
+let roomTemplates = {}; // Новая структура для шаблонов планов по разделам
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = '🏠'; // Выбранная иконка для нового раздела
@@ -3719,9 +3938,14 @@ function renderRooms() {
         
         html += `
           <div class="room-item">
-            <div class="room-icon">${roomIcon}</div>
-            <div class="room-name">${escapeHtml(roomName)}</div>
-            <button class="delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
+            <div class="room-info">
+              <div class="room-icon">${roomIcon}</div>
+              <div class="room-name">${escapeHtml(roomName)}</div>
+            </div>
+            <div class="room-actions">
+              <button class="room-action-btn configure-room" onclick="configureRoom('${escapeHtml(roomName)}')" title="Настроить шаблоны">⚙️</button>
+              <button class="room-action-btn delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')" title="Удалить раздел">🗑️</button>
+            </div>
           </div>
         `;
       } catch (e) {
@@ -3747,6 +3971,113 @@ function changeDay(direction) {
     currentDate.setDate(currentDate.getDate() + direction);
     render();
   }
+}
+
+// ROOM TEMPLATES - СИСТЕМА ШАБЛОНОВ ПЛАНОВ ДЛЯ РАЗДЕЛОВ
+function configureRoom(roomName) {
+  console.log('Настройка раздела:', roomName);
+  
+  // Показываем экран настройки раздела
+  showRoomConfigScreen(roomName);
+}
+
+function showRoomConfigScreen(roomName) {
+  const content = document.querySelector('.content');
+  const header = document.querySelector('.header');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  // Скрываем основные элементы
+  if (header) header.style.display = 'none';
+  if (bottomNav) bottomNav.style.display = 'none';
+  
+  // Получаем шаблоны для этого раздела
+  const templates = roomTemplates[roomName] || [];
+  
+  content.innerHTML = `
+    <div class="room-config-screen">
+      <div class="room-config-header">
+        <button class="header-btn" onclick="hideRoomConfig()">← Назад</button>
+        <h1>Настройка раздела</h1>
+        <div style="width: 60px;"></div>
+      </div>
+      
+      <div class="room-config-content">
+        <div class="room-config-title">
+          <div class="room-config-icon">${getRoomIcon(roomName)}</div>
+          <h2>${roomName}</h2>
+        </div>
+        
+        <div class="templates-section">
+          <h3>Шаблоны планов</h3>
+          <p class="templates-description">Создайте шаблоны планов, которые будут автоматически добавляться по расписанию</p>
+          
+          <div class="templates-list" id="templatesList">
+            ${renderTemplates(templates)}
+          </div>
+          
+          <button class="btn add-template-btn" onclick="addTemplate('${roomName}')">
+            <span class="add-icon">+</span>
+            Добавить шаблон
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTemplates(templates) {
+  if (templates.length === 0) {
+    return `
+      <div class="empty-templates">
+        <div class="empty-icon">📋</div>
+        <p>Пока нет шаблонов</p>
+        <small>Добавьте первый шаблон плана</small>
+      </div>
+    `;
+  }
+  
+  return templates.map(template => `
+    <div class="template-item">
+      <div class="template-info">
+        <div class="template-title">${escapeHtml(template.title)}</div>
+        <div class="template-schedule">${getScheduleText(template.schedule)}</div>
+        ${template.time ? `<div class="template-time">⏰ ${template.time}</div>` : ''}
+      </div>
+      <div class="template-actions">
+        <button class="template-action-btn edit-template" onclick="editTemplate('${template.id}')" title="Редактировать">✏️</button>
+        <button class="template-action-btn delete-template" onclick="deleteTemplate('${template.id}')" title="Удалить">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getScheduleText(schedule) {
+  switch (schedule.type) {
+    case 'daily':
+      return '📅 Каждый день';
+    case 'every-other-day':
+      return '📅 Через день';
+    case 'weekly':
+      const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const selectedDays = schedule.days.map(day => days[day]).join(', ');
+      return `📅 ${selectedDays}`;
+    case 'monthly':
+      return `📅 ${schedule.day} числа каждого месяца`;
+    default:
+      return '📅 По расписанию';
+  }
+}
+
+function hideRoomConfig() {
+  const header = document.querySelector('.header');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  // Показываем основные элементы
+  if (header) header.style.display = 'flex';
+  if (bottomNav) bottomNav.style.display = 'flex';
+  
+  // Возвращаемся к списку разделов
+  showRooms();
 }
 
 // MODALS & SCREENS

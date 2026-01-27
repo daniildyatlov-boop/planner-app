@@ -4957,7 +4957,6 @@ function showTabContent(tabName) {
           <h2>Планов нет</h2>
           <p>Добавьте первую задачу</p>
           <button class="btn" onclick="showAdd()">Добавить задачу</button>
-          <button class="btn" onclick="forceRestore()" style="margin-top: 10px; background: #ef4444;">🔄 Восстановить задачи</button>
         </div>
         
         <div class="plans-container" id="plansContainer" style="display:none">
@@ -5959,12 +5958,72 @@ function saveMeal(dateStr, mealType) {
       nutritionData.meals[dateStr][mealType] = {};
     }
     nutritionData.meals[dateStr][mealType].content = mealContent;
+    
+    // 🍽️ АВТОМАТИЧЕСКИ СОЗДАЕМ ЗАДАЧУ В ПЛАНАХ
+    // Получаем информацию о типе приема пищи
+    const mealTypes = {
+      'breakfast': { name: 'Завтрак', icon: '🌅' },
+      'lunch': { name: 'Обед', icon: '🍽️' },
+      'dinner': { name: 'Ужин', icon: '🌙' },
+      'snack': { name: 'Перекус', icon: '🍎' }
+    };
+    
+    const mealInfo = mealTypes[mealType] || { name: 'Прием пищи', icon: '🍽️' };
+    const taskTitle = `${mealInfo.icon} ${mealInfo.name}: ${mealContent}`;
+    
+    // Создаем новую задачу
+    const newTask = {
+      id: Date.now().toString() + '_meal_' + mealType,
+      title: taskTitle,
+      date: dateStr,
+      time: null, // Стандартные приемы пищи без времени
+      room: 'Питание',
+      completed: false,
+      createdFromMeal: true, // Помечаем что задача создана из приема пищи
+      mealId: mealType // Связываем с приемом пищи
+    };
+    
+    // Проверяем, не существует ли уже такая задача
+    const existingTask = plans.find(plan => 
+      plan.createdFromMeal && 
+      plan.mealId === mealType && 
+      plan.date === dateStr
+    );
+    
+    if (existingTask) {
+      // Обновляем существующую задачу
+      existingTask.title = taskTitle;
+      console.log('Обновлена существующая задача из приема пищи:', existingTask);
+    } else {
+      // Добавляем новую задачу
+      plans.push(newTask);
+      console.log('Автоматически создана задача из приема пищи:', newTask);
+    }
+    
+    savePlans();
   } else {
+    // Если содержимое пустое, удаляем прием пищи и связанную задачу
     delete nutritionData.meals[dateStr][mealType];
+    
+    // Удаляем связанную задачу
+    const initialPlansCount = plans.length;
+    plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealType && plan.date === dateStr));
+    const deletedTasksCount = initialPlansCount - plans.length;
+    
+    if (deletedTasksCount > 0) {
+      console.log(`Удалено связанных задач: ${deletedTasksCount}`);
+      savePlans();
+    }
   }
   
   saveNutritionData();
   renderNutritionDay();
+  
+  // Если мы на вкладке задач, обновляем их отображение
+  if (currentTab === 'tasks') {
+    render();
+  }
+  
   hidePopup();
 }
 

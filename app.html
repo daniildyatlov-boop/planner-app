@@ -3943,7 +3943,7 @@ function renderRooms() {
               <div class="room-name">${escapeHtml(roomName)}</div>
             </div>
             <div class="room-actions">
-              <button class="room-action-btn configure-room" onclick="window.configureRoom('${roomName}')" title="Настроить шаблоны">⚙️</button>
+              <button class="room-action-btn configure-room" onclick="alert('Настройка раздела: ${roomName}'); window.configureRoom('${roomName}')" title="Настроить шаблоны">⚙️</button>
               <button class="room-action-btn delete-room" onclick="deleteRoom('${roomName}')" title="Удалить раздел">🗑️</button>
             </div>
           </div>

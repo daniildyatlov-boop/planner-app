@@ -5219,7 +5219,9 @@ function renderNutritionDay() {
       return;
     }
     
-    const dateStr = currentNutritionDate.toDateString();
+    // ИСПРАВЛЕНО: используем правильный формат даты YYYY-MM-DD
+    const dateStr = currentNutritionDate.toISOString().split('T')[0];
+    console.log('renderNutritionDay dateStr:', dateStr);
     
     // Получаем приемы пищи для этого дня
     const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
@@ -5389,7 +5391,7 @@ function formatNutritionDate(date) {
 
 // Трекер воды
 function changeWater(delta) {
-  const dateStr = currentNutritionDate.toDateString();
+  const dateStr = currentNutritionDate.toISOString().split('T')[0]; // ИСПРАВЛЕНО: правильный формат даты
   
   // Получаем текущее количество воды для этого дня
   const currentAmount = nutritionData.water.daily[dateStr] || 0;
@@ -5402,7 +5404,7 @@ function changeWater(delta) {
 }
 
 function editWaterAmount() {
-  const dateStr = currentNutritionDate.toDateString();
+  const dateStr = currentNutritionDate.toISOString().split('T')[0]; // ИСПРАВЛЕНО: правильный формат даты
   const currentAmount = nutritionData.water.daily[dateStr] || 0;
   
   showPopup(
@@ -5438,7 +5440,7 @@ function saveWaterAmount() {
     return;
   }
   
-  const dateStr = currentNutritionDate.toDateString();
+  const dateStr = currentNutritionDate.toISOString().split('T')[0]; // ИСПРАВЛЕНО: правильный формат даты
   nutritionData.water.daily[dateStr] = newAmount;
   
   saveNutritionData();
@@ -5458,7 +5460,7 @@ function updateWaterTracker() {
     }
     
     // Получаем воду для текущего дня питания
-    const dateStr = currentNutritionDate.toDateString();
+    const dateStr = currentNutritionDate.toISOString().split('T')[0]; // ИСПРАВЛЕНО: правильный формат даты
     const current = nutritionData.water.daily[dateStr] || 0;
     const target = nutritionData.water.target;
     const percentage = (current / target) * 100;
@@ -5615,7 +5617,7 @@ function saveWaterSettings() {
 
 // Добавление нового типа приема пищи
 function addNewMealType() {
-  const dateStr = currentNutritionDate.toDateString();
+  const dateStr = currentNutritionDate.toISOString().split('T')[0]; // ИСПРАВЛЕНО: правильный формат даты
   
   // Показываем специальный селектор типов приемов пищи
   showMealTypeSelector(dateStr);
@@ -5675,7 +5677,7 @@ function closeMealTypeSelector() {
 }
 
 function selectMealType(typeId, typeName, typeIcon, defaultTime) {
-  const dateStr = currentNutritionDate.toDateString();
+  const dateStr = currentNutritionDate.toISOString().split('T')[0]; // ИСПРАВЛЕНО: правильный формат даты
   
   // Закрываем селектор типов
   closeMealTypeSelector();

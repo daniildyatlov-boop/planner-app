@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест персистентного удаления задач</title>
+    <title>Тест детерминированных ID и персистентного удаления</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
@@ -11,35 +11,36 @@
         .error { background-color: #f8d7da; border-color: #f5c6cb; }
         .info { background-color: #d1ecf1; border-color: #bee5eb; }
         button { padding: 10px 15px; margin: 5px; cursor: pointer; }
-        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto; }
+        .id-example { background: #fff3cd; padding: 8px; margin: 5px 0; border-radius: 4px; font-family: monospace; }
     </style>
 </head>
 <body>
-    <h1>🧪 Тест персистентного удаления задач</h1>
+    <h1>🧪 Тест детерминированных ID и персистентного удаления</h1>
     
     <div class="test-section info">
-        <h3>Инструкция по тестированию</h3>
-        <ol>
-            <li>Создайте задачу</li>
-            <li>Удалите её</li>
-            <li>Обновите страницу (F5)</li>
-            <li>Проверьте, что задача НЕ вернулась</li>
-            <li>Переключите дату и вернитесь</li>
-            <li>Задача должна остаться удаленной</li>
-        </ol>
+        <h3>🎯 КРИТИЧЕСКИЙ ТЕСТ</h3>
+        <p><strong>ПРОБЛЕМА:</strong> Удаленные задачи возвращались после reload, потому что автосоздаваемые задачи получали НОВЫЕ ID каждый раз.</p>
+        <p><strong>РЕШЕНИЕ:</strong> Детерминированные ID - одинаковые при каждом создании задачи.</p>
+        
+        <h4>Форматы детерминированных ID:</h4>
+        <div class="id-example">Рутинные задачи: section:1001:1:2024-01-15</div>
+        <div class="id-example">Задачи питания: meal:breakfast_2024-01-15:2024-01-15</div>
+        <div class="id-example">Ручные задачи: task:1737123456789_abc123def</div>
     </div>
 
     <div class="test-section">
-        <h3>Тестовые действия</h3>
-        <button onclick="createTestTask()">1. Создать тестовую задачу</button>
-        <button onclick="createSectionTask()">2. Создать задачу из раздела</button>
-        <button onclick="checkDeletedTasks()">3. Проверить удаленные задачи</button>
-        <button onclick="clearDeletedTasks()">4. Очистить удаленные задачи</button>
-        <button onclick="simulateReload()">5. Симулировать перезагрузку</button>
+        <h3>🧪 Тестовые сценарии</h3>
+        <button onclick="testDeterministicIds()">1. Проверить детерминированные ID</button>
+        <button onclick="testSectionTaskDeletion()">2. Тест удаления рутинной задачи</button>
+        <button onclick="testMealTaskDeletion()">3. Тест удаления задачи питания</button>
+        <button onclick="simulateReloadTest()">4. Симуляция reload (КРИТИЧЕСКИЙ ТЕСТ)</button>
+        <button onclick="checkDeletedTaskIds()">5. Проверить deletedTaskIds</button>
+        <button onclick="clearAllData()">6. Очистить все данные</button>
     </div>
 
     <div class="test-section">
-        <h3>Лог тестирования</h3>
+        <h3>📊 Лог тестирования</h3>
         <div id="testLog" class="log"></div>
     </div>
 
@@ -53,102 +54,248 @@
             logEl.scrollTop = logEl.scrollHeight;
         }
 
-        function createTestTask() {
-            const testTask = {
-                id: 'test_' + Date.now(),
-                title: 'Тестовая задача для удаления',
-                date: new Date().toISOString().split('T')[0],
-                time: '12:00',
-                room: 'Тест',
-                completed: false
-            };
-
-            // Добавляем в localStorage
-            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
-            plans.push(testTask);
-            localStorage.setItem('planner_plans', JSON.stringify(plans));
-            
-            log(`✅ Создана тестовая задача: ${testTask.title} (ID: ${testTask.id})`, 'success');
+        // Функции генерации детерминированных ID (копия из app.html)
+        function generateDeterministicId(type, params) {
+            switch (type) {
+                case 'section':
+                    return `section:${params.sectionId}:${params.templateId}:${params.date}`;
+                case 'meal':
+                    return `meal:${params.mealId}:${params.date}`;
+                case 'manual':
+                    return `task:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                default:
+                    return `task:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            }
         }
 
-        function createSectionTask() {
-            const sectionTask = {
-                id: 'section_test_' + Date.now(),
-                title: 'Задача из раздела для тестирования',
-                date: new Date().toISOString().split('T')[0],
-                time: '14:00',
+        function testDeterministicIds() {
+            log('🔍 Тестирование детерминированных ID...');
+            
+            const date = '2024-01-15';
+            
+            // Тест рутинной задачи
+            const sectionId1 = generateDeterministicId('section', {
+                sectionId: 1001,
+                templateId: 1,
+                date: date
+            });
+            
+            const sectionId2 = generateDeterministicId('section', {
+                sectionId: 1001,
+                templateId: 1,
+                date: date
+            });
+            
+            if (sectionId1 === sectionId2) {
+                log(`✅ Рутинные задачи: ID детерминированный - ${sectionId1}`, 'success');
+            } else {
+                log(`❌ ОШИБКА: Рутинные задачи имеют разные ID: ${sectionId1} vs ${sectionId2}`, 'error');
+            }
+            
+            // Тест задачи питания
+            const mealId1 = generateDeterministicId('meal', {
+                mealId: 'breakfast_' + date,
+                date: date
+            });
+            
+            const mealId2 = generateDeterministicId('meal', {
+                mealId: 'breakfast_' + date,
+                date: date
+            });
+            
+            if (mealId1 === mealId2) {
+                log(`✅ Задачи питания: ID детерминированный - ${mealId1}`, 'success');
+            } else {
+                log(`❌ ОШИБКА: Задачи питания имеют разные ID: ${mealId1} vs ${mealId2}`, 'error');
+            }
+            
+            // Тест ручных задач (должны быть уникальными)
+            const manualId1 = generateDeterministicId('manual');
+            const manualId2 = generateDeterministicId('manual');
+            
+            if (manualId1 !== manualId2) {
+                log(`✅ Ручные задачи: ID уникальные - ${manualId1} и ${manualId2}`, 'success');
+            } else {
+                log(`❌ ОШИБКА: Ручные задачи имеют одинаковые ID: ${manualId1}`, 'error');
+            }
+        }
+
+        function testSectionTaskDeletion() {
+            log('🗑️ Тестирование удаления рутинной задачи...');
+            
+            const date = new Date().toISOString().split('T')[0];
+            const taskId = generateDeterministicId('section', {
+                sectionId: 1001,
+                templateId: 1,
+                date: date
+            });
+            
+            // Создаем тестовую задачу
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            const testTask = {
+                id: taskId,
+                title: 'Тестовая рутинная задача',
+                date: date,
+                time: '07:00',
                 room: 'Утренняя зарядка',
                 completed: false,
-                sectionId: 123,
-                templateId: 456,
+                sectionId: 1001,
+                templateId: 1,
                 createdFromSection: true
             };
-
-            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
-            plans.push(sectionTask);
-            localStorage.setItem('planner_plans', JSON.stringify(plans));
             
-            log(`✅ Создана задача из раздела: ${sectionTask.title} (ID: ${sectionTask.id})`, 'success');
+            plans.push(testTask);
+            localStorage.setItem('planner_plans', JSON.stringify(plans));
+            log(`✅ Создана рутинная задача с ID: ${taskId}`);
+            
+            // Помечаем как удаленную
+            const deletedTaskIds = JSON.parse(localStorage.getItem('planner_deleted_task_ids') || '[]');
+            if (!deletedTaskIds.includes(taskId)) {
+                deletedTaskIds.push(taskId);
+                localStorage.setItem('planner_deleted_task_ids', JSON.stringify(deletedTaskIds));
+                log(`🗑️ Задача помечена как удаленная: ${taskId}`, 'success');
+            }
+            
+            // Удаляем из планов
+            const updatedPlans = plans.filter(p => p.id !== taskId);
+            localStorage.setItem('planner_plans', JSON.stringify(updatedPlans));
+            log(`✅ Задача удалена из планов`);
         }
 
-        function checkDeletedTasks() {
-            const deletedTasks = JSON.parse(localStorage.getItem('planner_deleted_tasks') || '{}');
+        function testMealTaskDeletion() {
+            log('🍽️ Тестирование удаления задачи питания...');
+            
+            const date = new Date().toISOString().split('T')[0];
+            const mealId = 'breakfast_' + date;
+            const taskId = generateDeterministicId('meal', {
+                mealId: mealId,
+                date: date
+            });
+            
+            // Создаем тестовую задачу питания
             const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            const testTask = {
+                id: taskId,
+                title: '🥐 Завтрак: Тестовое блюдо',
+                date: date,
+                time: null,
+                room: 'Питание',
+                completed: false,
+                createdFromMeal: true,
+                mealId: mealId
+            };
+            
+            plans.push(testTask);
+            localStorage.setItem('planner_plans', JSON.stringify(plans));
+            log(`✅ Создана задача питания с ID: ${taskId}`);
+            
+            // Помечаем как удаленную
+            const deletedTaskIds = JSON.parse(localStorage.getItem('planner_deleted_task_ids') || '[]');
+            if (!deletedTaskIds.includes(taskId)) {
+                deletedTaskIds.push(taskId);
+                localStorage.setItem('planner_deleted_task_ids', JSON.stringify(deletedTaskIds));
+                log(`🗑️ Задача питания помечена как удаленная: ${taskId}`, 'success');
+            }
+            
+            // Удаляем из планов
+            const updatedPlans = plans.filter(p => p.id !== taskId);
+            localStorage.setItem('planner_plans', JSON.stringify(updatedPlans));
+            log(`✅ Задача питания удалена из планов`);
+        }
+
+        function simulateReloadTest() {
+            log('🔄 КРИТИЧЕСКИЙ ТЕСТ: Симуляция reload страницы...');
+            
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            const deletedTaskIds = JSON.parse(localStorage.getItem('planner_deleted_task_ids') || '[]');
             
             log(`📊 Всего задач в планах: ${plans.length}`);
-            log(`🗑️ Удаленных задач по датам: ${Object.keys(deletedTasks).length}`);
+            log(`🗑️ Всего удаленных ID: ${deletedTaskIds.length}`);
             
-            Object.keys(deletedTasks).forEach(date => {
-                const deletedOnDate = Object.keys(deletedTasks[date]).length;
-                log(`   ${date}: ${deletedOnDate} удаленных задач`);
-                
-                Object.keys(deletedTasks[date]).forEach(sourceKey => {
-                    log(`     - ${sourceKey}: удалена`);
-                });
+            // Проверяем, что удаленные задачи НЕ присутствуют в планах
+            let foundDeletedTasks = 0;
+            let correctlyDeleted = 0;
+            
+            deletedTaskIds.forEach(deletedId => {
+                const taskExists = plans.some(plan => plan.id === deletedId);
+                if (taskExists) {
+                    log(`❌ КРИТИЧЕСКАЯ ОШИБКА: Удаленная задача найдена в планах! ID: ${deletedId}`, 'error');
+                    foundDeletedTasks++;
+                } else {
+                    log(`✅ Удаленная задача корректно отсутствует: ${deletedId}`, 'success');
+                    correctlyDeleted++;
+                }
             });
-        }
-
-        function clearDeletedTasks() {
-            localStorage.removeItem('planner_deleted_tasks');
-            log('🧹 Очищены все записи об удаленных задачах', 'success');
-        }
-
-        function simulateReload() {
-            log('🔄 Симуляция перезагрузки страницы...');
             
-            // Проверяем, что задачи не восстанавливаются
-            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
-            const deletedTasks = JSON.parse(localStorage.getItem('planner_deleted_tasks') || '{}');
-            
+            // Проверяем детерминированность ID для существующих задач
             const today = new Date().toISOString().split('T')[0];
             const todayPlans = plans.filter(p => p.date === today);
-            const todayDeleted = deletedTasks[today] || {};
             
-            log(`📅 Задачи на сегодня: ${todayPlans.length}`);
-            log(`🗑️ Удаленных на сегодня: ${Object.keys(todayDeleted).length}`);
-            
-            // Проверяем, что удаленные задачи не появляются в списке
             todayPlans.forEach(plan => {
-                let source;
                 if (plan.createdFromSection && plan.sectionId && plan.templateId) {
-                    source = `section_${plan.sectionId}_${plan.templateId}`;
+                    const expectedId = generateDeterministicId('section', {
+                        sectionId: plan.sectionId,
+                        templateId: plan.templateId,
+                        date: plan.date
+                    });
+                    
+                    if (plan.id === expectedId) {
+                        log(`✅ Рутинная задача имеет правильный детерминированный ID: ${plan.id}`);
+                    } else {
+                        log(`❌ ОШИБКА: Рутинная задача имеет неправильный ID: ${plan.id}, ожидался: ${expectedId}`, 'error');
+                    }
                 } else if (plan.createdFromMeal && plan.mealId) {
-                    source = `meal_${plan.mealId}`;
-                } else {
-                    source = 'manual';
-                }
-                
-                if (todayDeleted[source]) {
-                    log(`❌ ОШИБКА: Задача "${plan.title}" должна была быть удалена!`, 'error');
-                } else {
-                    log(`✅ Задача "${plan.title}" корректно присутствует`, 'success');
+                    const expectedId = generateDeterministicId('meal', {
+                        mealId: plan.mealId,
+                        date: plan.date
+                    });
+                    
+                    if (plan.id === expectedId) {
+                        log(`✅ Задача питания имеет правильный детерминированный ID: ${plan.id}`);
+                    } else {
+                        log(`❌ ОШИБКА: Задача питания имеет неправильный ID: ${plan.id}, ожидался: ${expectedId}`, 'error');
+                    }
                 }
             });
+            
+            // Итоговый результат
+            if (foundDeletedTasks === 0) {
+                log(`🎉 ТЕСТ ПРОЙДЕН! Все ${correctlyDeleted} удаленных задач корректно отсутствуют в планах`, 'success');
+            } else {
+                log(`💥 ТЕСТ ПРОВАЛЕН! Найдено ${foundDeletedTasks} удаленных задач в планах`, 'error');
+            }
+        }
+
+        function checkDeletedTaskIds() {
+            const deletedTaskIds = JSON.parse(localStorage.getItem('planner_deleted_task_ids') || '[]');
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            
+            log(`📊 Всего удаленных ID: ${deletedTaskIds.length}`);
+            log(`📊 Всего задач в планах: ${plans.length}`);
+            
+            if (deletedTaskIds.length === 0) {
+                log('ℹ️ Нет удаленных задач');
+                return;
+            }
+            
+            deletedTaskIds.forEach((id, index) => {
+                log(`${index + 1}. ${id}`);
+            });
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('planner_plans');
+            localStorage.removeItem('planner_deleted_task_ids');
+            localStorage.removeItem('planner_teams');
+            localStorage.removeItem('planner_sections');
+            localStorage.removeItem('planner_nutrition');
+            log('🧹 Все данные очищены', 'success');
         }
 
         // Инициализация
-        log('🚀 Тест персистентного удаления задач запущен');
+        log('🚀 Тест детерминированных ID и персистентного удаления запущен');
         log('💡 Используйте кнопки выше для тестирования функциональности');
+        log('⚠️ КРИТИЧЕСКИЙ ТЕСТ: После создания и удаления задач нажмите "Симуляция reload"');
     </script>
 </body>
 </html>

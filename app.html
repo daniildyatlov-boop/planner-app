@@ -3636,7 +3636,7 @@ let currentDate = new Date();
 let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
-let deletedTasks = {}; // КРИТИЧЕСКИЙ ФИХ: отслеживание удаленных задач {date: {sourceKey: true}}
+let deletedTaskIds = []; // КРИТИЧЕСКИЙ ФИХ: простой массив удаленных ID задач
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
@@ -3680,98 +3680,77 @@ function initializeIcons() {
   }
 }
 
-// КРИТИЧЕСКИЙ ФИХ: СИСТЕМА ОТСЛЕЖИВАНИЯ УДАЛЕННЫХ ЗАДАЧ
-function createTaskSource(type, options = {}) {
-  const source = { type };
-  
+// КРИТИЧЕСКИЙ ФИХ: ДЕТЕРМИНИРОВАННЫЕ ID И ПРОСТОЕ УДАЛЕНИЕ
+function generateDeterministicId(type, params) {
   switch (type) {
-    case 'manual':
-      // Обычные задачи, созданные пользователем
-      break;
     case 'section':
-      source.sectionId = options.sectionId;
-      source.templateId = options.templateId;
-      break;
+      return `section:${params.sectionId}:${params.templateId}:${params.date}`;
     case 'meal':
-      source.mealId = options.mealId;
-      break;
-    default:
-      console.warn('Неизвестный тип источника задачи:', type);
-      source.type = 'manual';
-  }
-  
-  return source;
-}
-
-function getSourceKey(source) {
-  switch (source.type) {
+      return `meal:${params.mealId}:${params.date}`;
     case 'manual':
-      return 'manual';
-    case 'section':
-      return `section_${source.sectionId}_${source.templateId}`;
-    case 'meal':
-      return `meal_${source.mealId}`;
+      // Для ручных задач используем UUID-подобный ID
+      return `task:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     default:
-      return 'manual';
+      console.error('Неизвестный тип задачи:', type);
+      return `task:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }
 
-function isTaskDeleted(date, source) {
-  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
-  const sourceKey = getSourceKey(source);
-  return deletedTasks[dateStr] && deletedTasks[dateStr][sourceKey];
+function isTaskDeleted(taskId) {
+  return deletedTaskIds.includes(taskId);
 }
 
-function markTaskAsDeleted(date, source) {
-  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
-  const sourceKey = getSourceKey(source);
-  
-  if (!deletedTasks[dateStr]) {
-    deletedTasks[dateStr] = {};
+function markTaskAsDeleted(taskId) {
+  if (!deletedTaskIds.includes(taskId)) {
+    deletedTaskIds.push(taskId);
+    saveDeletedTaskIds();
+    console.log(`🗑️ Задача помечена как удаленная: ${taskId}`);
   }
-  
-  deletedTasks[dateStr][sourceKey] = true;
-  saveDeletedTasks();
-  console.log(`🗑️ Задача помечена как удаленная: ${dateStr} - ${sourceKey}`);
 }
 
-function saveDeletedTasks() {
+function saveDeletedTaskIds() {
   try {
-    localStorage.setItem('planner_deleted_tasks', JSON.stringify(deletedTasks));
+    localStorage.setItem('planner_deleted_task_ids', JSON.stringify(deletedTaskIds));
   } catch (e) {
     console.error('Ошибка при сохранении удаленных задач:', e);
   }
 }
 
-function loadDeletedTasks() {
+function loadDeletedTaskIds() {
   try {
-    const saved = localStorage.getItem('planner_deleted_tasks');
-    deletedTasks = saved ? JSON.parse(saved) : {};
-    console.log('Загружены удаленные задачи:', Object.keys(deletedTasks).length, 'дат');
+    const saved = localStorage.getItem('planner_deleted_task_ids');
+    deletedTaskIds = saved ? JSON.parse(saved) : [];
+    console.log('Загружены удаленные задачи:', deletedTaskIds.length, 'ID');
   } catch (e) {
     console.error('Ошибка при загрузке удаленных задач:', e);
-    deletedTasks = {};
+    deletedTaskIds = [];
   }
 }
 
-function cleanupOldDeletedTasks() {
+function cleanupOldDeletedTaskIds() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const cutoffDateStr = thirtyDaysAgo.toISOString().split('T')[0];
   
-  let hasChanges = false;
+  const initialCount = deletedTaskIds.length;
   
-  // Очищаем удаленные задачи старше 30 дней
-  Object.keys(deletedTasks).forEach(dateStr => {
-    if (dateStr < cutoffDateStr) {
-      delete deletedTasks[dateStr];
-      hasChanges = true;
+  // Очищаем ID задач старше 30 дней (по дате в ID)
+  deletedTaskIds = deletedTaskIds.filter(taskId => {
+    if (taskId.includes(':')) {
+      const parts = taskId.split(':');
+      if (parts.length >= 3) {
+        const dateStr = parts[parts.length - 1]; // Последняя часть - дата
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          return dateStr >= cutoffDateStr;
+        }
+      }
     }
+    return true; // Оставляем задачи без даты или с неправильным форматом
   });
   
-  if (hasChanges) {
-    saveDeletedTasks();
-    console.log('🧹 Очищены старые записи об удаленных задачах');
+  if (deletedTaskIds.length !== initialCount) {
+    saveDeletedTaskIds();
+    console.log(`🧹 Очищены старые удаленные задачи: ${initialCount - deletedTaskIds.length}`);
   }
 }
 
@@ -3885,8 +3864,8 @@ function loadData() {
     plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
     rooms = JSON.parse(localStorage.getItem('planner_teams') || '[]');
     
-    // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи
-    loadDeletedTasks();
+    // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи ПЕРЕД синхронизацией
+    loadDeletedTaskIds();
     
     console.log(`Загружено планов: ${plans.length}, разделов: ${rooms.length}`);
     console.log('Загруженные планы:', plans);
@@ -4088,28 +4067,26 @@ function syncSectionsToPlans(date) {
       
       // Проверяем каждую шаблонную задачу из раздела
       section.templateTasks.forEach(template => {
-        // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
-        const taskSource = createTaskSource('section', {
+        // КРИТИЧЕСКИЙ ФИХ: Генерируем детерминированный ID
+        const taskId = generateDeterministicId('section', {
           sectionId: section.id,
-          templateId: template.id
+          templateId: template.id,
+          date: dateStr
         });
         
-        if (isTaskDeleted(dateStr, taskSource)) {
-          console.log(`⚠️ Задача "${template.title}" была удалена пользователем - пропускаем создание`);
+        // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
+        if (isTaskDeleted(taskId)) {
+          console.log(`⚠️ Задача "${template.title}" была удалена пользователем - пропускаем создание (ID: ${taskId})`);
           return; // Не создаем удаленную задачу
         }
         
         // Проверяем, не существует ли уже такая задача
-        const existingTask = plans.find(plan => 
-          plan.date === dateStr && 
-          plan.sectionId === section.id && 
-          plan.templateId === template.id
-        );
+        const existingTask = plans.find(plan => plan.id === taskId);
         
         if (!existingTask) {
           // Создаем новую задачу из шаблона
           const newTask = {
-            id: (Date.now() + Math.random()).toString(), // Уникальный ID как строка
+            id: taskId, // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID
             title: template.title,
             time: template.time || '',
             room: section.name, // Связываем с разделом
@@ -4121,7 +4098,7 @@ function syncSectionsToPlans(date) {
           };
           
           plans.push(newTask);
-          console.log(`✅ Создана задача из раздела: "${newTask.title}" с разделом "${section.name}"`);
+          console.log(`✅ Создана задача из раздела: "${newTask.title}" с ID: ${taskId}`);
         }
       });
     } else {
@@ -4164,7 +4141,7 @@ function initSectionsSync() {
     
     // Утренняя зарядка - каждый день
     sections.push({
-      id: Date.now() + 1,
+      id: 1001, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID
       name: 'Утренняя зарядка',
       icon: ICONS.rooms[5], // 🏃
       activityRule: { type: 'daily' },
@@ -4178,7 +4155,7 @@ function initSectionsSync() {
     
     // Уборка - через день
     sections.push({
-      id: Date.now() + 2,
+      id: 1002, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID
       name: 'Уборка дома',
       icon: '🧹', // Можно оставить специальную иконку для уборки
       activityRule: { type: 'every_other_day', value: 0 },
@@ -4191,7 +4168,7 @@ function initSectionsSync() {
     
     // Работа - только в будни
     sections.push({
-      id: Date.now() + 3,
+      id: 1003, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID
       name: 'Рабочие задачи',
       icon: ICONS.rooms[4], // 💼
       activityRule: { type: 'weekdays', value: [1, 2, 3, 4, 5] }, // Пн-Пт
@@ -4208,7 +4185,7 @@ function initSectionsSync() {
   }
   
   // КРИТИЧЕСКИЙ ФИХ: Очищаем старые записи об удаленных задачах
-  cleanupOldDeletedTasks();
+  cleanupOldDeletedTaskIds();
   
   // Синхронизируем на текущую дату
   syncSectionsToPlans(currentDate);
@@ -4764,7 +4741,7 @@ function savePlan() {
   console.log('Дата задачи (date) - строка YYYY-MM-DD:', date);
   
   const plan = {
-    id: selectedPlanId || Date.now().toString(),
+    id: selectedPlanId || generateDeterministicId('manual'), // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID для ручных задач
     title: title,
     date: date,
     time: time || null, // Сохраняем время (может быть null)
@@ -5001,30 +4978,8 @@ function confirmDeleteFromEdit() {
   console.log('Удаляем задачу с ID:', selectedPlanId);
   console.log('Планы до удаления:', plans.length);
   
-  // КРИТИЧЕСКИЙ ФИХ: Находим задачу и помечаем как удаленную
-  const planToDelete = plans.find(p => p.id === selectedPlanId);
-  
-  if (planToDelete) {
-    // Определяем источник задачи для отслеживания удаления
-    let source;
-    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
-      source = createTaskSource('section', {
-        sectionId: planToDelete.sectionId,
-        templateId: planToDelete.templateId
-      });
-    } else if (planToDelete.createdFromMeal && planToDelete.mealId) {
-      source = createTaskSource('meal', {
-        mealId: planToDelete.mealId
-      });
-    } else {
-      source = createTaskSource('manual');
-    }
-    
-    // Помечаем задачу как удаленную
-    markTaskAsDeleted(planToDelete.date, source);
-    
-    console.log(`🗑️ Задача помечена как удаленная: "${planToDelete.title}"`);
-  }
+  // КРИТИЧЕСКИЙ ФИХ: Помечаем задачу как удаленную по ID
+  markTaskAsDeleted(selectedPlanId);
   
   const initialLength = plans.length;
   plans = plans.filter(p => p.id !== selectedPlanId);
@@ -5085,30 +5040,8 @@ function confirmDeletePlan() {
   console.log('Удаляем задачу с ID:', selectedPlanId);
   console.log('Планы до удаления:', plans.length);
   
-  // КРИТИЧЕСКИЙ ФИХ: Находим задачу и помечаем как удаленную
-  const planToDelete = plans.find(p => p.id === selectedPlanId);
-  
-  if (planToDelete) {
-    // Определяем источник задачи для отслеживания удаления
-    let source;
-    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
-      source = createTaskSource('section', {
-        sectionId: planToDelete.sectionId,
-        templateId: planToDelete.templateId
-      });
-    } else if (planToDelete.createdFromMeal && planToDelete.mealId) {
-      source = createTaskSource('meal', {
-        mealId: planToDelete.mealId
-      });
-    } else {
-      source = createTaskSource('manual');
-    }
-    
-    // Помечаем задачу как удаленную
-    markTaskAsDeleted(planToDelete.date, source);
-    
-    console.log(`🗑️ Задача помечена как удаленная: "${planToDelete.title}"`);
-  }
+  // КРИТИЧЕСКИЙ ФИХ: Помечаем задачу как удаленную по ID
+  markTaskAsDeleted(selectedPlanId);
   
   const initialLength = plans.length;
   plans = plans.filter(p => p.id !== selectedPlanId);
@@ -5959,7 +5892,7 @@ function saveEditedSection(sectionId) {
     const title = titleInput.value.trim();
     if (title) {
       templateTasks.push({
-        id: Date.now() + index,
+        id: 1000 + templateTasks.length + 1, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID для шаблонов
         title: title,
         time: timeInput.value || ''
       });
@@ -6243,7 +6176,7 @@ function saveNewSection() {
     const title = titleInput.value.trim();
     if (title) {
       templateTasks.push({
-        id: Date.now() + index,
+        id: 2000 + templateTasks.length + 1, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID для новых шаблонов
         title: title,
         time: timeInput.value || ''
       });
@@ -6257,7 +6190,7 @@ function saveNewSection() {
   
   // Создаем новый раздел
   const newSection = {
-    id: Date.now(),
+    id: 2000 + sections.length + 1, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID для новых разделов
     name: name,
     icon: window.selectedSectionIcon || '🏃',
     activityRule: activityRule,
@@ -7295,8 +7228,8 @@ function selectMealType(typeId, typeName, typeIcon, defaultTime) {
       showCustomMealTypeInput(dateStr);
     }, 300);
   } else {
-    // Для предустановленных типов генерируем уникальный ID
-    const uniqueId = typeId + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    // КРИТИЧЕСКИЙ ФИХ: Для предустановленных типов используем стабильный ID
+    const uniqueId = typeId + '_' + dateStr; // Детерминированный ID на основе типа и даты
     setTimeout(() => {
       showMealTimeInput(dateStr, uniqueId, typeName, typeIcon, defaultTime);
     }, 300);
@@ -7336,8 +7269,8 @@ function saveCustomMealType(dateStr) {
   
   hidePopup();
   
-  // Генерируем уникальный ID для кастомного приема пищи
-  const uniqueId = 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  // КРИТИЧЕСКИЙ ФИХ: Генерируем детерминированный ID для кастомного приема пищи
+  const uniqueId = 'custom_' + mealName.toLowerCase().replace(/\s+/g, '_') + '_' + dateStr;
   
   setTimeout(() => {
     showMealTimeInput(dateStr, uniqueId, mealName, '🍽️', '');
@@ -7446,9 +7379,15 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   const taskTitle = `${mealIcon} ${mealName}: ${mealContent}`;
   const taskTime = mealTime || null;
   
+  // КРИТИЧЕСКИЙ ФИХ: Генерируем детерминированный ID для задачи питания
+  const taskId = generateDeterministicId('meal', {
+    mealId: mealId,
+    date: dateStr
+  });
+  
   // Создаем новую задачу
   const newTask = {
-    id: Date.now().toString() + '_meal_' + mealId,
+    id: taskId, // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID
     title: taskTitle,
     date: dateStr,
     time: taskTime,
@@ -7511,21 +7450,17 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   console.log('Данные приемов пищи до удаления:', nutritionData.meals[dateStr]);
   
   // 🗑️ КРИТИЧЕСКИЙ ФИХ: ПОМЕЧАЕМ СВЯЗАННУЮ ЗАДАЧУ КАК УДАЛЕННУЮ
-  const relatedTask = plans.find(plan => 
-    plan.createdFromMeal && 
-    plan.mealId === mealTypeId && 
-    plan.date === dateStr
-  );
+  const taskId = generateDeterministicId('meal', {
+    mealId: mealTypeId,
+    date: dateStr
+  });
   
-  if (relatedTask) {
-    const source = createTaskSource('meal', { mealId: mealTypeId });
-    markTaskAsDeleted(dateStr, source);
-    console.log(`🗑️ Задача питания помечена как удаленная: ${mealTypeId}`);
-  }
+  markTaskAsDeleted(taskId);
+  console.log(`🗑️ Задача питания помечена как удаленная: ${taskId}`);
   
   // 🗑️ УДАЛЯЕМ СВЯЗАННУЮ ЗАДАЧУ ИЗ ПЛАНОВ
   const initialPlansCount = plans.length;
-  plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealTypeId && plan.date === dateStr));
+  plans = plans.filter(plan => plan.id !== taskId);
   const deletedTasksCount = initialPlansCount - plans.length;
   
   if (deletedTasksCount > 0) {
@@ -7622,16 +7557,21 @@ function saveMeal(dateStr, mealType) {
     console.log('mealInfo:', mealInfo);
     console.log('taskTitle:', taskTitle);
     
+    // КРИТИЧЕСКИЙ ФИХ: Генерируем детерминированный ID для задачи питания
+    const taskId = generateDeterministicId('meal', {
+      mealId: mealType,
+      date: dateStr
+    });
+    
     // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
-    const mealSource = createTaskSource('meal', { mealId: mealType });
-    if (isTaskDeleted(dateStr, mealSource)) {
-      console.log(`⚠️ Задача питания "${mealType}" была удалена пользователем - пропускаем создание`);
+    if (isTaskDeleted(taskId)) {
+      console.log(`⚠️ Задача питания "${mealType}" была удалена пользователем - пропускаем создание (ID: ${taskId})`);
       return; // Не создаем удаленную задачу
     }
     
     // Создаем новую задачу
     const newTask = {
-      id: Date.now().toString() + '_meal_' + mealType,
+      id: taskId, // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID
       title: taskTitle,
       date: dateStr,
       time: null, // Стандартные приемы пищи без времени
@@ -7644,11 +7584,7 @@ function saveMeal(dateStr, mealType) {
     console.log('Создали новую задачу:', newTask);
     
     // Проверяем, не существует ли уже такая задача
-    const existingTask = plans.find(plan => 
-      plan.createdFromMeal && 
-      plan.mealId === mealType && 
-      plan.date === dateStr
-    );
+    const existingTask = plans.find(plan => plan.id === taskId);
     
     console.log('Существующая задача:', existingTask);
     
@@ -7671,21 +7607,17 @@ function saveMeal(dateStr, mealType) {
     delete nutritionData.meals[dateStr][mealType];
     
     // КРИТИЧЕСКИЙ ФИХ: Помечаем связанную задачу как удаленную
-    const relatedTask = plans.find(plan => 
-      plan.createdFromMeal && 
-      plan.mealId === mealType && 
-      plan.date === dateStr
-    );
+    const taskId = generateDeterministicId('meal', {
+      mealId: mealType,
+      date: dateStr
+    });
     
-    if (relatedTask) {
-      const source = createTaskSource('meal', { mealId: mealType });
-      markTaskAsDeleted(dateStr, source);
-      console.log(`🗑️ Задача питания помечена как удаленная: ${mealType}`);
-    }
+    markTaskAsDeleted(taskId);
+    console.log(`🗑️ Задача питания помечена как удаленная: ${taskId}`);
     
     // Удаляем связанную задачу
     const initialPlansCount = plans.length;
-    plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealType && plan.date === dateStr));
+    plans = plans.filter(plan => plan.id !== taskId);
     const deletedTasksCount = initialPlansCount - plans.length;
     
     if (deletedTasksCount > 0) {

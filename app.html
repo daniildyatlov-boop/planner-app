@@ -3636,6 +3636,7 @@ let currentDate = new Date();
 let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
+let deletedTasks = {}; // КРИТИЧЕСКИЙ ФИХ: отслеживание удаленных задач {date: {sourceKey: true}}
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
@@ -3676,6 +3677,101 @@ function initializeIcons() {
     console.log('✅ Иконки успешно инициализированы');
   } catch (e) {
     console.error('❌ Ошибка при инициализации иконок:', e);
+  }
+}
+
+// КРИТИЧЕСКИЙ ФИХ: СИСТЕМА ОТСЛЕЖИВАНИЯ УДАЛЕННЫХ ЗАДАЧ
+function createTaskSource(type, options = {}) {
+  const source = { type };
+  
+  switch (type) {
+    case 'manual':
+      // Обычные задачи, созданные пользователем
+      break;
+    case 'section':
+      source.sectionId = options.sectionId;
+      source.templateId = options.templateId;
+      break;
+    case 'meal':
+      source.mealId = options.mealId;
+      break;
+    default:
+      console.warn('Неизвестный тип источника задачи:', type);
+      source.type = 'manual';
+  }
+  
+  return source;
+}
+
+function getSourceKey(source) {
+  switch (source.type) {
+    case 'manual':
+      return 'manual';
+    case 'section':
+      return `section_${source.sectionId}_${source.templateId}`;
+    case 'meal':
+      return `meal_${source.mealId}`;
+    default:
+      return 'manual';
+  }
+}
+
+function isTaskDeleted(date, source) {
+  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const sourceKey = getSourceKey(source);
+  return deletedTasks[dateStr] && deletedTasks[dateStr][sourceKey];
+}
+
+function markTaskAsDeleted(date, source) {
+  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const sourceKey = getSourceKey(source);
+  
+  if (!deletedTasks[dateStr]) {
+    deletedTasks[dateStr] = {};
+  }
+  
+  deletedTasks[dateStr][sourceKey] = true;
+  saveDeletedTasks();
+  console.log(`🗑️ Задача помечена как удаленная: ${dateStr} - ${sourceKey}`);
+}
+
+function saveDeletedTasks() {
+  try {
+    localStorage.setItem('planner_deleted_tasks', JSON.stringify(deletedTasks));
+  } catch (e) {
+    console.error('Ошибка при сохранении удаленных задач:', e);
+  }
+}
+
+function loadDeletedTasks() {
+  try {
+    const saved = localStorage.getItem('planner_deleted_tasks');
+    deletedTasks = saved ? JSON.parse(saved) : {};
+    console.log('Загружены удаленные задачи:', Object.keys(deletedTasks).length, 'дат');
+  } catch (e) {
+    console.error('Ошибка при загрузке удаленных задач:', e);
+    deletedTasks = {};
+  }
+}
+
+function cleanupOldDeletedTasks() {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoffDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+  
+  let hasChanges = false;
+  
+  // Очищаем удаленные задачи старше 30 дней
+  Object.keys(deletedTasks).forEach(dateStr => {
+    if (dateStr < cutoffDateStr) {
+      delete deletedTasks[dateStr];
+      hasChanges = true;
+    }
+  });
+  
+  if (hasChanges) {
+    saveDeletedTasks();
+    console.log('🧹 Очищены старые записи об удаленных задачах');
   }
 }
 
@@ -3788,6 +3884,9 @@ function loadData() {
 
     plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
     rooms = JSON.parse(localStorage.getItem('planner_teams') || '[]');
+    
+    // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи
+    loadDeletedTasks();
     
     console.log(`Загружено планов: ${plans.length}, разделов: ${rooms.length}`);
     console.log('Загруженные планы:', plans);
@@ -3989,6 +4088,17 @@ function syncSectionsToPlans(date) {
       
       // Проверяем каждую шаблонную задачу из раздела
       section.templateTasks.forEach(template => {
+        // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
+        const taskSource = createTaskSource('section', {
+          sectionId: section.id,
+          templateId: template.id
+        });
+        
+        if (isTaskDeleted(dateStr, taskSource)) {
+          console.log(`⚠️ Задача "${template.title}" была удалена пользователем - пропускаем создание`);
+          return; // Не создаем удаленную задачу
+        }
+        
         // Проверяем, не существует ли уже такая задача
         const existingTask = plans.find(plan => 
           plan.date === dateStr && 
@@ -4011,7 +4121,7 @@ function syncSectionsToPlans(date) {
           };
           
           plans.push(newTask);
-          console.log(`Создана задача из раздела: "${newTask.title}" с разделом "${section.name}"`);
+          console.log(`✅ Создана задача из раздела: "${newTask.title}" с разделом "${section.name}"`);
         }
       });
     } else {
@@ -4096,6 +4206,9 @@ function initSectionsSync() {
     saveSections();
     console.log('Демонстрационные разделы созданы');
   }
+  
+  // КРИТИЧЕСКИЙ ФИХ: Очищаем старые записи об удаленных задачах
+  cleanupOldDeletedTasks();
   
   // Синхронизируем на текущую дату
   syncSectionsToPlans(currentDate);
@@ -4888,6 +5001,31 @@ function confirmDeleteFromEdit() {
   console.log('Удаляем задачу с ID:', selectedPlanId);
   console.log('Планы до удаления:', plans.length);
   
+  // КРИТИЧЕСКИЙ ФИХ: Находим задачу и помечаем как удаленную
+  const planToDelete = plans.find(p => p.id === selectedPlanId);
+  
+  if (planToDelete) {
+    // Определяем источник задачи для отслеживания удаления
+    let source;
+    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
+      source = createTaskSource('section', {
+        sectionId: planToDelete.sectionId,
+        templateId: planToDelete.templateId
+      });
+    } else if (planToDelete.createdFromMeal && planToDelete.mealId) {
+      source = createTaskSource('meal', {
+        mealId: planToDelete.mealId
+      });
+    } else {
+      source = createTaskSource('manual');
+    }
+    
+    // Помечаем задачу как удаленную
+    markTaskAsDeleted(planToDelete.date, source);
+    
+    console.log(`🗑️ Задача помечена как удаленная: "${planToDelete.title}"`);
+  }
+  
   const initialLength = plans.length;
   plans = plans.filter(p => p.id !== selectedPlanId);
   
@@ -4946,6 +5084,31 @@ function confirmDeletePlan() {
   
   console.log('Удаляем задачу с ID:', selectedPlanId);
   console.log('Планы до удаления:', plans.length);
+  
+  // КРИТИЧЕСКИЙ ФИХ: Находим задачу и помечаем как удаленную
+  const planToDelete = plans.find(p => p.id === selectedPlanId);
+  
+  if (planToDelete) {
+    // Определяем источник задачи для отслеживания удаления
+    let source;
+    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
+      source = createTaskSource('section', {
+        sectionId: planToDelete.sectionId,
+        templateId: planToDelete.templateId
+      });
+    } else if (planToDelete.createdFromMeal && planToDelete.mealId) {
+      source = createTaskSource('meal', {
+        mealId: planToDelete.mealId
+      });
+    } else {
+      source = createTaskSource('manual');
+    }
+    
+    // Помечаем задачу как удаленную
+    markTaskAsDeleted(planToDelete.date, source);
+    
+    console.log(`🗑️ Задача помечена как удаленная: "${planToDelete.title}"`);
+  }
   
   const initialLength = plans.length;
   plans = plans.filter(p => p.id !== selectedPlanId);
@@ -7347,6 +7510,19 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   console.log('Типы приемов пищи до удаления:', nutritionData.mealTypes[dateStr]);
   console.log('Данные приемов пищи до удаления:', nutritionData.meals[dateStr]);
   
+  // 🗑️ КРИТИЧЕСКИЙ ФИХ: ПОМЕЧАЕМ СВЯЗАННУЮ ЗАДАЧУ КАК УДАЛЕННУЮ
+  const relatedTask = plans.find(plan => 
+    plan.createdFromMeal && 
+    plan.mealId === mealTypeId && 
+    plan.date === dateStr
+  );
+  
+  if (relatedTask) {
+    const source = createTaskSource('meal', { mealId: mealTypeId });
+    markTaskAsDeleted(dateStr, source);
+    console.log(`🗑️ Задача питания помечена как удаленная: ${mealTypeId}`);
+  }
+  
   // 🗑️ УДАЛЯЕМ СВЯЗАННУЮ ЗАДАЧУ ИЗ ПЛАНОВ
   const initialPlansCount = plans.length;
   plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealTypeId && plan.date === dateStr));
@@ -7446,6 +7622,13 @@ function saveMeal(dateStr, mealType) {
     console.log('mealInfo:', mealInfo);
     console.log('taskTitle:', taskTitle);
     
+    // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
+    const mealSource = createTaskSource('meal', { mealId: mealType });
+    if (isTaskDeleted(dateStr, mealSource)) {
+      console.log(`⚠️ Задача питания "${mealType}" была удалена пользователем - пропускаем создание`);
+      return; // Не создаем удаленную задачу
+    }
+    
     // Создаем новую задачу
     const newTask = {
       id: Date.now().toString() + '_meal_' + mealType,
@@ -7486,6 +7669,19 @@ function saveMeal(dateStr, mealType) {
   } else {
     // Если содержимое пустое, удаляем прием пищи и связанную задачу
     delete nutritionData.meals[dateStr][mealType];
+    
+    // КРИТИЧЕСКИЙ ФИХ: Помечаем связанную задачу как удаленную
+    const relatedTask = plans.find(plan => 
+      plan.createdFromMeal && 
+      plan.mealId === mealType && 
+      plan.date === dateStr
+    );
+    
+    if (relatedTask) {
+      const source = createTaskSource('meal', { mealId: mealType });
+      markTaskAsDeleted(dateStr, source);
+      console.log(`🗑️ Задача питания помечена как удаленная: ${mealType}`);
+    }
     
     // Удаляем связанную задачу
     const initialPlansCount = plans.length;

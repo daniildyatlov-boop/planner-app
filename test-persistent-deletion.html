@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест персистентного удаления задач</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест персистентного удаления задач</h1>
+    
+    <div class="test-section info">
+        <h3>Инструкция по тестированию</h3>
+        <ol>
+            <li>Создайте задачу</li>
+            <li>Удалите её</li>
+            <li>Обновите страницу (F5)</li>
+            <li>Проверьте, что задача НЕ вернулась</li>
+            <li>Переключите дату и вернитесь</li>
+            <li>Задача должна остаться удаленной</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>Тестовые действия</h3>
+        <button onclick="createTestTask()">1. Создать тестовую задачу</button>
+        <button onclick="createSectionTask()">2. Создать задачу из раздела</button>
+        <button onclick="checkDeletedTasks()">3. Проверить удаленные задачи</button>
+        <button onclick="clearDeletedTasks()">4. Очистить удаленные задачи</button>
+        <button onclick="simulateReload()">5. Симулировать перезагрузку</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Лог тестирования</h3>
+        <div id="testLog" class="log"></div>
+    </div>
+
+    <script>
+        // Простая система логирования
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logEl.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function createTestTask() {
+            const testTask = {
+                id: 'test_' + Date.now(),
+                title: 'Тестовая задача для удаления',
+                date: new Date().toISOString().split('T')[0],
+                time: '12:00',
+                room: 'Тест',
+                completed: false
+            };
+
+            // Добавляем в localStorage
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            plans.push(testTask);
+            localStorage.setItem('planner_plans', JSON.stringify(plans));
+            
+            log(`✅ Создана тестовая задача: ${testTask.title} (ID: ${testTask.id})`, 'success');
+        }
+
+        function createSectionTask() {
+            const sectionTask = {
+                id: 'section_test_' + Date.now(),
+                title: 'Задача из раздела для тестирования',
+                date: new Date().toISOString().split('T')[0],
+                time: '14:00',
+                room: 'Утренняя зарядка',
+                completed: false,
+                sectionId: 123,
+                templateId: 456,
+                createdFromSection: true
+            };
+
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            plans.push(sectionTask);
+            localStorage.setItem('planner_plans', JSON.stringify(plans));
+            
+            log(`✅ Создана задача из раздела: ${sectionTask.title} (ID: ${sectionTask.id})`, 'success');
+        }
+
+        function checkDeletedTasks() {
+            const deletedTasks = JSON.parse(localStorage.getItem('planner_deleted_tasks') || '{}');
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            
+            log(`📊 Всего задач в планах: ${plans.length}`);
+            log(`🗑️ Удаленных задач по датам: ${Object.keys(deletedTasks).length}`);
+            
+            Object.keys(deletedTasks).forEach(date => {
+                const deletedOnDate = Object.keys(deletedTasks[date]).length;
+                log(`   ${date}: ${deletedOnDate} удаленных задач`);
+                
+                Object.keys(deletedTasks[date]).forEach(sourceKey => {
+                    log(`     - ${sourceKey}: удалена`);
+                });
+            });
+        }
+
+        function clearDeletedTasks() {
+            localStorage.removeItem('planner_deleted_tasks');
+            log('🧹 Очищены все записи об удаленных задачах', 'success');
+        }
+
+        function simulateReload() {
+            log('🔄 Симуляция перезагрузки страницы...');
+            
+            // Проверяем, что задачи не восстанавливаются
+            const plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+            const deletedTasks = JSON.parse(localStorage.getItem('planner_deleted_tasks') || '{}');
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayPlans = plans.filter(p => p.date === today);
+            const todayDeleted = deletedTasks[today] || {};
+            
+            log(`📅 Задачи на сегодня: ${todayPlans.length}`);
+            log(`🗑️ Удаленных на сегодня: ${Object.keys(todayDeleted).length}`);
+            
+            // Проверяем, что удаленные задачи не появляются в списке
+            todayPlans.forEach(plan => {
+                let source;
+                if (plan.createdFromSection && plan.sectionId && plan.templateId) {
+                    source = `section_${plan.sectionId}_${plan.templateId}`;
+                } else if (plan.createdFromMeal && plan.mealId) {
+                    source = `meal_${plan.mealId}`;
+                } else {
+                    source = 'manual';
+                }
+                
+                if (todayDeleted[source]) {
+                    log(`❌ ОШИБКА: Задача "${plan.title}" должна была быть удалена!`, 'error');
+                } else {
+                    log(`✅ Задача "${plan.title}" корректно присутствует`, 'success');
+                }
+            });
+        }
+
+        // Инициализация
+        log('🚀 Тест персистентного удаления задач запущен');
+        log('💡 Используйте кнопки выше для тестирования функциональности');
+    </script>
+</body>
+</html>

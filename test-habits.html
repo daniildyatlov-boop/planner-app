@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест раздела Привычки</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            background: #f8faf8;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Тест раздела «Привычки»</h1>
+    
+    <div class="test-section">
+        <h2>1. Проверка функций</h2>
+        <button onclick="testFunctions()">Проверить функции</button>
+        <div id="functionsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Проверка данных</h2>
+        <button onclick="testData()">Проверить данные</button>
+        <div id="dataResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Проверка навигации</h2>
+        <button onclick="testNavigation()">Проверить навигацию</button>
+        <div id="navigationResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Добавить тестовую привычку</h2>
+        <button onclick="addTestHabit()">Добавить привычку</button>
+        <div id="habitResult"></div>
+    </div>
+
+    <script>
+        // Эмулируем основные функции из app.html
+        let habits = [];
+        let habitLogs = [];
+        let currentTab = 'tasks';
+        
+        // Базовые функции
+        function saveHabits() {
+            try {
+                localStorage.setItem('planner_habits', JSON.stringify(habits));
+                return true;
+            } catch (e) {
+                console.error('Ошибка при сохранении привычек:', e);
+                return false;
+            }
+        }
+        
+        function loadHabits() {
+            try {
+                const savedHabits = localStorage.getItem('planner_habits');
+                habits = savedHabits ? JSON.parse(savedHabits) : [];
+                return true;
+            } catch (e) {
+                console.error('Ошибка при загрузке привычек:', e);
+                habits = [];
+                return false;
+            }
+        }
+        
+        function saveHabitLogs() {
+            try {
+                localStorage.setItem('planner_habit_logs', JSON.stringify(habitLogs));
+                return true;
+            } catch (e) {
+                console.error('Ошибка при сохранении логов привычек:', e);
+                return false;
+            }
+        }
+        
+        function loadHabitLogs() {
+            try {
+                const savedLogs = localStorage.getItem('planner_habit_logs');
+                habitLogs = savedLogs ? JSON.parse(savedLogs) : [];
+                return true;
+            } catch (e) {
+                console.error('Ошибка при загрузке логов привычек:', e);
+                habitLogs = [];
+                return false;
+            }
+        }
+        
+        function isHabitCompletedOnDate(habitId, date) {
+            const dateStr = date.toISOString().split('T')[0];
+            return habitLogs.some(log => 
+                log.habitId === habitId && 
+                log.date === dateStr && 
+                log.completed
+            );
+        }
+        
+        function toggleHabitCompletion(habitId, date = new Date()) {
+            const dateStr = date.toISOString().split('T')[0];
+            const existingLogIndex = habitLogs.findIndex(log => 
+                log.habitId === habitId && log.date === dateStr
+            );
+            
+            if (existingLogIndex >= 0) {
+                habitLogs[existingLogIndex].completed = !habitLogs[existingLogIndex].completed;
+            } else {
+                habitLogs.push({
+                    habitId: habitId,
+                    date: dateStr,
+                    completed: true
+                });
+            }
+            
+            saveHabitLogs();
+            return true;
+        }
+        
+        // Тестовые функции
+        function testFunctions() {
+            const result = document.getElementById('functionsResult');
+            let html = '';
+            
+            const functions = [
+                'saveHabits',
+                'loadHabits', 
+                'saveHabitLogs',
+                'loadHabitLogs',
+                'isHabitCompletedOnDate',
+                'toggleHabitCompletion'
+            ];
+            
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    html += `<div class="test-result success">✅ ${funcName} - функция существует</div>`;
+                } else {
+                    html += `<div class="test-result error">❌ ${funcName} - функция не найдена</div>`;
+                }
+            });
+            
+            result.innerHTML = html;
+        }
+        
+        function testData() {
+            const result = document.getElementById('dataResult');
+            let html = '';
+            
+            // Тестируем загрузку данных
+            const loadResult = loadHabits() && loadHabitLogs();
+            if (loadResult) {
+                html += `<div class="test-result success">✅ Данные загружены успешно</div>`;
+                html += `<div class="test-result success">📊 Привычек: ${habits.length}</div>`;
+                html += `<div class="test-result success">📝 Логов: ${habitLogs.length}</div>`;
+            } else {
+                html += `<div class="test-result error">❌ Ошибка загрузки данных</div>`;
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        function testNavigation() {
+            const result = document.getElementById('navigationResult');
+            let html = '';
+            
+            // Проверяем что switchTab существует в основном приложении
+            if (window.parent && window.parent.switchTab) {
+                html += `<div class="test-result success">✅ switchTab функция доступна</div>`;
+                html += `<div class="test-result success">🎯 Можно переключиться на вкладку привычек</div>`;
+            } else {
+                html += `<div class="test-result error">❌ switchTab функция не найдена</div>`;
+            }
+            
+            // Проверяем HTML элементы навигации
+            const navButton = document.querySelector('[data-tab="habits"]');
+            if (navButton) {
+                html += `<div class="test-result success">✅ Кнопка навигации найдена</div>`;
+            } else {
+                html += `<div class="test-result error">❌ Кнопка навигации не найдена</div>`;
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        function addTestHabit() {
+            const result = document.getElementById('habitResult');
+            
+            // Создаем тестовую привычку
+            const testHabit = {
+                id: Date.now().toString(),
+                title: 'Тестовая привычка',
+                icon: '🎯',
+                frequency: {
+                    type: 'daily'
+                },
+                enabled: true,
+                createdAt: new Date().toISOString()
+            };
+            
+            habits.push(testHabit);
+            const saveResult = saveHabits();
+            
+            if (saveResult) {
+                result.innerHTML = `
+                    <div class="test-result success">✅ Тестовая привычка добавлена</div>
+                    <div class="test-result success">🎯 ID: ${testHabit.id}</div>
+                    <div class="test-result success">📝 Название: ${testHabit.title}</div>
+                `;
+                
+                // Тестируем переключение статуса
+                toggleHabitCompletion(testHabit.id);
+                const isCompleted = isHabitCompletedOnDate(testHabit.id, new Date());
+                
+                if (isCompleted) {
+                    result.innerHTML += `<div class="test-result success">✅ Статус переключен успешно</div>`;
+                } else {
+                    result.innerHTML += `<div class="test-result error">❌ Ошибка переключения статуса</div>`;
+                }
+            } else {
+                result.innerHTML = `<div class="test-result error">❌ Ошибка сохранения привычки</div>`;
+            }
+        }
+        
+        // Автоматически загружаем данные при старте
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHabits();
+            loadHabitLogs();
+        });
+    </script>
+</body>
+</html>

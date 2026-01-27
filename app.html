@@ -3495,6 +3495,22 @@ function loadData() {
       saveRooms(); // Сохраняем в новом формате
       console.log('Миграция разделов завершена');
     }
+    
+    // 🍽️ АВТОМАТИЧЕСКИ ДОБАВЛЯЕМ РАЗДЕЛ "ПИТАНИЕ" ЕСЛИ ЕГО НЕТ
+    const nutritionRoomExists = rooms.some(room => {
+      const roomName = typeof room === 'string' ? room : room.name;
+      return roomName === 'Питание';
+    });
+    
+    if (!nutritionRoomExists) {
+      console.log('Добавляем раздел "Питание"');
+      rooms.push({
+        name: 'Питание',
+        icon: '🍽️'
+      });
+      saveRooms();
+      console.log('Раздел "Питание" добавлен автоматически');
+    }
   } catch (e) {
     console.error('Ошибка при загрузке данных:', e);
     // Инициализируем пустыми данными в случае ошибки
@@ -5801,11 +5817,39 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     completed: false // Новые приемы пищи по умолчанию не выполнены
   };
   
+  // 🍽️ АВТОМАТИЧЕСКИ СОЗДАЕМ ЗАДАЧУ В ПЛАНАХ
+  const taskTitle = `${mealIcon} ${mealName}: ${mealContent}`;
+  const taskTime = mealTime || null;
+  
+  // Создаем новую задачу
+  const newTask = {
+    id: Date.now().toString() + '_meal_' + mealId,
+    title: taskTitle,
+    date: dateStr,
+    time: taskTime,
+    room: 'Питание',
+    completed: false,
+    createdFromMeal: true, // Помечаем что задача создана из приема пищи
+    mealId: mealId // Связываем с приемом пищи
+  };
+  
+  // Добавляем задачу в планы
+  plans.push(newTask);
+  savePlans();
+  
+  console.log('Автоматически создана задача из приема пищи:', newTask);
+  
   console.log('Текущие типы приемов пищи для дня:', nutritionData.mealTypes[dateStr]);
   console.log('Текущие данные приемов пищи для дня:', nutritionData.meals[dateStr]);
   
   saveNutritionData();
   renderNutritionDay();
+  
+  // Если мы на вкладке задач, обновляем их отображение
+  if (currentTab === 'tasks') {
+    render();
+  }
+  
   closeMealInputModal();
 }
 
@@ -5841,6 +5885,16 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   console.log('Типы приемов пищи до удаления:', nutritionData.mealTypes[dateStr]);
   console.log('Данные приемов пищи до удаления:', nutritionData.meals[dateStr]);
   
+  // 🗑️ УДАЛЯЕМ СВЯЗАННУЮ ЗАДАЧУ ИЗ ПЛАНОВ
+  const initialPlansCount = plans.length;
+  plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealTypeId && plan.date === dateStr));
+  const deletedTasksCount = initialPlansCount - plans.length;
+  
+  if (deletedTasksCount > 0) {
+    console.log(`Удалено связанных задач: ${deletedTasksCount}`);
+    savePlans();
+  }
+  
   // Удаляем тип приема пищи
   if (nutritionData.mealTypes[dateStr]) {
     const beforeCount = nutritionData.mealTypes[dateStr].length;
@@ -5860,6 +5914,12 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   
   saveNutritionData();
   renderNutritionDay();
+  
+  // Если мы на вкладке задач, обновляем их отображение
+  if (currentTab === 'tasks') {
+    render();
+  }
+  
   hidePopup();
 }
 

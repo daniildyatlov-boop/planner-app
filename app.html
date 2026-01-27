@@ -2801,11 +2801,9 @@ textarea.input {
   align-items:center;
   justify-content:space-between;
   height:68px;
-  box-shadow: var(--shadow-soft);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
   flex-shrink:0;
   box-shadow: var(--shadow-soft);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .screen-content{
   flex:1;
@@ -3128,7 +3126,7 @@ textarea.input {
       </div>
       <button class="nav-arrow" onclick="changeDay(1)">›</button>
     </div>
-    <button class="rooms-btn" onclick="showRooms()">🏠</button>
+    <button class="rooms-btn" onclick="showRooms()">${ICONS.navigation.home}</button>
   </div>
   
   <div class="content">
@@ -3161,7 +3159,7 @@ textarea.input {
 <!-- BOTTOM NAVIGATION -->
 <div class="bottom-nav" id="bottomNav">
   <button class="nav-item active" onclick="switchTab('tasks')" data-tab="tasks">
-    <div class="nav-icon">📝</div>
+    <div class="nav-icon">${ICONS.navigation.tasks}</div>
     <div class="nav-label">Задачи</div>
   </button>
   <button class="nav-item" onclick="switchTab('nutrition')" data-tab="nutrition">
@@ -3169,7 +3167,7 @@ textarea.input {
     <div class="nav-label">Питание</div>
   </button>
   <button class="nav-item" onclick="switchTab('habits')" data-tab="habits">
-    <div class="nav-icon">🎯</div>
+    <div class="nav-icon">${ICONS.navigation.habits}</div>
     <div class="nav-label">Привычки</div>
   </button>
 </div>
@@ -3266,7 +3264,7 @@ textarea.input {
     </div>
     
     <div class="premium-notice">
-      <div class="premium-icon">⭐</div>
+      <div class="premium-icon">${ICONS.navigation.premium}</div>
       <span>Уведомления и пометка «Важная» доступны только с подпиской </span>
       <span class="premium-link">Премиум Трекер</span>
     </div>
@@ -3346,7 +3344,7 @@ textarea.input {
             font-size: 24px;
             box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
             animation: sections-icon-pulse 3s infinite ease-in-out;
-          ">⚙️</div>
+          ">${ICONS.navigation.sections}</div>
           
           <div style="flex: 1;">
             <h3 style="
@@ -3462,7 +3460,7 @@ textarea.input {
     
     <div class="profile-menu">
       <button class="profile-menu-btn" onclick="showAccount()">
-        <div class="menu-btn-icon">👤</div>
+        <div class="menu-btn-icon">${ICONS.navigation.profile}</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Аккаунт</div>
           <div class="menu-btn-desc">Личные данные и подписка</div>
@@ -3471,7 +3469,7 @@ textarea.input {
       </button>
       
       <button class="profile-menu-btn" onclick="showSettings()">
-        <div class="menu-btn-icon">⚙️</div>
+        <div class="menu-btn-icon">${ICONS.navigation.settings}</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Настройки</div>
           <div class="menu-btn-desc">Уведомления и предпочтения</div>
@@ -3480,7 +3478,7 @@ textarea.input {
       </button>
       
       <button class="profile-menu-btn" onclick="showSupport()">
-        <div class="menu-btn-icon">💬</div>
+        <div class="menu-btn-icon">${ICONS.navigation.support}</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Поддержка</div>
           <div class="menu-btn-desc">Помощь и обратная связь</div>
@@ -3536,6 +3534,60 @@ if (tg) {
   console.log('Telegram WebApp API недоступен - работаем в браузере');
 }
 
+// ЕДИНАЯ СИСТЕМА ИКОНОК - ИСПОЛЬЗУЕТСЯ ВЕЗДЕ В ПРИЛОЖЕНИИ
+const ICONS = {
+  // Основные разделы и комнаты
+  rooms: ['🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧'],
+  
+  // Дополнительные иконки для разделов
+  activities: ['🎯', '🎨', '🎵', '🏋️', '🧘', '🍕', '☕', '🌟', '💡', '🔥'],
+  
+  // Специальные иконки
+  special: ['🎪', '🎭', '🎬', '📱', '💻', '🎸', '🎹', '🎤', '�', '📷'],
+  
+  // Путешествия и природа
+  travel: ['✈️', '🚗', '🏖️', '🏔️', '🌊', '🌙', '☀️', '🌈', '⚡', '❄️'],
+  
+  // Навигация и интерфейс
+  navigation: {
+    tasks: '📝',
+    nutrition: '🍽️', 
+    habits: '🎯',
+    home: '🏠',
+    profile: '👤',
+    settings: '⚙️',
+    support: '💬',
+    premium: '⭐',
+    sections: '⚙️'
+  },
+  
+  // Приемы пищи
+  meals: {
+    breakfast: '🌅',
+    lunch: '🍽️',
+    dinner: '🌙',
+    snack: '🍎'
+  },
+  
+  // Получить все иконки для выбора
+  getAllForSelection() {
+    return [
+      ...this.rooms,
+      ...this.activities, 
+      ...this.special,
+      ...this.travel
+    ];
+  },
+  
+  // Получить иконки для разделов
+  getSectionIcons() {
+    return [
+      '🏃', '🧘', '📚', '🍳', '🧹', '💼', '🎯', '🌱', 
+      '💪', '🎨', '🎵', '🛁', '🚿', '🛏️', '🏠'
+    ];
+  }
+};
+
 // STATE
 let currentDate = new Date();
 let plans = [];
@@ -3543,7 +3595,7 @@ let rooms = []; // Теперь будет массив объектов {name: 
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
 let selectedPlanId = null;
 let calendarDate = new Date();
-let selectedRoomIcon = '🏠'; // Выбранная иконка для нового раздела
+let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
 let currentTab = 'tasks'; // Текущая активная вкладка
 
 // UTILS
@@ -3584,7 +3636,7 @@ function getRoomIcon(roomName) {
   }
   
   // Если раздел не найден или в старом формате, возвращаем дефолтную иконку
-  return '🏠';
+  return ICONS.navigation.home;
 }
 
 function getPlansForDate(date) {
@@ -3689,7 +3741,7 @@ function loadData() {
     // Миграция старых разделов (строки) в новый формат (объекты)
     if (rooms.length > 0 && typeof rooms[0] === 'string') {
       console.log('Мигрируем разделы в новый формат...');
-      const defaultIcons = ['🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧'];
+      const defaultIcons = ICONS.rooms;
       rooms = rooms.map((roomName, index) => ({
         name: roomName,
         icon: defaultIcons[index % defaultIcons.length]
@@ -3897,7 +3949,7 @@ function initSectionsSync() {
     sections.push({
       id: Date.now() + 1,
       name: 'Утренняя зарядка',
-      icon: '🏃',
+      icon: ICONS.rooms[5], // 🏃
       activityRule: { type: 'daily' },
       templateTasks: [
         { id: 1, title: 'Разминка', time: '07:00' },
@@ -3911,7 +3963,7 @@ function initSectionsSync() {
     sections.push({
       id: Date.now() + 2,
       name: 'Уборка дома',
-      icon: '🧹',
+      icon: '🧹', // Можно оставить специальную иконку для уборки
       activityRule: { type: 'every_other_day', value: 0 },
       templateTasks: [
         { id: 4, title: 'Пропылесосить', time: '10:00' },
@@ -3924,7 +3976,7 @@ function initSectionsSync() {
     sections.push({
       id: Date.now() + 3,
       name: 'Рабочие задачи',
-      icon: '💼',
+      icon: ICONS.rooms[4], // 💼
       activityRule: { type: 'weekdays', value: [1, 2, 3, 4, 5] }, // Пн-Пт
       templateTasks: [
         { id: 6, title: 'Проверить почту', time: '09:00' },
@@ -4040,7 +4092,7 @@ function updateRoomsSelect() {
       try {
         // Поддерживаем старый формат (строки) и новый (объекты)
         const roomName = typeof room === 'string' ? room : room.name;
-        const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+        const roomIcon = typeof room === 'string' ? ICONS.navigation.home : room.icon;
         
         const option = document.createElement('option');
         option.value = roomName;
@@ -4068,7 +4120,7 @@ function renderRooms() {
       try {
         // Поддерживаем старый формат (строки) и новый (объекты)
         const roomName = typeof room === 'string' ? room : room.name;
-        const roomIcon = typeof room === 'string' ? '🏠' : room.icon;
+        const roomIcon = typeof room === 'string' ? ICONS.navigation.home : room.icon;
         
         html += `
           <div class="room-item">
@@ -4150,41 +4202,63 @@ function hideAdd() {
 }
 
 function showRooms() {
-  console.log('Показываем экран разделов');
+  console.log('🏠 Показываем экран разделов с улучшенной анимацией');
   
   const roomsScreen = document.getElementById('roomsScreen');
   const header = document.querySelector('.header');
   const bottomNav = document.getElementById('bottomNav');
+  const content = document.querySelector('.content');
   
   if (!roomsScreen) {
-    console.error('Элемент roomsScreen не найден');
+    console.error('❌ Элемент roomsScreen не найден');
     return;
   }
   
-  // Плавное появление экрана
+  // Подготавливаем экран для показа
   roomsScreen.style.display = 'flex';
-  setTimeout(() => {
-    roomsScreen.classList.add('show');
-  }, 10);
+  roomsScreen.style.transform = 'translateX(100%)';
+  roomsScreen.style.opacity = '0';
   
-  // Скрываем основные элементы
+  // Плавно скрываем основные элементы
   if (header) {
+    header.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    header.style.transform = 'translateY(-100%)';
     header.style.opacity = '0';
-    setTimeout(() => header.style.display = 'none', 300);
   }
   if (bottomNav) {
+    bottomNav.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    bottomNav.style.transform = 'translateY(100%)';
     bottomNav.style.opacity = '0';
-    setTimeout(() => bottomNav.style.display = 'none', 300);
   }
+  if (content) {
+    content.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    content.style.transform = 'translateX(-30px)';
+    content.style.opacity = '0';
+  }
+  
+  // Анимированное появление экрана разделов
+  setTimeout(() => {
+    roomsScreen.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    roomsScreen.style.transform = 'translateX(0)';
+    roomsScreen.style.opacity = '1';
+    roomsScreen.classList.add('show');
+  }, 50);
+  
+  // Скрываем элементы после анимации
+  setTimeout(() => {
+    if (header) header.style.display = 'none';
+    if (bottomNav) bottomNav.style.display = 'none';
+  }, 400);
   
   currentModal = 'rooms';
   if (tg) tg.BackButton.show();
   
-  // Рендерим содержимое после анимации
+  // Рендерим содержимое и обновляем статистику
   setTimeout(() => {
     renderRooms();
-    updateSectionsStats(); // Обновляем статистику разделов
-  }, 100);
+    updateSectionsStats();
+    console.log('✅ Экран разделов успешно показан');
+  }, 200);
 }
 
 // Обновляет статистику разделов в интерфейсе
@@ -4243,63 +4317,122 @@ function animateNumber(element, targetNumber) {
 }
 
 function hideRooms() {
-  console.log('Скрываем экран разделов');
+  console.log('🏠 Скрываем экран разделов с улучшенной анимацией');
   
   const roomsScreen = document.getElementById('roomsScreen');
   const header = document.querySelector('.header');
   const bottomNav = document.getElementById('bottomNav');
+  const content = document.querySelector('.content');
   
   if (!roomsScreen) {
-    console.error('Элемент roomsScreen не найден');
+    console.error('❌ Элемент roomsScreen не найден');
     return;
   }
   
-  // Плавное скрытие экрана
+  // Плавное скрытие экрана разделов
+  roomsScreen.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+  roomsScreen.style.transform = 'translateX(100%)';
+  roomsScreen.style.opacity = '0';
   roomsScreen.classList.remove('show');
   
-  // Показываем основные элементы
+  // Показываем основные элементы с анимацией
   if (header) {
     header.style.display = 'flex';
-    header.style.opacity = '0';
-    setTimeout(() => header.style.opacity = '1', 10);
+    header.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+      header.style.transform = 'translateY(0)';
+      header.style.opacity = '1';
+    }, 100);
   }
+  
   if (bottomNav) {
     bottomNav.style.display = 'flex';
-    bottomNav.style.opacity = '0';
-    setTimeout(() => bottomNav.style.opacity = '1', 10);
+    bottomNav.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+      bottomNav.style.transform = 'translateY(0)';
+      bottomNav.style.opacity = '1';
+    }, 150);
+  }
+  
+  if (content) {
+    content.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+      content.style.transform = 'translateX(0)';
+      content.style.opacity = '1';
+    }, 200);
   }
   
   // Полностью скрываем экран после анимации
   setTimeout(() => {
     roomsScreen.style.display = 'none';
-  }, 300);
+    // Сбрасываем трансформации
+    roomsScreen.style.transform = '';
+    roomsScreen.style.transition = '';
+    console.log('✅ Экран разделов успешно скрыт');
+  }, 600);
   
   currentModal = null;
   if (tg) tg.BackButton.hide();
 }
 
 function showProfile() {
-  console.log('Показываем экран профиля');
+  console.log('👤 Показываем экран профиля с улучшенной анимацией');
   
   const profileScreen = document.getElementById('profileScreen');
   const header = document.querySelector('.header');
   const bottomNav = document.getElementById('bottomNav');
+  const content = document.querySelector('.content');
   
   if (!profileScreen) {
-    console.error('Элемент profileScreen не найден');
+    console.error('❌ Элемент profileScreen не найден');
     return;
   }
   
-  // Плавное появление экрана
+  // Подготавливаем экран для показа
   profileScreen.style.display = 'flex';
-  setTimeout(() => {
-    profileScreen.classList.add('show');
-  }, 10);
+  profileScreen.style.transform = 'translateX(-100%)';
+  profileScreen.style.opacity = '0';
   
-  // Скрываем основные элементы
+  // Плавно скрываем основные элементы
   if (header) {
+    header.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    header.style.transform = 'translateY(-100%)';
     header.style.opacity = '0';
-    setTimeout(() => header.style.display = 'none', 300);
+  }
+  if (bottomNav) {
+    bottomNav.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    bottomNav.style.transform = 'translateY(100%)';
+    bottomNav.style.opacity = '0';
+  }
+  if (content) {
+    content.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    content.style.transform = 'translateX(30px)';
+    content.style.opacity = '0';
+  }
+  
+  // Анимированное появление экрана профиля
+  setTimeout(() => {
+    profileScreen.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    profileScreen.style.transform = 'translateX(0)';
+    profileScreen.style.opacity = '1';
+    profileScreen.classList.add('show');
+  }, 50);
+  
+  // Скрываем элементы после анимации
+  setTimeout(() => {
+    if (header) header.style.display = 'none';
+    if (bottomNav) bottomNav.style.display = 'none';
+  }, 400);
+  
+  currentModal = 'profile';
+  if (tg) tg.BackButton.show();
+  
+  // Загружаем данные профиля
+  setTimeout(() => {
+    loadProfileData();
+    console.log('✅ Экран профиля успешно показан');
+  }, 200);
+}
   }
   if (bottomNav) {
     bottomNav.style.opacity = '0';
@@ -4316,36 +4449,59 @@ function showProfile() {
 }
 
 function hideProfile() {
-  console.log('Скрываем экран профиля');
+  console.log('👤 Скрываем экран профиля с улучшенной анимацией');
   
   const profileScreen = document.getElementById('profileScreen');
   const header = document.querySelector('.header');
   const bottomNav = document.getElementById('bottomNav');
+  const content = document.querySelector('.content');
   
   if (!profileScreen) {
-    console.error('Элемент profileScreen не найден');
+    console.error('❌ Элемент profileScreen не найден');
     return;
   }
   
-  // Плавное скрытие экрана
+  // Плавное скрытие экрана профиля
+  profileScreen.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+  profileScreen.style.transform = 'translateX(-100%)';
+  profileScreen.style.opacity = '0';
   profileScreen.classList.remove('show');
   
-  // Показываем основные элементы
+  // Показываем основные элементы с анимацией
   if (header) {
     header.style.display = 'flex';
-    header.style.opacity = '0';
-    setTimeout(() => header.style.opacity = '1', 10);
+    header.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+      header.style.transform = 'translateY(0)';
+      header.style.opacity = '1';
+    }, 100);
   }
+  
   if (bottomNav) {
     bottomNav.style.display = 'flex';
-    bottomNav.style.opacity = '0';
-    setTimeout(() => bottomNav.style.opacity = '1', 10);
+    bottomNav.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+      bottomNav.style.transform = 'translateY(0)';
+      bottomNav.style.opacity = '1';
+    }, 150);
+  }
+  
+  if (content) {
+    content.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    setTimeout(() => {
+      content.style.transform = 'translateX(0)';
+      content.style.opacity = '1';
+    }, 200);
   }
   
   // Полностью скрываем экран после анимации
   setTimeout(() => {
     profileScreen.style.display = 'none';
-  }, 300);
+    // Сбрасываем трансформации
+    profileScreen.style.transform = '';
+    profileScreen.style.transition = '';
+    console.log('✅ Экран профиля успешно скрыт');
+  }, 600);
   
   currentModal = null;
   if (tg) tg.BackButton.hide();
@@ -5080,17 +5236,12 @@ function renderCalendar() {
 
 // ROOMS
 function showAddRoom() {
-  selectedRoomIcon = '🏠'; // Сбрасываем выбор иконки
+  selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
   showRoomIconSelector();
 }
 
 function showRoomIconSelector() {
-  const roomIcons = [
-    '🏠', '🛏️', '🍳', '🛁', '💼', '🏃', '📚', '🎮', '🌿', '🔧',
-    '🎯', '🎨', '🎵', '🏋️', '🧘', '🍕', '☕', '🌟', '💡', '🔥',
-    '🎪', '🎭', '🎬', '📱', '💻', '🎸', '🎹', '🎤', '🎧', '📷',
-    '✈️', '🚗', '🏖️', '🏔️', '🌊', '🌙', '☀️', '🌈', '⚡', '❄️'
-  ];
+  const roomIcons = ICONS.getAllForSelection();
   
   // Создаем HTML для селектора иконок
   let iconSelectorHTML = '<div class="icon-selector">';
@@ -5375,7 +5526,7 @@ function renderSectionIcons() {
   const container = document.getElementById('sectionIconSelector');
   if (!container) return;
   
-  const icons = ['🏃', '🧘', '📚', '🍳', '🧹', '💼', '🎯', '🌱', '💪', '🎨', '🎵', '🛁', '🚿', '🛏️', '🏠'];
+  const icons = ICONS.getSectionIcons();
   let selectedIcon = icons[0];
   
   let html = '';

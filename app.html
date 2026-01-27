@@ -659,12 +659,17 @@ body{
   justify-content: center;
   gap: 8px;
   white-space: nowrap;
+  /* КРИТИЧЕСКИ ВАЖНО: минимальная touch zone */
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .btn-base:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
+  /* КРИТИЧЕСКИ ВАЖНО: блокируем все взаимодействия с disabled кнопками */
+  pointer-events: none;
 }
 
 .btn-base:active:not(:disabled) {
@@ -1268,6 +1273,8 @@ body{
   transition:all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   height:100vh;
   overflow:hidden;
+  /* КРИТИЧЕСКИ ВАЖНО: блокируем все клики под модалкой */
+  pointer-events: auto;
 }
 .modal.show{
   display:flex;
@@ -1731,6 +1738,8 @@ textarea.input {
   transition:opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   align-items:center;
   justify-content:center;
+  /* КРИТИЧЕСКИ ВАЖНО: блокируем все клики под overlay */
+  pointer-events: auto;
 }
 .overlay.show{
   display:flex;
@@ -3397,6 +3406,11 @@ textarea.input {
   animation: floatIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
   position: relative;
   overflow: hidden;
+  /* КРИТИЧЕСКИ ВАЖНО: убираем выделение текста и tap highlight */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Обеспечиваем минимальную touch zone */
+  min-height: 72px;
 }
 
 .habit-card::before {
@@ -3422,8 +3436,12 @@ textarea.input {
 }
 
 .habit-card:active {
-  transform: translateY(-2px) scale(1.01);
+  transform: translateY(0) scale(0.98);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-soft);
+}
 }
 
 /* COMPLETED HABIT STYLES - СТИЛИ ДЛЯ ВЫПОЛНЕННЫХ ПРИВЫЧЕК */
@@ -3521,7 +3539,7 @@ textarea.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  /* УБИРАЕМ cursor: pointer - чекбокс НЕ кликабельный */
   flex-shrink: 0;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   transform: translateZ(0);
@@ -3530,14 +3548,14 @@ textarea.input {
     0 2px 8px rgba(0, 0, 0, 0.2) inset,
     0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
-  z-index: 10;
+  z-index: 1; /* Понижаем z-index чтобы не перехватывал клики */
+  /* Запрещаем взаимодействие с чекбоксом напрямую */
+  pointer-events: none;
 }
 
-.habit-checkbox:hover {
-  transform: scale(1.1);
-  box-shadow: 
-    0 0 20px rgba(34, 197, 94, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.2) inset;
+/* Убираем hover для чекбокса - он больше не кликабельный */
+.habit-card:hover .habit-checkbox {
+  /* Чекбокс реагирует на hover карточки, но сам не кликабельный */
   border-color: rgba(34, 197, 94, 0.5);
 }
 
@@ -3837,11 +3855,11 @@ textarea.input {
   position: absolute;
   top: var(--spacing-md);
   right: var(--spacing-md);
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   background: rgba(0, 0, 0, 0.1);
   border: none;
-  border-radius: 16px;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3851,6 +3869,9 @@ textarea.input {
   backdrop-filter: blur(10px);
   font-size: 16px;
   color: var(--text-secondary);
+  /* Обеспечиваем минимальную touch zone */
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .habit-card:hover .habit-menu-btn {
@@ -4375,9 +4396,9 @@ textarea.input {
     <div class="form-group" id="weeklyFrequencyGroup" style="display: none;">
       <label class="label">Сколько раз в неделю</label>
       <div class="weekly-counter">
-        <button class="counter-btn" onclick="changeWeeklyCount(-1)">−</button>
+        <button class="counter-btn" data-action="decrease">−</button>
         <span class="counter-value" id="weeklyCount">3</span>
-        <button class="counter-btn" onclick="changeWeeklyCount(1)">+</button>
+        <button class="counter-btn" data-action="increase">+</button>
       </div>
     </div>
     
@@ -5460,6 +5481,19 @@ function isHabitCompletedOnDate(habitId, date) {
 
 // Переключает состояние выполнения привычки
 function toggleHabitCompletion(habitId, date = currentDate) {
+  // DEBOUNCE ЗАЩИТА - предотвращаем двойные клики
+  const now = Date.now();
+  const debounceKey = `habit_${habitId}_${date.toISOString().split('T')[0]}`;
+  
+  if (!window.habitDebounce) window.habitDebounce = {};
+  
+  if (window.habitDebounce[debounceKey] && (now - window.habitDebounce[debounceKey]) < 500) {
+    console.log('🚫 Debounce: игнорируем повторный клик по привычке');
+    return;
+  }
+  
+  window.habitDebounce[debounceKey] = now;
+  
   const dateStr = date.toISOString().split('T')[0];
   const existingLogIndex = habitLogs.findIndex(log => 
     log.habitId === habitId && log.date === dateStr
@@ -5483,6 +5517,8 @@ function toggleHabitCompletion(habitId, date = currentDate) {
   if (currentTab === 'habits') {
     renderHabits();
   }
+  
+  console.log(`✅ Привычка ${habitId} переключена для ${dateStr}`);
 }
 
 // Получает статистику привычек для текущей недели
@@ -9083,16 +9119,17 @@ function renderHabits() {
         html += `
           <div class="${cardClasses}" 
                data-habit-id="${habit.id}"
+               data-habit-type="habit"
                style="animation-delay: ${index * 0.1}s; position: relative;">
             <div class="habit-icon">${habit.icon}</div>
-            <div class="habit-content" onclick="toggleHabitCompletion('${habit.id}')">
+            <div class="habit-content">
               <div class="habit-title">${escapeHtml(habit.title)}</div>
               ${reminderDisplay}
               ${timeWindowDisplay}
               <div class="habit-frequency">${getHabitFrequencyText(habit)}</div>
             </div>
-            <div class="habit-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleHabitCompletion('${habit.id}')"></div>
-            <button class="habit-menu-btn" onclick="showHabitContextMenu('${habit.id}', event)">⋯</button>
+            <div class="habit-checkbox ${isCompleted ? 'checked' : ''}"></div>
+            <button class="habit-menu-btn" data-habit-id="${habit.id}">⋯</button>
           </div>
         `;
       });
@@ -9806,6 +9843,15 @@ function hideSnackbar() {
 
 // Изменяет количество раз в неделю
 function changeWeeklyCount(delta) {
+  // DEBOUNCE ЗАЩИТА
+  const now = Date.now();
+  if (!window.weeklyCountDebounce) window.weeklyCountDebounce = 0;
+  
+  if ((now - window.weeklyCountDebounce) < 200) {
+    return; // Игнорируем быстрые клики
+  }
+  window.weeklyCountDebounce = now;
+  
   const countElement = document.getElementById('weeklyCount');
   let count = parseInt(countElement.textContent) || 3;
   count = Math.max(1, Math.min(7, count + delta));
@@ -9833,6 +9879,11 @@ function showModal(modalId) {
   // Обновляем текущее модальное окно
   currentModal = modalId;
   
+  // КРИТИЧЕСКИ ВАЖНО: блокируем скролл под модалкой
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  
   // Показываем кнопку "Назад" в Telegram
   if (typeof tg !== 'undefined' && tg.BackButton) {
     tg.BackButton.show();
@@ -9855,6 +9906,11 @@ function hideModal(modalId) {
   if (currentModal === modalId) {
     currentModal = null;
   }
+  
+  // КРИТИЧЕСКИ ВАЖНО: восстанавливаем скролл
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
   
   // Скрываем кнопку "Назад" в Telegram
   if (typeof tg !== 'undefined' && tg.BackButton) {
@@ -11049,24 +11105,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Обработчик для долгого тапа на привычках
+  // ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ ПРИВЫЧЕК - БЕЗ КОНФЛИКТОВ
   let longPressTimer = null;
   let isLongPress = false;
+  let lastClickTime = 0;
+  const DOUBLE_CLICK_THRESHOLD = 300; // мс для защиты от двойного клика
   
+  // Долгий тап для контекстного меню
   document.addEventListener('touchstart', (e) => {
     if (e.target.closest('.habit-card')) {
       const habitCard = e.target.closest('.habit-card');
       const habitId = habitCard.dataset.habitId;
       
+      // Игнорируем если клик по кнопке меню
+      if (e.target.closest('.habit-menu-btn')) return;
+      
       isLongPress = false;
       longPressTimer = setTimeout(() => {
         isLongPress = true;
-        // Вибрация для обратной связи (если поддерживается)
         if (navigator.vibrate) {
           navigator.vibrate(50);
         }
         showHabitContextMenu(habitId, e);
-      }, 500); // 500ms для долгого тапа
+      }, 500);
     }
   });
   
@@ -11084,14 +11145,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Обработчик для обычного клика (не долгий тап)
+  // ЕДИНЫЙ ОБРАБОТЧИК КЛИКОВ - БЕЗ КОНФЛИКТОВ
   document.addEventListener('click', (e) => {
+    const now = Date.now();
+    
+    // Защита от двойного клика
+    if (now - lastClickTime < DOUBLE_CLICK_THRESHOLD) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    lastClickTime = now;
+    
+    // КНОПКИ СЧЕТЧИКА НЕДЕЛЬНОЙ ЧАСТОТЫ
+    if (e.target.closest('.counter-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const btn = e.target.closest('.counter-btn');
+      const action = btn.dataset.action;
+      
+      if (action === 'increase') {
+        changeWeeklyCount(1);
+      } else if (action === 'decrease') {
+        changeWeeklyCount(-1);
+      }
+      return;
+    }
+    
+    // КНОПКА МЕНЮ ПРИВЫЧКИ
+    if (e.target.closest('.habit-menu-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const menuBtn = e.target.closest('.habit-menu-btn');
+      const habitId = menuBtn.dataset.habitId;
+      
+      if (habitId) {
+        showHabitContextMenu(habitId, e);
+      }
+      return;
+    }
+    
+    // КАРТОЧКА ПРИВЫЧКИ (только если не долгий тап)
     if (e.target.closest('.habit-card') && !isLongPress) {
+      e.preventDefault();
+      e.stopPropagation();
+      
       const habitCard = e.target.closest('.habit-card');
       const habitId = habitCard.dataset.habitId;
       
-      // Проверяем, что клик не по кнопке меню или чекбоксу
-      if (!e.target.closest('.habit-menu-btn') && !e.target.closest('.habit-checkbox')) {
+      // Проверяем что это именно привычка
+      if (habitCard.dataset.habitType === 'habit' && habitId) {
         toggleHabitCompletion(habitId);
       }
     }

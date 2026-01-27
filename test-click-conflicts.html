@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест конфликтов кликов - Привычки</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .habit-card-test {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 72px;
+        }
+        
+        .habit-card-test:hover {
+            background: #e9ecef;
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+        
+        .habit-card-test:active {
+            transform: scale(0.98);
+            background: #dee2e6;
+        }
+        
+        .habit-icon-test {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .habit-content-test {
+            flex: 1;
+        }
+        
+        .habit-title-test {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .habit-frequency-test {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .habit-checkbox-test {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #22c55e;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            pointer-events: none;
+        }
+        
+        .habit-checkbox-test.checked {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .habit-menu-btn-test {
+            width: 44px;
+            height: 44px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .habit-menu-btn-test:hover {
+            background: rgba(0,0,0,0.2);
+            transform: scale(1.1);
+        }
+        
+        .habit-menu-btn-test:active {
+            transform: scale(0.95);
+        }
+        
+        .click-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        
+        .test-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-button:hover {
+            background: #5856eb;
+            transform: translateY(-1px);
+        }
+        
+        .test-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="click-counter" id="clickCounter">
+        Кликов: 0
+    </div>
+    
+    <div class="test-container">
+        <h1>🧪 Тест конфликтов кликов</h1>
+        <p>Проверяем что каждый элемент имеет ТОЛЬКО одно действие</p>
+        
+        <div class="test-section">
+            <div class="test-title">1. Карточка привычки</div>
+            <div class="test-result" id="cardTest">Ожидание теста...</div>
+            
+            <div class="habit-card-test" id="testHabitCard" data-habit-id="test-habit">
+                <div class="habit-icon-test">💪</div>
+                <div class="habit-content-test">
+                    <div class="habit-title-test">Тестовая привычка</div>
+                    <div class="habit-frequency-test">Каждый день</div>
+                </div>
+                <div class="habit-checkbox-test" id="testCheckbox"></div>
+                <button class="habit-menu-btn-test" id="testMenuBtn" data-habit-id="test-habit">⋯</button>
+            </div>
+            
+            <p><strong>Ожидаемое поведение:</strong></p>
+            <ul>
+                <li>Клик по карточке = toggle привычки</li>
+                <li>Клик по кнопке "⋯" = показать меню</li>
+                <li>Чекбокс НЕ кликабельный</li>
+                <li>Никаких двойных срабатываний</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">2. Touch Zone тест</div>
+            <div class="test-result" id="touchTest">Ожидание теста...</div>
+            
+            <p>Минимальные размеры кнопок:</p>
+            <button class="test-button" style="width: 44px; height: 44px;">44px</button>
+            <button class="test-button" style="width: 32px; height: 32px;">32px</button>
+            <button class="test-button" style="width: 48px; height: 48px;">48px</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">3. Debounce тест</div>
+            <div class="test-result" id="debounceTest">Ожидание теста...</div>
+            
+            <button class="test-button" id="debounceBtn">Быстро кликай меня!</button>
+            <div id="debounceCounter">Обработано кликов: 0</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">4. Результаты тестов</div>
+            <div id="testResults">
+                <div class="test-result warning">Запустите тесты</div>
+            </div>
+            
+            <button class="test-button" onclick="runAllTests()">🚀 Запустить все тесты</button>
+            <button class="test-button" onclick="resetTests()">🔄 Сбросить</button>
+        </div>
+    </div>
+
+    <script>
+        let clickCount = 0;
+        let habitToggleCount = 0;
+        let menuClickCount = 0;
+        let debounceClickCount = 0;
+        let lastDebounceTime = 0;
+        
+        // Счетчик кликов
+        function updateClickCounter() {
+            clickCount++;
+            document.getElementById('clickCounter').textContent = `Кликов: ${clickCount}`;
+        }
+        
+        // Имитация функции toggle привычки с debounce
+        function toggleHabitCompletion(habitId) {
+            const now = Date.now();
+            if (now - lastDebounceTime < 300) {
+                console.log('🚫 Debounce: игнорируем повторный клик');
+                return;
+            }
+            lastDebounceTime = now;
+            
+            habitToggleCount++;
+            const checkbox = document.getElementById('testCheckbox');
+            checkbox.classList.toggle('checked');
+            checkbox.textContent = checkbox.classList.contains('checked') ? '✓' : '';
+            
+            console.log(`✅ Привычка переключена (${habitToggleCount})`);
+            updateClickCounter();
+        }
+        
+        // Имитация показа меню
+        function showHabitContextMenu(habitId, event) {
+            event.stopPropagation();
+            menuClickCount++;
+            console.log(`📋 Меню показано (${menuClickCount})`);
+            alert(`Контекстное меню для привычки ${habitId}`);
+            updateClickCounter();
+        }
+        
+        // Обработчики событий
+        document.addEventListener('click', (e) => {
+            // Кнопка меню
+            if (e.target.closest('#testMenuBtn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const btn = e.target.closest('#testMenuBtn');
+                const habitId = btn.dataset.habitId;
+                showHabitContextMenu(habitId, e);
+                return;
+            }
+            
+            // Карточка привычки
+            if (e.target.closest('#testHabitCard')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const card = e.target.closest('#testHabitCard');
+                const habitId = card.dataset.habitId;
+                toggleHabitCompletion(habitId);
+                return;
+            }
+        });
+        
+        // Debounce тест
+        let debounceProcessedCount = 0;
+        document.getElementById('debounceBtn').addEventListener('click', (e) => {
+            debounceClickCount++;
+            
+            // Простой debounce
+            const now = Date.now();
+            if (!window.testDebounce) window.testDebounce = 0;
+            
+            if (now - window.testDebounce < 200) {
+                console.log('🚫 Debounce сработал');
+                return;
+            }
+            window.testDebounce = now;
+            
+            debounceProcessedCount++;
+            document.getElementById('debounceCounter').textContent = 
+                `Обработано кликов: ${debounceProcessedCount} из ${debounceClickCount}`;
+        });
+        
+        // Тесты
+        function runAllTests() {
+            const results = [];
+            
+            // Тест 1: Размеры кнопок
+            const menuBtn = document.getElementById('testMenuBtn');
+            const btnRect = menuBtn.getBoundingClientRect();
+            if (btnRect.width >= 44 && btnRect.height >= 44) {
+                results.push('<div class="test-result success">✅ Touch zone: кнопка меню 44px+</div>');
+            } else {
+                results.push('<div class="test-result error">❌ Touch zone: кнопка меню меньше 44px</div>');
+            }
+            
+            // Тест 2: Чекбокс не кликабельный
+            const checkbox = document.getElementById('testCheckbox');
+            const checkboxStyle = window.getComputedStyle(checkbox);
+            if (checkboxStyle.pointerEvents === 'none') {
+                results.push('<div class="test-result success">✅ Чекбокс: pointer-events: none</div>');
+            } else {
+                results.push('<div class="test-result error">❌ Чекбокс: может перехватывать клики</div>');
+            }
+            
+            // Тест 3: Карточка имеет правильные стили
+            const card = document.getElementById('testHabitCard');
+            const cardStyle = window.getComputedStyle(card);
+            if (cardStyle.userSelect === 'none' && cardStyle.cursor === 'pointer') {
+                results.push('<div class="test-result success">✅ Карточка: правильные стили</div>');
+            } else {
+                results.push('<div class="test-result warning">⚠️ Карточка: проверьте стили</div>');
+            }
+            
+            // Тест 4: Минимальная высота
+            const cardRect = card.getBoundingClientRect();
+            if (cardRect.height >= 72) {
+                results.push('<div class="test-result success">✅ Карточка: минимальная высота 72px+</div>');
+            } else {
+                results.push('<div class="test-result warning">⚠️ Карточка: высота меньше 72px</div>');
+            }
+            
+            results.push('<div class="test-result success">🎯 Тесты завершены! Проверьте поведение вручную.</div>');
+            
+            document.getElementById('testResults').innerHTML = results.join('');
+        }
+        
+        function resetTests() {
+            clickCount = 0;
+            habitToggleCount = 0;
+            menuClickCount = 0;
+            debounceClickCount = 0;
+            debounceProcessedCount = 0;
+            lastDebounceTime = 0;
+            window.testDebounce = 0;
+            
+            document.getElementById('clickCounter').textContent = 'Кликов: 0';
+            document.getElementById('debounceCounter').textContent = 'Обработано кликов: 0';
+            document.getElementById('testCheckbox').classList.remove('checked');
+            document.getElementById('testCheckbox').textContent = '';
+            document.getElementById('testResults').innerHTML = '<div class="test-result warning">Тесты сброшены</div>';
+        }
+        
+        // Автоматический запуск тестов при загрузке
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

@@ -3303,6 +3303,332 @@ textarea.input {
   opacity: 0;
   pointer-events: none;
 }
+
+/* HABITS SYSTEM - СИСТЕМА ПРИВЫЧЕК */
+
+/* HABITS CONTAINER - ОСНОВНОЙ КОНТЕЙНЕР ПРИВЫЧЕК */
+.habits-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--spacing-xl);
+}
+
+/* HABITS EMPTY STATE - ПУСТОЕ СОСТОЯНИЕ */
+.habits-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px var(--spacing-xl);
+  flex: 1;
+  animation: fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+.habits-empty .empty-content {
+  max-width: 320px;
+}
+
+.habits-empty .empty-icon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-2xl);
+  opacity: 0.8;
+  animation: gentle-pulse 3s infinite ease-in-out;
+}
+
+.habits-empty .empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.4;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.habits-empty .empty-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-3xl);
+  line-height: 1.5;
+}
+
+/* HABITS CONTENT - КОНТЕНТ С ПРИВЫЧКАМИ */
+.habits-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.habits-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: var(--spacing-xl);
+}
+
+.habits-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* HABITS LIST - СПИСОК ПРИВЫЧЕК */
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* HABIT CARD - КАРТОЧКА ПРИВЫЧКИ */
+.habit-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(30px);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 80px;
+  transform: translateZ(0);
+  animation: floatIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+  position: relative;
+  overflow: hidden;
+}
+
+.habit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.habit-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--border-primary);
+}
+
+.habit-card:hover::before {
+  opacity: 1;
+}
+
+.habit-card:active {
+  transform: translateY(-2px) scale(1.01);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* COMPLETED HABIT STYLES - СТИЛИ ДЛЯ ВЫПОЛНЕННЫХ ПРИВЫЧЕК */
+.habit-card.completed {
+  opacity: 0.8;
+  background: var(--bg-secondary);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.habit-card.completed .habit-title {
+  color: var(--text-muted);
+  position: relative;
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+  text-decoration-thickness: 2px;
+}
+
+/* HABIT ICON - ИКОНКА ПРИВЫЧКИ */
+.habit-icon {
+  font-size: 32px;
+  margin-right: var(--spacing-xl);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 2;
+}
+
+.habit-card:hover .habit-icon {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: scale(1.05);
+}
+
+/* HABIT CONTENT - КОНТЕНТ ПРИВЫЧКИ */
+.habit-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
+
+.habit-title {
+  font-size: 18px;
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.habit-time {
+  font-size: 12px;
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.12);
+  backdrop-filter: blur(10px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 4px;
+  font-weight: 700;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.15);
+  letter-spacing: 0.3px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  width: fit-content;
+}
+
+.habit-frequency {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* HABIT CHECKBOX - ЧЕКБОКС ПРИВЫЧКИ */
+.habit-checkbox {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-radius: 14px;
+  margin-left: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform: translateZ(0);
+  background: var(--bg-tertiary);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2) inset,
+    0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.habit-checkbox:hover {
+  transform: scale(1.1);
+  box-shadow: 
+    0 0 20px rgba(34, 197, 94, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2) inset;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.habit-checkbox.checked {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-color: #22c55e;
+  box-shadow: 
+    0 0 20px rgba(34, 197, 94, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.3) inset;
+  transform: scale(1.05);
+}
+
+.habit-checkbox.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  animation: habit-checkmark-appear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Анимация появления галочки для привычек */
+@keyframes habit-checkmark-appear {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-22deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* HABITS STATS - СТАТИСТИКА ПРИВЫЧЕК */
+.habits-stats-container {
+  padding: var(--spacing-xl) 0;
+  border-top: 1px solid var(--border-soft);
+  margin-top: var(--spacing-xl);
+  flex-shrink: 0;
+}
+
+.habits-stats {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.5;
+  padding: var(--spacing-lg);
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-secondary);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ADD HABIT BUTTON - КНОПКА ДОБАВЛЕНИЯ ПРИВЫЧКИ */
+.add-habit-container {
+  padding: var(--spacing-lg) 0;
+  margin-top: var(--spacing-lg);
+}
+
+/* АНИМАЦИИ ДЛЯ ПРИВЫЧЕК */
+.habit-card:nth-child(1) { animation-delay: 0.1s; }
+.habit-card:nth-child(2) { animation-delay: 0.2s; }
+.habit-card:nth-child(3) { animation-delay: 0.3s; }
+.habit-card:nth-child(4) { animation-delay: 0.4s; }
+.habit-card:nth-child(5) { animation-delay: 0.5s; }
+
+/* Специальная анимация для привычек, которые меняют статус */
+.habit-card.status-changing {
+  animation: habit-status-change 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes habit-status-change {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-8px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 </style>
 </head>
 <body>
@@ -3806,6 +4132,8 @@ let currentDate = new Date();
 let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
+let habits = []; // ПРИВЫЧКИ: массив объектов habit
+let habitLogs = []; // ЛОГИ ПРИВЫЧЕК: массив объектов habitLog
 let deletedTasks = {}; // РЕФАКТОРИНГ: контекстное удаление {date: {sourceKey: true}}
 let selectedPlanId = null;
 let calendarDate = new Date();
@@ -4149,6 +4477,10 @@ function loadData() {
       });
       saveRooms();
     }
+    
+    // 🎯 ЗАГРУЖАЕМ ДАННЫЕ ПРИВЫЧЕК
+    loadHabits();
+    loadHabitLogs();
   } catch (e) {
     console.error('Ошибка при загрузке данных:', e);
     // Инициализируем пустыми данными в случае ошибки
@@ -4219,6 +4551,119 @@ function loadSections() {
     console.error('Ошибка при загрузке разделов:', e);
     sections = [];
   }
+}
+
+// HABITS SYSTEM - СИСТЕМА ПРИВЫЧЕК
+function saveHabits() {
+  try {
+    localStorage.setItem('planner_habits', JSON.stringify(habits));
+  } catch (e) {
+    console.error('Ошибка при сохранении привычек:', e);
+  }
+}
+
+function loadHabits() {
+  try {
+    const savedHabits = localStorage.getItem('planner_habits');
+    habits = savedHabits ? JSON.parse(savedHabits) : [];
+  } catch (e) {
+    console.error('Ошибка при загрузке привычек:', e);
+    habits = [];
+  }
+}
+
+function saveHabitLogs() {
+  try {
+    localStorage.setItem('planner_habit_logs', JSON.stringify(habitLogs));
+  } catch (e) {
+    console.error('Ошибка при сохранении логов привычек:', e);
+  }
+}
+
+function loadHabitLogs() {
+  try {
+    const savedLogs = localStorage.getItem('planner_habit_logs');
+    habitLogs = savedLogs ? JSON.parse(savedLogs) : [];
+  } catch (e) {
+    console.error('Ошибка при загрузке логов привычек:', e);
+    habitLogs = [];
+  }
+}
+
+// Проверяет, выполнена ли привычка в определенную дату
+function isHabitCompletedOnDate(habitId, date) {
+  const dateStr = date.toISOString().split('T')[0];
+  return habitLogs.some(log => 
+    log.habitId === habitId && 
+    log.date === dateStr && 
+    log.completed
+  );
+}
+
+// Переключает состояние выполнения привычки
+function toggleHabitCompletion(habitId, date = currentDate) {
+  const dateStr = date.toISOString().split('T')[0];
+  const existingLogIndex = habitLogs.findIndex(log => 
+    log.habitId === habitId && log.date === dateStr
+  );
+  
+  if (existingLogIndex >= 0) {
+    // Переключаем существующий лог
+    habitLogs[existingLogIndex].completed = !habitLogs[existingLogIndex].completed;
+  } else {
+    // Создаем новый лог
+    habitLogs.push({
+      habitId: habitId,
+      date: dateStr,
+      completed: true
+    });
+  }
+  
+  saveHabitLogs();
+  
+  // Обновляем отображение если мы на вкладке привычек
+  if (currentTab === 'habits') {
+    renderHabits();
+  }
+}
+
+// Получает статистику привычек для текущей недели
+function getHabitsWeeklyStats() {
+  const today = new Date(currentDate);
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Понедельник
+  
+  const stats = {
+    completed: 0,
+    total: 0
+  };
+  
+  habits.forEach(habit => {
+    if (!habit.enabled) return;
+    
+    // Считаем сколько раз привычка должна была быть выполнена на этой неделе
+    let expectedCount = 0;
+    if (habit.frequency.type === 'daily') {
+      expectedCount = 7;
+    } else if (habit.frequency.type === 'weekly') {
+      expectedCount = habit.frequency.value || 1;
+    }
+    
+    // Считаем сколько раз привычка была выполнена на этой неделе
+    let completedCount = 0;
+    for (let i = 0; i < 7; i++) {
+      const checkDate = new Date(startOfWeek);
+      checkDate.setDate(startOfWeek.getDate() + i);
+      if (isHabitCompletedOnDate(habit.id, checkDate)) {
+        completedCount++;
+      }
+    }
+    
+    stats.total += expectedCount;
+    stats.completed += Math.min(completedCount, expectedCount);
+  });
+  
+  return stats;
 }
 
 // РЕФАКТОРИНГ: Упрощенная система удаления задач
@@ -7383,6 +7828,75 @@ function initNutrition() {
   updateHeaderForTab('nutrition');
 }
 
+// ОТДЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ВКЛАДКИ ПРИВЫЧЕК
+function showHabitsTab() {
+  const content = document.querySelector('.content');
+  content.innerHTML = `
+    <!-- HABITS CONTAINER -->
+    <div class="habits-container">
+      <!-- EMPTY STATE -->
+      <div class="habits-empty" id="habitsEmpty">
+        <div class="empty-content">
+          <div class="empty-icon">🎯</div>
+          <h2 class="empty-title">Привычки — это то, что держит ритм</h2>
+          <p class="empty-subtitle">Добавьте 1–2, не больше</p>
+          <button class="btn-primary" onclick="showAddHabit()">Добавить привычку</button>
+        </div>
+      </div>
+      
+      <!-- HABITS LIST -->
+      <div class="habits-content" id="habitsContainer" style="display: none;">
+        <div class="habits-scroll-container">
+          <div class="habits-list" id="habitsList">
+            <!-- Привычки будут здесь -->
+          </div>
+          
+          <!-- ADD HABIT BUTTON -->
+          <div class="add-habit-container">
+            <button class="btn-secondary btn-full-width" onclick="showAddHabit()" style="margin-top: 20px;">
+              <span class="add-icon">+</span>
+              Добавить привычку
+            </button>
+          </div>
+        </div>
+        
+        <!-- HABITS STATS -->
+        <div class="habits-stats-container">
+          <div class="habits-stats" id="habitsStats">
+            Пока нет активных привычек
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Настраиваем стили контейнера
+  content.style.height = '100%';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+  
+  // Добавляем анимации появления
+  setTimeout(() => {
+    const habitsContainer = document.querySelector('.habits-container');
+    if (habitsContainer) habitsContainer.classList.add('animate-in');
+  }, 50);
+  
+  // Инициализируем привычки
+  initHabits();
+}
+
+function initHabits() {
+  // Загружаем данные привычек
+  loadHabits();
+  loadHabitLogs();
+  
+  // Рендерим привычки
+  renderHabits();
+  
+  // Обновляем заголовок
+  updateHeaderForTab('habits');
+}
+
 // Данные питания
 let nutritionData = {
   water: {
@@ -7623,9 +8137,153 @@ function renderNutritionDay() {
   }
 }
 
+// HABITS RENDERING - РЕНДЕРИНГ ПРИВЫЧЕК
+function renderHabits() {
+  try {
+    console.log('🎯 Рендерим привычки');
+    
+    const habitsContainer = document.getElementById('habitsContainer');
+    const habitsEmpty = document.getElementById('habitsEmpty');
+    
+    if (!habitsContainer || !habitsEmpty) {
+      console.warn('⚠️ Контейнеры привычек не найдены');
+      return;
+    }
+    
+    // Фильтруем только активные привычки
+    const activeHabits = habits.filter(habit => habit.enabled);
+    
+    if (activeHabits.length === 0) {
+      // Показываем пустое состояние
+      habitsEmpty.style.display = 'flex';
+      habitsContainer.style.display = 'none';
+    } else {
+      // Показываем список привычек
+      habitsEmpty.style.display = 'none';
+      habitsContainer.style.display = 'block';
+      
+      const habitsList = document.getElementById('habitsList');
+      if (!habitsList) {
+        console.warn('⚠️ Список привычек не найден');
+        return;
+      }
+      
+      let html = '';
+      
+      activeHabits.forEach((habit, index) => {
+        const isCompleted = isHabitCompletedOnDate(habit.id, currentDate);
+        const timeDisplay = habit.time ? `<div class="habit-time">${habit.time}</div>` : '';
+        
+        html += `
+          <div class="habit-card ${isCompleted ? 'completed' : ''}" 
+               onclick="toggleHabitCompletion('${habit.id}')"
+               style="animation-delay: ${index * 0.1}s">
+            <div class="habit-icon">${habit.icon}</div>
+            <div class="habit-content">
+              <div class="habit-title">${escapeHtml(habit.title)}</div>
+              ${timeDisplay}
+              <div class="habit-frequency">${getHabitFrequencyText(habit)}</div>
+            </div>
+            <div class="habit-checkbox ${isCompleted ? 'checked' : ''}"></div>
+          </div>
+        `;
+      });
+      
+      habitsList.innerHTML = html;
+      
+      // Добавляем анимации
+      setTimeout(() => {
+        const habitCards = habitsList.querySelectorAll('.habit-card');
+        habitCards.forEach(card => {
+          card.classList.add('animate-in');
+        });
+      }, 50);
+    }
+    
+    // Обновляем статистику
+    updateHabitsStats();
+    
+  } catch (e) {
+    console.error('Ошибка при рендеринге привычек:', e);
+  }
+}
 
+// Получает текст частоты для привычки
+function getHabitFrequencyText(habit) {
+  if (habit.frequency.type === 'daily') {
+    return 'Каждый день';
+  } else if (habit.frequency.type === 'weekly') {
+    const times = habit.frequency.value || 1;
+    return `${times} раз в неделю`;
+  }
+  return '';
+}
 
+// Обновляет статистику привычек
+function updateHabitsStats() {
+  try {
+    const statsElement = document.getElementById('habitsStats');
+    if (!statsElement) return;
+    
+    const stats = getHabitsWeeklyStats();
+    const todayCompleted = habits.filter(habit => 
+      habit.enabled && isHabitCompletedOnDate(habit.id, currentDate)
+    ).length;
+    const todayTotal = habits.filter(habit => habit.enabled).length;
+    
+    let statsText = '';
+    if (stats.total > 0) {
+      statsText += `На этой неделе: ${stats.completed} из ${stats.total}`;
+    }
+    if (todayTotal > 0) {
+      if (statsText) statsText += ' • ';
+      if (todayCompleted === todayTotal) {
+        statsText += 'Сегодня: выполнено';
+      } else {
+        statsText += `Сегодня: ${todayCompleted} из ${todayTotal}`;
+      }
+    }
+    
+    statsElement.textContent = statsText || 'Пока нет активных привычек';
+    
+  } catch (e) {
+    console.error('Ошибка при обновлении статистики привычек:', e);
+  }
+}
 
+// HABIT MANAGEMENT - УПРАВЛЕНИЕ ПРИВЫЧКАМИ
+
+// Показывает модальное окно добавления привычки
+function showAddHabit() {
+  // Пока что простая заглушка - в будущем здесь будет полноценное модальное окно
+  const habitTitle = prompt('Название привычки:');
+  if (!habitTitle || !habitTitle.trim()) return;
+  
+  // Создаем новую привычку с базовыми настройками
+  const newHabit = {
+    id: Date.now().toString(),
+    title: habitTitle.trim(),
+    icon: '🎯', // По умолчанию
+    frequency: {
+      type: 'daily'
+    },
+    enabled: true,
+    createdAt: new Date().toISOString()
+  };
+  
+  // Добавляем в массив
+  habits.push(newHabit);
+  
+  // Сохраняем
+  saveHabits();
+  
+  // Обновляем отображение
+  if (currentTab === 'habits') {
+    renderHabits();
+  }
+  
+  console.log('✅ Привычка добавлена:', newHabit);
+}
 
 // Трекер воды
 function changeWater(delta) {

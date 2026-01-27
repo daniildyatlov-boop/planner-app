@@ -3975,54 +3975,78 @@ function changeDay(direction) {
 
 // ROOM TEMPLATES - СИСТЕМА ШАБЛОНОВ ПЛАНОВ ДЛЯ РАЗДЕЛОВ
 function configureRoom(roomName) {
-  console.log('Настройка раздела:', roomName);
+  console.log('configureRoom вызвана для раздела:', roomName);
   
-  // Показываем экран настройки раздела
-  showRoomConfigScreen(roomName);
+  try {
+    // Показываем экран настройки раздела
+    showRoomConfigScreen(roomName);
+  } catch (error) {
+    console.error('Ошибка в configureRoom:', error);
+    alert('Ошибка при открытии настроек раздела: ' + error.message);
+  }
 }
 
 function showRoomConfigScreen(roomName) {
-  const content = document.querySelector('.content');
-  const header = document.querySelector('.header');
-  const bottomNav = document.getElementById('bottomNav');
+  console.log('showRoomConfigScreen вызвана для раздела:', roomName);
   
-  // Скрываем основные элементы
-  if (header) header.style.display = 'none';
-  if (bottomNav) bottomNav.style.display = 'none';
-  
-  // Получаем шаблоны для этого раздела
-  const templates = roomTemplates[roomName] || [];
-  
-  content.innerHTML = `
-    <div class="room-config-screen">
-      <div class="room-config-header">
-        <button class="header-btn" onclick="hideRoomConfig()">← Назад</button>
-        <h1>Настройка раздела</h1>
-        <div style="width: 60px;"></div>
-      </div>
-      
-      <div class="room-config-content">
-        <div class="room-config-title">
-          <div class="room-config-icon">${getRoomIcon(roomName)}</div>
-          <h2>${roomName}</h2>
+  try {
+    const content = document.querySelector('.content');
+    const header = document.querySelector('.header');
+    const bottomNav = document.getElementById('bottomNav');
+    
+    console.log('Элементы найдены:', { content, header, bottomNav });
+    
+    // Скрываем основные элементы
+    if (header) header.style.display = 'none';
+    if (bottomNav) bottomNav.style.display = 'none';
+    
+    // Получаем шаблоны для этого раздела
+    const templates = roomTemplates[roomName] || [];
+    console.log('Шаблоны для раздела:', templates);
+    
+    // Получаем иконку раздела
+    const roomIcon = getRoomIcon(roomName);
+    console.log('Иконка раздела:', roomIcon);
+    
+    const htmlContent = `
+      <div class="room-config-screen">
+        <div class="room-config-header">
+          <button class="header-btn" onclick="hideRoomConfig()">← Назад</button>
+          <h1>Настройка раздела</h1>
+          <div style="width: 60px;"></div>
         </div>
         
-        <div class="templates-section">
-          <h3>Шаблоны планов</h3>
-          <p class="templates-description">Создайте шаблоны планов, которые будут автоматически добавляться по расписанию</p>
-          
-          <div class="templates-list" id="templatesList">
-            ${renderTemplates(templates)}
+        <div class="room-config-content">
+          <div class="room-config-title">
+            <div class="room-config-icon">${roomIcon}</div>
+            <h2>${roomName}</h2>
           </div>
           
-          <button class="btn add-template-btn" onclick="addTemplate('${roomName}')">
-            <span class="add-icon">+</span>
-            Добавить шаблон
-          </button>
+          <div class="templates-section">
+            <h3>Шаблоны планов</h3>
+            <p class="templates-description">Создайте шаблоны планов, которые будут автоматически добавляться по расписанию</p>
+            
+            <div class="templates-list" id="templatesList">
+              ${renderTemplates(templates)}
+            </div>
+            
+            <button class="btn add-template-btn" onclick="addTemplate('${roomName}')">
+              <span class="add-icon">+</span>
+              Добавить шаблон
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+    
+    console.log('HTML контент сгенерирован');
+    content.innerHTML = htmlContent;
+    console.log('HTML контент установлен');
+    
+  } catch (error) {
+    console.error('Ошибка в showRoomConfigScreen:', error);
+    alert('Ошибка при отображении экрана настроек: ' + error.message);
+  }
 }
 
 function renderTemplates(templates) {

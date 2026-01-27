@@ -1065,6 +1065,35 @@ body{
   opacity: 0.7;
   transform: scale(0.98);
   background: var(--bg-secondary);
+  /* Добавляем плавную анимацию при изменении позиции */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Анимация для перемещения задач */
+.plan {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Специальная анимация для задач, которые меняют статус */
+.plan.status-changing {
+  animation: task-reorder 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes task-reorder {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .plan.completed .plan-title {
   color: var(--text-muted);
@@ -4348,6 +4377,23 @@ function render() {
     
     const todayPlans = getPlansForDate(currentDate);
     
+    // Сортируем задачи: невыполненные вверху, выполненные внизу
+    todayPlans.sort((a, b) => {
+      // Если одна задача выполнена, а другая нет
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1; // Выполненные идут вниз
+      }
+      // Если обе задачи имеют одинаковый статус, сортируем по времени
+      if (a.time && b.time) {
+        return a.time.localeCompare(b.time);
+      }
+      // Задачи с временем идут выше задач без времени
+      if (a.time && !b.time) return -1;
+      if (!a.time && b.time) return 1;
+      // Если нет времени у обеих, сортируем по порядку создания (по ID)
+      return a.id.localeCompare(b.id);
+    });
+    
     // Update date display
     const dayTitle = document.getElementById('dayTitle');
     const daySubtitle = document.getElementById('daySubtitle');
@@ -5513,6 +5559,11 @@ function toggleComplete(id, event) {
     
     savePlans();
     updateProgress();
+    
+    // Перерендериваем список с задержкой для плавного перемещения задач
+    setTimeout(() => {
+      render();
+    }, 300);
     
   } catch (error) {
     console.error('Ошибка при переключении состояния задачи:', error);

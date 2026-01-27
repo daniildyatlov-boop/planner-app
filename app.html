@@ -5908,7 +5908,7 @@ function showAddSection() {
   modal.innerHTML = `
     <div class="modal-header">
       <h2 class="modal-title">Новый раздел</h2>
-      <button class="header-btn" onclick="hideAddSection()">Отмена</button>
+      <button class="header-btn" onclick="hideAddSection(); showSectionsManager();">Отмена</button>
     </div>
     <div class="modal-content">
       <div class="form-group">
@@ -5972,7 +5972,6 @@ function hideAddSection() {
   if (modal) {
     modal.remove();
   }
-  showSectionsManager();
 }
 
 function renderSectionIcons() {
@@ -6114,7 +6113,7 @@ function saveNewSection() {
   updateSectionsStats(); // Обновляем статистику
   
   hideAddSection();
-  showSectionsManager();
+  showSectionsManager(); // Возвращаемся в управление разделами
 }
 
 function deleteSection(sectionId, event) {

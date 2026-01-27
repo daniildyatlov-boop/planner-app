@@ -3920,6 +3920,291 @@ textarea.input {
 .snackbar-action:active {
   transform: scale(0.95);
 }
+
+/* EMOJI SELECTOR - СЕЛЕКТОР ЭМОДЗИ */
+
+/* EMOJI PREVIEW - ПРЕВЬЮ ЭМОДЗИ */
+.habit-emoji-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-soft);
+}
+
+.habit-emoji-preview:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.emoji-display {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 16px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.emoji-change-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* EMOJI SEARCH - ПОИСК ЭМОДЗИ */
+.emoji-search-container {
+  margin-bottom: var(--spacing-2xl);
+}
+
+/* EMOJI SECTIONS - СЕКЦИИ ЭМОДЗИ */
+.emoji-recent-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.emoji-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  padding-left: var(--spacing-sm);
+}
+
+.emoji-category {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-md);
+}
+
+.emoji-option {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-secondary);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.emoji-option:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-medium);
+}
+
+.emoji-option:active {
+  transform: scale(0.95);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* WEEKDAYS SELECTOR - СЕЛЕКТОР ДНЕЙ НЕДЕЛИ */
+.weekdays-selector {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.weekday-option {
+  position: relative;
+}
+
+.weekday-option input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.weekday-option label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-secondary);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.weekday-option input[type="checkbox"]:checked + label {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-color: var(--accent-primary);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+.weekday-option label:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+}
+
+.weekday-option label:active {
+  transform: scale(0.95);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* TIME WINDOW SELECTOR - СЕЛЕКТОР ВРЕМЕННОГО ОКНА */
+.time-window-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.time-window-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.time-window-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.time-window-toggle label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.time-window-inputs {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+}
+
+.time-input-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.time-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 20px;
+}
+
+.time-input {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* REMINDER SELECTOR - СЕЛЕКТОР НАПОМИНАНИЙ */
+.reminder-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.reminder-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.reminder-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.reminder-toggle label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.reminder-inputs {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+/* FREQUENCY OPTION UPDATES - ОБНОВЛЕНИЯ ДЛЯ ОПЦИЙ ЧАСТОТЫ */
+.frequency-option[data-type="workdays"] {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-secondary);
+}
+
+.frequency-option[data-type="workdays"]:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+}
+
+.frequency-option[data-type="workdays"].active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--accent-primary);
+}
+
+/* HABIT TIME DISPLAY - ОТОБРАЖЕНИЕ ВРЕМЕНИ ПРИВЫЧКИ */
+.habit-time-window {
+  font-size: 11px;
+  color: var(--accent-water);
+  background: rgba(6, 182, 212, 0.12);
+  backdrop-filter: blur(10px);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+  font-weight: 600;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  letter-spacing: 0.2px;
+}
+
+/* HABIT CARD UPDATES - ОБНОВЛЕНИЯ ДЛЯ КАРТОЧЕК ПРИВЫЧЕК */
+.habit-card.time-restricted {
+  border-left: 3px solid var(--accent-water);
+}
+
+.habit-card.paused {
+  opacity: 0.6;
+  background: var(--bg-secondary);
+  border-color: var(--border-soft);
+}
+
+.habit-card.paused .habit-title::after {
+  content: ' (приостановлена)';
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
 </style>
 </head>
 <body>
@@ -4062,20 +4347,10 @@ textarea.input {
     </div>
     
     <div class="form-group">
-      <label class="label">Иконка</label>
-      <div class="habit-icon-selector" id="habitIconSelector">
-        <div class="habit-icon-option selected" data-icon="🎯">🎯</div>
-        <div class="habit-icon-option" data-icon="💧">💧</div>
-        <div class="habit-icon-option" data-icon="🏃">🏃</div>
-        <div class="habit-icon-option" data-icon="📚">📚</div>
-        <div class="habit-icon-option" data-icon="🧘">🧘</div>
-        <div class="habit-icon-option" data-icon="🌱">🌱</div>
-        <div class="habit-icon-option" data-icon="💪">💪</div>
-        <div class="habit-icon-option" data-icon="🎵">🎵</div>
-        <div class="habit-icon-option" data-icon="✍️">✍️</div>
-        <div class="habit-icon-option" data-icon="🍎">🍎</div>
-        <div class="habit-icon-option" data-icon="😴">😴</div>
-        <div class="habit-icon-option" data-icon="🌅">🌅</div>
+      <label class="label">Эмодзи</label>
+      <div class="habit-emoji-preview" id="habitEmojiPreview" onclick="showEmojiSelector()">
+        <div class="emoji-display">🎯</div>
+        <div class="emoji-change-text">Нажмите для выбора</div>
       </div>
     </div>
     
@@ -4090,6 +4365,10 @@ textarea.input {
           <div class="frequency-title">Несколько раз в неделю</div>
           <div class="frequency-subtitle">Гибкий график</div>
         </div>
+        <div class="frequency-option" data-type="workdays">
+          <div class="frequency-title">Рабочие дни</div>
+          <div class="frequency-subtitle">Пн-Пт или настроить</div>
+        </div>
       </div>
     </div>
     
@@ -4102,15 +4381,210 @@ textarea.input {
       </div>
     </div>
     
+    <div class="form-group" id="workdaysGroup" style="display: none;">
+      <label class="label">Дни недели</label>
+      <div class="weekdays-selector">
+        <div class="weekday-option" data-day="1">
+          <input type="checkbox" id="day1" checked>
+          <label for="day1">Пн</label>
+        </div>
+        <div class="weekday-option" data-day="2">
+          <input type="checkbox" id="day2" checked>
+          <label for="day2">Вт</label>
+        </div>
+        <div class="weekday-option" data-day="3">
+          <input type="checkbox" id="day3" checked>
+          <label for="day3">Ср</label>
+        </div>
+        <div class="weekday-option" data-day="4">
+          <input type="checkbox" id="day4" checked>
+          <label for="day4">Чт</label>
+        </div>
+        <div class="weekday-option" data-day="5">
+          <input type="checkbox" id="day5" checked>
+          <label for="day5">Пт</label>
+        </div>
+        <div class="weekday-option" data-day="6">
+          <input type="checkbox" id="day6">
+          <label for="day6">Сб</label>
+        </div>
+        <div class="weekday-option" data-day="0">
+          <input type="checkbox" id="day0">
+          <label for="day0">Вс</label>
+        </div>
+      </div>
+    </div>
+    
     <div class="form-group">
-      <label class="label">Время (необязательно)</label>
-      <input type="time" class="input" id="habitTime" placeholder="Выберите время">
+      <label class="label">Временное окно (необязательно)</label>
+      <div class="time-window-selector">
+        <div class="time-window-toggle">
+          <input type="checkbox" id="enableTimeWindow">
+          <label for="enableTimeWindow">Ограничить по времени</label>
+        </div>
+        <div class="time-window-inputs" id="timeWindowInputs" style="display: none;">
+          <div class="time-input-group">
+            <label class="time-label">С</label>
+            <input type="time" class="input time-input" id="habitTimeStart" value="06:00">
+          </div>
+          <div class="time-input-group">
+            <label class="time-label">До</label>
+            <input type="time" class="input time-input" id="habitTimeEnd" value="23:00">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="label">Напоминание (необязательно)</label>
+      <div class="reminder-selector">
+        <div class="reminder-toggle">
+          <input type="checkbox" id="enableReminder">
+          <label for="enableReminder">Напомнить в определенное время</label>
+        </div>
+        <div class="reminder-inputs" id="reminderInputs" style="display: none;">
+          <input type="time" class="input" id="habitReminderTime" value="09:00">
+        </div>
+      </div>
     </div>
     
     <div class="form-group" id="habitDeleteGroup" style="display: none;">
       <button class="btn-destructive btn-full-width" onclick="showDeleteHabitConfirm()">
         Удалить привычку
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- EMOJI SELECTOR MODAL - СЕЛЕКТОР ЭМОДЗИ -->
+<div class="modal" id="emojiModal">
+  <div class="modal-header">
+    <div class="modal-header-actions">
+      <button class="btn-tertiary" onclick="hideEmojiSelector()">Отмена</button>
+    </div>
+    <div class="modal-title">Выберите эмодзи</div>
+    <div class="modal-header-actions"></div>
+  </div>
+  <div class="modal-content">
+    <div class="emoji-search-container">
+      <input class="input" id="emojiSearch" placeholder="Поиск эмодзи..." oninput="filterEmojis()">
+    </div>
+    
+    <div class="emoji-recent-section" id="emojiRecentSection">
+      <div class="emoji-section-title">Недавние</div>
+      <div class="emoji-grid" id="emojiRecentGrid">
+        <!-- Недавние эмодзи будут добавлены динамически -->
+      </div>
+    </div>
+    
+    <div class="emoji-categories">
+      <div class="emoji-category">
+        <div class="emoji-section-title">💪 Тело и спорт</div>
+        <div class="emoji-grid">
+          <div class="emoji-option" data-emoji="💪">💪</div>
+          <div class="emoji-option" data-emoji="🏃">🏃</div>
+          <div class="emoji-option" data-emoji="🚴">🚴</div>
+          <div class="emoji-option" data-emoji="🏋️">🏋️</div>
+          <div class="emoji-option" data-emoji="🧘">🧘</div>
+          <div class="emoji-option" data-emoji="🤸">🤸</div>
+          <div class="emoji-option" data-emoji="🏊">🏊</div>
+          <div class="emoji-option" data-emoji="⚽">⚽</div>
+          <div class="emoji-option" data-emoji="🏀">🏀</div>
+          <div class="emoji-option" data-emoji="🎾">🎾</div>
+          <div class="emoji-option" data-emoji="🏓">🏓</div>
+          <div class="emoji-option" data-emoji="🥊">🥊</div>
+        </div>
+      </div>
+      
+      <div class="emoji-category">
+        <div class="emoji-section-title">🍎 Еда и здоровье</div>
+        <div class="emoji-grid">
+          <div class="emoji-option" data-emoji="🍎">🍎</div>
+          <div class="emoji-option" data-emoji="🥗">🥗</div>
+          <div class="emoji-option" data-emoji="💧">💧</div>
+          <div class="emoji-option" data-emoji="🥛">🥛</div>
+          <div class="emoji-option" data-emoji="🍵">🍵</div>
+          <div class="emoji-option" data-emoji="🥤">🥤</div>
+          <div class="emoji-option" data-emoji="🍌">🍌</div>
+          <div class="emoji-option" data-emoji="🥕">🥕</div>
+          <div class="emoji-option" data-emoji="🥦">🥦</div>
+          <div class="emoji-option" data-emoji="🍊">🍊</div>
+          <div class="emoji-option" data-emoji="🍇">🍇</div>
+          <div class="emoji-option" data-emoji="💊">💊</div>
+        </div>
+      </div>
+      
+      <div class="emoji-category">
+        <div class="emoji-section-title">📚 Работа и учеба</div>
+        <div class="emoji-grid">
+          <div class="emoji-option" data-emoji="📚">📚</div>
+          <div class="emoji-option" data-emoji="✍️">✍️</div>
+          <div class="emoji-option" data-emoji="💻">💻</div>
+          <div class="emoji-option" data-emoji="📝">📝</div>
+          <div class="emoji-option" data-emoji="📖">📖</div>
+          <div class="emoji-option" data-emoji="🎓">🎓</div>
+          <div class="emoji-option" data-emoji="💼">💼</div>
+          <div class="emoji-option" data-emoji="📊">📊</div>
+          <div class="emoji-option" data-emoji="📈">📈</div>
+          <div class="emoji-option" data-emoji="🎯">🎯</div>
+          <div class="emoji-option" data-emoji="⏰">⏰</div>
+          <div class="emoji-option" data-emoji="📅">📅</div>
+        </div>
+      </div>
+      
+      <div class="emoji-category">
+        <div class="emoji-section-title">🧠 Фокус и развитие</div>
+        <div class="emoji-grid">
+          <div class="emoji-option" data-emoji="🧠">🧠</div>
+          <div class="emoji-option" data-emoji="💡">💡</div>
+          <div class="emoji-option" data-emoji="🎨">🎨</div>
+          <div class="emoji-option" data-emoji="🎵">🎵</div>
+          <div class="emoji-option" data-emoji="🎸">🎸</div>
+          <div class="emoji-option" data-emoji="📷">📷</div>
+          <div class="emoji-option" data-emoji="🎬">🎬</div>
+          <div class="emoji-option" data-emoji="🌱">🌱</div>
+          <div class="emoji-option" data-emoji="🔍">🔍</div>
+          <div class="emoji-option" data-emoji="🎪">🎪</div>
+          <div class="emoji-option" data-emoji="🎭">🎭</div>
+          <div class="emoji-option" data-emoji="🎲">🎲</div>
+        </div>
+      </div>
+      
+      <div class="emoji-category">
+        <div class="emoji-section-title">💰 Деньги и финансы</div>
+        <div class="emoji-grid">
+          <div class="emoji-option" data-emoji="💰">💰</div>
+          <div class="emoji-option" data-emoji="💳">💳</div>
+          <div class="emoji-option" data-emoji="💎">💎</div>
+          <div class="emoji-option" data-emoji="🏦">🏦</div>
+          <div class="emoji-option" data-emoji="📊">📊</div>
+          <div class="emoji-option" data-emoji="💹">💹</div>
+          <div class="emoji-option" data-emoji="🪙">🪙</div>
+          <div class="emoji-option" data-emoji="💵">💵</div>
+          <div class="emoji-option" data-emoji="🧾">🧾</div>
+          <div class="emoji-option" data-emoji="📋">📋</div>
+          <div class="emoji-option" data-emoji="🎯">🎯</div>
+          <div class="emoji-option" data-emoji="📈">📈</div>
+        </div>
+      </div>
+      
+      <div class="emoji-category">
+        <div class="emoji-section-title">😴 Отдых и сон</div>
+        <div class="emoji-grid">
+          <div class="emoji-option" data-emoji="😴">😴</div>
+          <div class="emoji-option" data-emoji="🛏️">🛏️</div>
+          <div class="emoji-option" data-emoji="🌙">🌙</div>
+          <div class="emoji-option" data-emoji="⭐">⭐</div>
+          <div class="emoji-option" data-emoji="🌅">🌅</div>
+          <div class="emoji-option" data-emoji="🌄">🌄</div>
+          <div class="emoji-option" data-emoji="🌇">🌇</div>
+          <div class="emoji-option" data-emoji="🕯️">🕯️</div>
+          <div class="emoji-option" data-emoji="🛁">🛁</div>
+          <div class="emoji-option" data-emoji="🧖">🧖</div>
+          <div class="emoji-option" data-emoji="☕">☕</div>
+          <div class="emoji-option" data-emoji="🍃">🍃</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -5929,10 +6403,13 @@ function hideCurrentModal() {
   const addSectionModal = document.getElementById('addSectionModal');
   const habitModal = document.getElementById('habitModal');
   const habitDeleteModal = document.getElementById('habitDeleteModal');
+  const emojiModal = document.getElementById('emojiModal');
   
   // Закрываем в порядке приоритета (от самых верхних к базовым)
   if (popup && popup.classList.contains('show')) {
     hidePopup();
+  } else if (emojiModal && emojiModal.classList.contains('show')) {
+    hideEmojiSelector();
   } else if (habitDeleteModal && habitDeleteModal.classList.contains('show')) {
     hideDeleteHabitConfirm();
   } else if (habitModal && habitModal.classList.contains('show')) {
@@ -8582,16 +9059,36 @@ function renderHabits() {
       
       activeHabits.forEach((habit, index) => {
         const isCompleted = isHabitCompletedOnDate(habit.id, currentDate);
-        const timeDisplay = habit.time ? `<div class="habit-time">${habit.time}</div>` : '';
+        const isActiveToday = isHabitActiveOnDay(habit, currentDate);
+        const isInTimeWindow = isHabitInTimeWindow(habit);
+        
+        // Показываем привычку только если она активна сегодня и в своем временном окне
+        if (!isActiveToday || !isInTimeWindow) {
+          return; // Пропускаем эту привычку
+        }
+        
+        const timeWindowDisplay = habit.timeWindow ? 
+          `<div class="habit-time-window">${habit.timeWindow.start}–${habit.timeWindow.end}</div>` : '';
+        
+        const reminderDisplay = habit.reminderTime ? 
+          `<div class="habit-time">🔔 ${habit.reminderTime}</div>` : '';
+        
+        const cardClasses = [
+          'habit-card',
+          isCompleted ? 'completed' : '',
+          habit.timeWindow ? 'time-restricted' : '',
+          !habit.enabled ? 'paused' : ''
+        ].filter(Boolean).join(' ');
         
         html += `
-          <div class="habit-card ${isCompleted ? 'completed' : ''}" 
+          <div class="${cardClasses}" 
                data-habit-id="${habit.id}"
                style="animation-delay: ${index * 0.1}s; position: relative;">
             <div class="habit-icon">${habit.icon}</div>
             <div class="habit-content" onclick="toggleHabitCompletion('${habit.id}')">
               <div class="habit-title">${escapeHtml(habit.title)}</div>
-              ${timeDisplay}
+              ${reminderDisplay}
+              ${timeWindowDisplay}
               <div class="habit-frequency">${getHabitFrequencyText(habit)}</div>
             </div>
             <div class="habit-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleHabitCompletion('${habit.id}')"></div>
@@ -8759,11 +9256,8 @@ function hideHabitModal() {
 
 // Сбрасывает селекторы в модальном окне
 function resetHabitSelectors() {
-  // Сбрасываем иконки
-  document.querySelectorAll('.habit-icon-option').forEach(option => {
-    option.classList.remove('selected');
-  });
-  document.querySelector('.habit-icon-option[data-icon="🎯"]').classList.add('selected');
+  // Сбрасываем эмодзи
+  document.querySelector('.emoji-display').textContent = '🎯';
   
   // Сбрасываем частоту
   document.querySelectorAll('.frequency-option').forEach(option => {
@@ -8771,17 +9265,23 @@ function resetHabitSelectors() {
   });
   document.querySelector('.frequency-option[data-type="daily"]').classList.add('active');
   document.getElementById('weeklyFrequencyGroup').style.display = 'none';
-}
-
-// Устанавливает выбранную иконку
-function setSelectedHabitIcon(icon) {
-  document.querySelectorAll('.habit-icon-option').forEach(option => {
-    option.classList.remove('selected');
+  document.getElementById('workdaysGroup').style.display = 'none';
+  
+  // Сбрасываем дни недели (по умолчанию рабочие дни)
+  document.querySelectorAll('.weekday-option input[type="checkbox"]').forEach((checkbox, index) => {
+    checkbox.checked = index >= 1 && index <= 5; // Пн-Пт
   });
-  const iconOption = document.querySelector(`[data-icon="${icon}"]`);
-  if (iconOption) {
-    iconOption.classList.add('selected');
-  }
+  
+  // Сбрасываем временное окно
+  document.getElementById('enableTimeWindow').checked = false;
+  document.getElementById('timeWindowInputs').style.display = 'none';
+  document.getElementById('habitTimeStart').value = '06:00';
+  document.getElementById('habitTimeEnd').value = '23:00';
+  
+  // Сбрасываем напоминание
+  document.getElementById('enableReminder').checked = false;
+  document.getElementById('reminderInputs').style.display = 'none';
+  document.getElementById('habitReminderTime').value = '09:00';
 }
 
 // Устанавливает частоту привычки
@@ -8814,18 +9314,37 @@ function saveHabit() {
   }
   
   // Получаем данные из формы
-  const selectedIcon = document.querySelector('.habit-icon-option.selected');
-  const icon = selectedIcon ? selectedIcon.dataset.icon : '🎯';
+  const selectedEmoji = document.querySelector('.emoji-display').textContent;
+  const icon = selectedEmoji || '🎯';
   
   const selectedFrequency = document.querySelector('.frequency-option.active');
   const frequencyType = selectedFrequency ? selectedFrequency.dataset.type : 'daily';
   
-  const time = document.getElementById('habitTime').value || null;
   const weeklyCount = parseInt(document.getElementById('weeklyCount').textContent) || 3;
+  
+  // Получаем дни недели для рабочих дней
+  const activeDays = [];
+  if (frequencyType === 'workdays') {
+    document.querySelectorAll('.weekday-option input[type="checkbox"]:checked').forEach(checkbox => {
+      activeDays.push(parseInt(checkbox.id.replace('day', '')));
+    });
+  }
+  
+  // Получаем временное окно
+  const enableTimeWindow = document.getElementById('enableTimeWindow').checked;
+  const timeWindow = enableTimeWindow ? {
+    start: document.getElementById('habitTimeStart').value,
+    end: document.getElementById('habitTimeEnd').value
+  } : null;
+  
+  // Получаем напоминание
+  const enableReminder = document.getElementById('enableReminder').checked;
+  const reminderTime = enableReminder ? document.getElementById('habitReminderTime').value : null;
   
   const frequency = {
     type: frequencyType,
-    ...(frequencyType === 'weekly' && { value: weeklyCount })
+    ...(frequencyType === 'weekly' && { value: weeklyCount }),
+    ...(frequencyType === 'workdays' && { activeDays: activeDays })
   };
   
   if (currentEditingHabit) {
@@ -8833,7 +9352,8 @@ function saveHabit() {
     currentEditingHabit.title = title;
     currentEditingHabit.icon = icon;
     currentEditingHabit.frequency = frequency;
-    currentEditingHabit.time = time;
+    currentEditingHabit.timeWindow = timeWindow;
+    currentEditingHabit.reminderTime = reminderTime;
     
     console.log('✅ Привычка обновлена:', currentEditingHabit);
   } else {
@@ -8843,7 +9363,8 @@ function saveHabit() {
       title: title,
       icon: icon,
       frequency: frequency,
-      time: time,
+      timeWindow: timeWindow,
+      reminderTime: reminderTime,
       enabled: true,
       createdAt: new Date().toISOString()
     };
@@ -8859,6 +9380,252 @@ function saveHabit() {
   }
   
   hideHabitModal();
+}
+
+// EMOJI MANAGEMENT - УПРАВЛЕНИЕ ЭМОДЗИ
+
+// Глобальные переменные для эмодзи
+let recentEmojis = JSON.parse(localStorage.getItem('planner_recent_emojis') || '[]');
+
+// Показывает селектор эмодзи
+function showEmojiSelector() {
+  // Обновляем недавние эмодзи
+  renderRecentEmojis();
+  
+  // Показываем модальное окно
+  showModal('emojiModal');
+  
+  // Фокусируемся на поиске
+  setTimeout(() => {
+    const searchInput = document.getElementById('emojiSearch');
+    if (searchInput) searchInput.focus();
+  }, 300);
+}
+
+// Скрывает селектор эмодзи
+function hideEmojiSelector() {
+  hideModal('emojiModal');
+}
+
+// Рендерит недавние эмодзи
+function renderRecentEmojis() {
+  const recentGrid = document.getElementById('emojiRecentGrid');
+  const recentSection = document.getElementById('emojiRecentSection');
+  
+  if (recentEmojis.length === 0) {
+    recentSection.style.display = 'none';
+    return;
+  }
+  
+  recentSection.style.display = 'block';
+  recentGrid.innerHTML = recentEmojis.map(emoji => 
+    `<div class="emoji-option" data-emoji="${emoji}">${emoji}</div>`
+  ).join('');
+}
+
+// Добавляет эмодзи в недавние
+function addToRecentEmojis(emoji) {
+  // Удаляем если уже есть
+  recentEmojis = recentEmojis.filter(e => e !== emoji);
+  
+  // Добавляем в начало
+  recentEmojis.unshift(emoji);
+  
+  // Ограничиваем до 12 эмодзи
+  if (recentEmojis.length > 12) {
+    recentEmojis = recentEmojis.slice(0, 12);
+  }
+  
+  // Сохраняем
+  localStorage.setItem('planner_recent_emojis', JSON.stringify(recentEmojis));
+}
+
+// Фильтрует эмодзи по поиску
+function filterEmojis() {
+  const searchTerm = document.getElementById('emojiSearch').value.toLowerCase();
+  const categories = document.querySelectorAll('.emoji-category');
+  
+  categories.forEach(category => {
+    const title = category.querySelector('.emoji-section-title').textContent.toLowerCase();
+    const emojis = category.querySelectorAll('.emoji-option');
+    let hasVisibleEmojis = false;
+    
+    emojis.forEach(emoji => {
+      const emojiText = emoji.dataset.emoji;
+      const shouldShow = searchTerm === '' || 
+                        title.includes(searchTerm) ||
+                        emojiText.includes(searchTerm);
+      
+      emoji.style.display = shouldShow ? 'flex' : 'none';
+      if (shouldShow) hasVisibleEmojis = true;
+    });
+    
+    category.style.display = hasVisibleEmojis ? 'block' : 'none';
+  });
+}
+
+// HABIT FREQUENCY MANAGEMENT - УПРАВЛЕНИЕ ЧАСТОТОЙ ПРИВЫЧЕК
+
+// Получает текст частоты для привычки (обновленная версия)
+function getHabitFrequencyText(habit) {
+  if (habit.frequency.type === 'daily') {
+    return 'Каждый день';
+  } else if (habit.frequency.type === 'weekly') {
+    const times = habit.frequency.value || 1;
+    return `${times} раз в неделю`;
+  } else if (habit.frequency.type === 'workdays') {
+    const days = habit.frequency.activeDays || [1, 2, 3, 4, 5];
+    if (days.length === 5 && days.includes(1) && days.includes(2) && days.includes(3) && days.includes(4) && days.includes(5)) {
+      return 'Рабочие дни';
+    } else {
+      const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      return days.map(day => dayNames[day]).join(', ');
+    }
+  }
+  return '';
+}
+
+// Проверяет, активна ли привычка в определенный день
+function isHabitActiveOnDay(habit, date) {
+  if (!habit.enabled) return false;
+  
+  const dayOfWeek = date.getDay(); // 0 = воскресенье, 1 = понедельник, и т.д.
+  
+  if (habit.frequency.type === 'daily') {
+    return true;
+  } else if (habit.frequency.type === 'workdays') {
+    const activeDays = habit.frequency.activeDays || [1, 2, 3, 4, 5];
+    return activeDays.includes(dayOfWeek);
+  } else if (habit.frequency.type === 'weekly') {
+    // Для недельных привычек проверяем, сколько раз уже выполнено на этой неделе
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() - date.getDay());
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    let completedThisWeek = 0;
+    for (let d = new Date(startOfWeek); d <= endOfWeek; d.setDate(d.getDate() + 1)) {
+      if (isHabitCompletedOnDate(habit.id, d)) {
+        completedThisWeek++;
+      }
+    }
+    
+    return completedThisWeek < (habit.frequency.value || 3);
+  }
+  
+  return true;
+}
+
+// Проверяет, находится ли привычка в своем временном окне
+function isHabitInTimeWindow(habit) {
+  if (!habit.timeWindow) return true;
+  
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+  
+  const [startHour, startMin] = habit.timeWindow.start.split(':').map(Number);
+  const [endHour, endMin] = habit.timeWindow.end.split(':').map(Number);
+  
+  const startTime = startHour * 60 + startMin;
+  const endTime = endHour * 60 + endMin;
+  
+  // Обрабатываем случай, когда временное окно переходит через полночь
+  if (startTime > endTime) {
+    return currentTime >= startTime || currentTime <= endTime;
+  } else {
+    return currentTime >= startTime && currentTime <= endTime;
+  }
+}
+
+// HABIT FORM MANAGEMENT - УПРАВЛЕНИЕ ФОРМОЙ ПРИВЫЧЕК
+
+// Обновляет функцию setHabitFrequency для поддержки новых типов
+function setHabitFrequency(frequency) {
+  document.querySelectorAll('.frequency-option').forEach(option => {
+    option.classList.remove('active');
+  });
+  
+  const frequencyOption = document.querySelector(`[data-type="${frequency.type}"]`);
+  if (frequencyOption) {
+    frequencyOption.classList.add('active');
+  }
+  
+  // Показываем/скрываем соответствующие группы
+  const weeklyGroup = document.getElementById('weeklyFrequencyGroup');
+  const workdaysGroup = document.getElementById('workdaysGroup');
+  
+  if (frequency.type === 'weekly') {
+    weeklyGroup.style.display = 'block';
+    workdaysGroup.style.display = 'none';
+    document.getElementById('weeklyCount').textContent = frequency.value || 3;
+  } else if (frequency.type === 'workdays') {
+    weeklyGroup.style.display = 'none';
+    workdaysGroup.style.display = 'block';
+    
+    // Устанавливаем активные дни
+    const activeDays = frequency.activeDays || [1, 2, 3, 4, 5];
+    document.querySelectorAll('.weekday-option input[type="checkbox"]').forEach(checkbox => {
+      const day = parseInt(checkbox.id.replace('day', ''));
+      checkbox.checked = activeDays.includes(day);
+    });
+  } else {
+    weeklyGroup.style.display = 'none';
+    workdaysGroup.style.display = 'none';
+  }
+}
+
+// Обновляет функцию showEditHabitModal для поддержки новых полей
+function showEditHabitModal(habitId) {
+  const habit = habits.find(h => h.id === habitId);
+  if (!habit) return;
+  
+  currentEditingHabit = habit;
+  
+  // Заполняем форму данными привычки
+  document.getElementById('habitTitle').value = habit.title;
+  
+  // Устанавливаем заголовок
+  document.getElementById('habitModalTitle').textContent = 'Редактировать привычку';
+  
+  // Показываем кнопку удаления
+  document.getElementById('habitDeleteGroup').style.display = 'block';
+  
+  // Устанавливаем эмодзи
+  document.querySelector('.emoji-display').textContent = habit.icon;
+  
+  // Устанавливаем частоту
+  setHabitFrequency(habit.frequency);
+  
+  // Устанавливаем временное окно
+  const enableTimeWindow = document.getElementById('enableTimeWindow');
+  const timeWindowInputs = document.getElementById('timeWindowInputs');
+  
+  if (habit.timeWindow) {
+    enableTimeWindow.checked = true;
+    timeWindowInputs.style.display = 'flex';
+    document.getElementById('habitTimeStart').value = habit.timeWindow.start;
+    document.getElementById('habitTimeEnd').value = habit.timeWindow.end;
+  } else {
+    enableTimeWindow.checked = false;
+    timeWindowInputs.style.display = 'none';
+  }
+  
+  // Устанавливаем напоминание
+  const enableReminder = document.getElementById('enableReminder');
+  const reminderInputs = document.getElementById('reminderInputs');
+  
+  if (habit.reminderTime) {
+    enableReminder.checked = true;
+    reminderInputs.style.display = 'flex';
+    document.getElementById('habitReminderTime').value = habit.reminderTime;
+  } else {
+    enableReminder.checked = false;
+    reminderInputs.style.display = 'none';
+  }
+  
+  // Показываем модальное окно
+  showModal('habitModal');
 }
 
 // Показывает контекстное меню привычки
@@ -10223,15 +10990,19 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ МОДАЛЬНОГО ОКНА ПРИВЫЧЕК
   
-  // Обработчики для селектора иконок
+  // Обработчики для селектора эмодзи
   document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('habit-icon-option')) {
-      // Убираем выделение со всех иконок
-      document.querySelectorAll('.habit-icon-option').forEach(option => {
-        option.classList.remove('selected');
-      });
-      // Выделяем выбранную иконку
-      e.target.classList.add('selected');
+    if (e.target.classList.contains('emoji-option')) {
+      const emoji = e.target.dataset.emoji;
+      
+      // Обновляем превью
+      document.querySelector('.emoji-display').textContent = emoji;
+      
+      // Добавляем в недавние
+      addToRecentEmojis(emoji);
+      
+      // Закрываем селектор
+      hideEmojiSelector();
     }
   });
   
@@ -10248,13 +11019,33 @@ document.addEventListener('DOMContentLoaded', () => {
       // Активируем выбранную опцию
       option.classList.add('active');
       
-      // Показываем/скрываем группу недельной частоты
+      // Показываем/скрываем соответствующие группы
       const weeklyGroup = document.getElementById('weeklyFrequencyGroup');
+      const workdaysGroup = document.getElementById('workdaysGroup');
+      
       if (option.dataset.type === 'weekly') {
         weeklyGroup.style.display = 'block';
+        workdaysGroup.style.display = 'none';
+      } else if (option.dataset.type === 'workdays') {
+        weeklyGroup.style.display = 'none';
+        workdaysGroup.style.display = 'block';
       } else {
         weeklyGroup.style.display = 'none';
+        workdaysGroup.style.display = 'none';
       }
+    }
+  });
+  
+  // Обработчики для временного окна
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'enableTimeWindow') {
+      const timeWindowInputs = document.getElementById('timeWindowInputs');
+      timeWindowInputs.style.display = e.target.checked ? 'flex' : 'none';
+    }
+    
+    if (e.target.id === 'enableReminder') {
+      const reminderInputs = document.getElementById('reminderInputs');
+      reminderInputs.style.display = e.target.checked ? 'flex' : 'none';
     }
   });
   

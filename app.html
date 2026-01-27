@@ -3983,7 +3983,7 @@ function syncSectionsToPlans(date) {
         if (!existingTask) {
           // Создаем новую задачу из шаблона
           const newTask = {
-            id: Date.now() + Math.random(), // Уникальный ID
+            id: (Date.now() + Math.random()).toString(), // Уникальный ID как строка
             title: template.title,
             time: template.time || '',
             room: section.name, // Связываем с разделом
@@ -5631,6 +5631,251 @@ function getActivityRuleText(rule) {
       return 'По дням недели';
     default:
       return 'Не активен';
+  }
+}
+
+function editSection(sectionId) {
+  console.log('Редактируем рутинный раздел:', sectionId);
+  
+  const section = sections.find(s => s.id == sectionId);
+  if (!section) {
+    console.error('Раздел не найден:', sectionId);
+    return;
+  }
+  
+  hideSectionsManager();
+  
+  // Заполняем форму данными раздела
+  const modal = document.createElement('div');
+  modal.id = 'editSectionModal';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-header">
+      <h2 class="modal-title">Редактировать раздел</h2>
+      <button class="header-btn" onclick="hideEditSection()">Закрыть</button>
+    </div>
+    <div class="modal-content">
+      <div class="form-group">
+        <label class="label">Название раздела</label>
+        <input type="text" class="input" id="editSectionName" value="${escapeHtml(section.name)}">
+      </div>
+      
+      <div class="form-group">
+        <label class="label">Иконка</label>
+        <div id="editSectionIconSelector" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px;">
+          <!-- Иконки будут здесь -->
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="label">Правило активности</label>
+        <select class="select" id="editActivityType">
+          <option value="daily" ${section.activityRule.type === 'daily' ? 'selected' : ''}>Каждый день</option>
+          <option value="every_other_day" ${section.activityRule.type === 'every_other_day' ? 'selected' : ''}>Через день</option>
+          <option value="weekdays" ${section.activityRule.type === 'weekdays' ? 'selected' : ''}>По дням недели</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="label">Шаблонные задачи</label>
+        <div id="editTemplateTasks">
+          ${section.templateTasks.map(task => `
+            <div class="template-task" style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <input type="text" class="input" value="${escapeHtml(task.title)}" style="flex: 1;">
+              <input type="time" class="input" value="${task.time || ''}" style="width: 120px;">
+              <button type="button" onclick="this.parentElement.remove()" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 8px;">×</button>
+            </div>
+          `).join('')}
+        </div>
+        <button type="button" onclick="addEditTemplateTask()" class="btn" style="margin-top: 8px;">Добавить задачу</button>
+      </div>
+      
+      <button onclick="saveEditedSection(${section.id})" class="btn" style="width: 100%; margin-top: 20px;">Сохранить изменения</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  modal.classList.add('show');
+  
+  // Рендерим иконки с выбранной
+  renderEditSectionIcons(section.icon);
+}
+
+function renderEditSectionIcons(selectedIcon) {
+  const container = document.getElementById('editSectionIconSelector');
+  if (!container) return;
+  
+  const icons = ICONS.getSectionIcons();
+  let html = '';
+  
+  icons.forEach((icon) => {
+    const isSelected = icon === selectedIcon;
+    html += `
+      <button type="button" onclick="selectEditSectionIcon('${icon}', this)" 
+              class="section-icon-btn ${isSelected ? 'selected' : ''}"
+              style="
+                background: ${isSelected ? 'var(--accent-primary)' : 'var(--bg-tertiary)'};
+                color: ${isSelected ? 'white' : 'var(--text-primary)'};
+                border: 1px solid ${isSelected ? 'var(--accent-primary)' : 'var(--border-soft)'};
+                border-radius: 8px;
+                padding: 8px;
+                font-size: 18px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              ">
+        ${icon}
+      </button>
+    `;
+  });
+  
+  container.innerHTML = html;
+  window.selectedEditSectionIcon = selectedIcon;
+}
+
+function selectEditSectionIcon(icon, button) {
+  document.querySelectorAll('#editSectionIconSelector .section-icon-btn').forEach(btn => {
+    btn.style.background = 'var(--bg-tertiary)';
+    btn.style.color = 'var(--text-primary)';
+    btn.style.borderColor = 'var(--border-soft)';
+    btn.classList.remove('selected');
+  });
+  
+  button.style.background = 'var(--accent-primary)';
+  button.style.color = 'white';
+  button.style.borderColor = 'var(--accent-primary)';
+  button.classList.add('selected');
+  
+  window.selectedEditSectionIcon = icon;
+}
+
+function addEditTemplateTask() {
+  const container = document.getElementById('editTemplateTasks');
+  const taskDiv = document.createElement('div');
+  taskDiv.className = 'template-task';
+  taskDiv.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+  taskDiv.innerHTML = `
+    <input type="text" class="input" placeholder="Название задачи" style="flex: 1;">
+    <input type="time" class="input" style="width: 120px;">
+    <button type="button" onclick="this.parentElement.remove()" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 8px;">×</button>
+  `;
+  container.appendChild(taskDiv);
+}
+
+function saveEditedSection(sectionId) {
+  const name = document.getElementById('editSectionName').value.trim();
+  const activityType = document.getElementById('editActivityType').value;
+  
+  if (!name) {
+    alert('Введите название раздела');
+    return;
+  }
+  
+  // Собираем шаблонные задачи
+  const templateTasks = [];
+  document.querySelectorAll('#editTemplateTasks .template-task').forEach((taskDiv, index) => {
+    const titleInput = taskDiv.querySelector('input[type="text"]');
+    const timeInput = taskDiv.querySelector('input[type="time"]');
+    const title = titleInput.value.trim();
+    if (title) {
+      templateTasks.push({
+        id: Date.now() + index,
+        title: title,
+        time: timeInput.value || ''
+      });
+    }
+  });
+  
+  if (templateTasks.length === 0) {
+    alert('Добавьте хотя бы одну задачу');
+    return;
+  }
+  
+  // Находим и обновляем раздел
+  const sectionIndex = sections.findIndex(s => s.id == sectionId);
+  if (sectionIndex !== -1) {
+    const oldName = sections[sectionIndex].name;
+    
+    sections[sectionIndex] = {
+      ...sections[sectionIndex],
+      name: name,
+      icon: window.selectedEditSectionIcon || sections[sectionIndex].icon,
+      activityRule: { type: activityType },
+      templateTasks: templateTasks
+    };
+    
+    // Обновляем связанные разделы в rooms
+    const roomIndex = rooms.findIndex(r => {
+      const roomName = typeof r === 'string' ? r : r.name;
+      return roomName === oldName;
+    });
+    
+    if (roomIndex !== -1) {
+      rooms[roomIndex] = {
+        name: name,
+        icon: window.selectedEditSectionIcon || sections[sectionIndex].icon
+      };
+      saveRooms();
+    }
+    
+    // Обновляем планы
+    plans.forEach(plan => {
+      if (plan.room === oldName) {
+        plan.room = name;
+      }
+    });
+    
+    saveSections();
+    savePlans();
+    syncSectionsToPlans(currentDate);
+    
+    console.log(`✅ Раздел обновлен: "${name}"`);
+  }
+  
+  hideEditSection();
+  showSectionsManager();
+}
+
+function hideEditSection() {
+  const modal = document.getElementById('editSectionModal');
+  if (modal) {
+    modal.classList.remove('show');
+    setTimeout(() => modal.remove(), 300);
+  }
+}
+
+function deleteSection(sectionId, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  
+  const section = sections.find(s => s.id == sectionId);
+  if (!section) return;
+  
+  if (confirm(`Удалить раздел "${section.name}"? Все связанные задачи будут удалены.`)) {
+    // Удаляем раздел
+    sections = sections.filter(s => s.id != sectionId);
+    
+    // Удаляем связанные задачи
+    plans = plans.filter(plan => plan.sectionId != sectionId);
+    
+    // Удаляем из rooms
+    rooms = rooms.filter(room => {
+      const roomName = typeof room === 'string' ? room : room.name;
+      return roomName !== section.name;
+    });
+    
+    saveSections();
+    savePlans();
+    saveRooms();
+    
+    // Обновляем интерфейс
+    renderSectionsManager();
+    renderRooms();
+    updateRoomsSelect();
+    renderPlans();
+    
+    console.log(`✅ Раздел "${section.name}" удален`);
   }
 }
 

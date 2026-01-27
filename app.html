@@ -3578,34 +3578,12 @@ function saveRooms() {
 // RENDER
 function render() {
   try {
-    console.log('=== НАЧАЛО RENDER ===');
-    console.log('Функция render вызвана');
-    console.log('Текущие планы в render:', plans);
-    console.log('Количество планов в render:', plans.length);
-    
-    // Показываем все задачи с отметкой откуда они
-    plans.forEach((plan, index) => {
-      console.log(`План ${index}:`, {
-        id: plan.id,
-        title: plan.title,
-        date: plan.date,
-        room: plan.room,
-        createdFromMeal: plan.createdFromMeal,
-        mealId: plan.mealId
-      });
-    });
-    
     // Проверяем, что мы на вкладке задач
     if (currentTab !== 'tasks') {
-      console.log('Не на вкладке задач, currentTab:', currentTab);
       return;
     }
     
     const todayPlans = getPlansForDate(currentDate);
-    console.log('Планы на сегодня:', todayPlans);
-    console.log('Количество планов на сегодня:', todayPlans.length);
-    console.log('Текущая дата для фильтрации:', currentDate);
-    console.log('Текущая дата в формате строки:', currentDate.toISOString().split('T')[0]);
     
     // Update date display
     const dayTitle = document.getElementById('dayTitle');
@@ -3614,9 +3592,6 @@ function render() {
     if (daySubtitle) daySubtitle.textContent = formatDateSubtitle(currentDate);
     
     // Update progress
-    const completedCount = todayPlans.filter(p => p.completed).length;
-    const totalCount = todayPlans.length;
-    console.log('Прогресс:', completedCount, '/', totalCount);
     updateProgress();
     
     // Show/hide elements
@@ -3624,17 +3599,15 @@ function render() {
     const plansContainer = document.getElementById('plansContainer');
     
     if (!empty || !plansContainer) {
-      console.log('Элементы empty или plansContainer не найдены - DOM не готов');
       return;
     }
     
     if (todayPlans.length === 0) {
-      console.log('Нет планов на сегодня, показываем empty');
       empty.style.display = 'flex';
       plansContainer.style.display = 'none';
     } else {
-      console.log('Есть планы на сегодня, показываем список');
-      console.log('=== КОНЕЦ RENDER ===');
+      empty.style.display = 'none';
+      plansContainer.style.display = 'flex';
       console.log('Есть планы на сегодня, показываем список');
       empty.style.display = 'none';
       plansContainer.style.display = 'flex';
@@ -4244,10 +4217,7 @@ function confirmDeletePlan() {
 }
 
 function toggleComplete(id, event) {
-  console.log('toggleComplete вызвана для задачи:', id);
-  console.log('Event target:', event ? event.target : 'нет события');
-  
-  // КРИТИЧЕСКИ ВАЖНО: останавливаем всплытие события
+  // Останавливаем всплытие события
   if (event) {
     event.stopPropagation();
     event.preventDefault();
@@ -4255,29 +4225,57 @@ function toggleComplete(id, event) {
   
   const plan = plans.find(p => p.id === id);
   if (!plan) {
-    console.error('Задача не найдена:', id);
     return;
   }
   
   const planElement = event ? event.target.closest('.plan') : null;
   const checkbox = event ? event.target : null;
   
-  console.log('Plan element:', planElement);
-  console.log('Checkbox:', checkbox);
-  
   if (plan.completed) {
-    // Убираем выполнение - мгновенно
-    console.log('Убираем выполнение задачи:', plan.title);
+    // Убираем выполнение
     plan.completed = false;
     if (planElement) planElement.classList.remove('completed');
     if (checkbox) checkbox.classList.remove('checked');
+    
+    // 🍽️ СИНХРОНИЗАЦИЯ С ПИТАНИЕМ: убираем выполнение приема пищи
+    if (plan.createdFromMeal && plan.mealId && plan.date) {
+      if (!nutritionData.meals[plan.date]) {
+        nutritionData.meals[plan.date] = {};
+      }
+      if (!nutritionData.meals[plan.date][plan.mealId]) {
+        nutritionData.meals[plan.date][plan.mealId] = {};
+      }
+      nutritionData.meals[plan.date][plan.mealId].completed = false;
+      saveNutritionData();
+      
+      // Обновляем отображение питания если мы на этой вкладке
+      if (currentTab === 'nutrition') {
+        renderNutritionDay();
+      }
+    }
   } else {
-    // Отмечаем как выполненное - с анимацией
-    console.log('Отмечаем задачу как выполненную:', plan.title);
+    // Отмечаем как выполненное
     plan.completed = true;
     
     // Сначала анимируем чекбокс
     if (checkbox) checkbox.classList.add('checked');
+    
+    // 🍽️ СИНХРОНИЗАЦИЯ С ПИТАНИЕМ: отмечаем прием пищи как выполненный
+    if (plan.createdFromMeal && plan.mealId && plan.date) {
+      if (!nutritionData.meals[plan.date]) {
+        nutritionData.meals[plan.date] = {};
+      }
+      if (!nutritionData.meals[plan.date][plan.mealId]) {
+        nutritionData.meals[plan.date][plan.mealId] = {};
+      }
+      nutritionData.meals[plan.date][plan.mealId].completed = true;
+      saveNutritionData();
+      
+      // Обновляем отображение питания если мы на этой вкладке
+      if (currentTab === 'nutrition') {
+        renderNutritionDay();
+      }
+    }
     
     // Затем через небольшую задержку добавляем класс completed
     setTimeout(() => {
@@ -4291,11 +4289,7 @@ function toggleComplete(id, event) {
   }
   
   savePlans();
-  
-  // Обновляем только прогресс, не перерисовываем весь список
   updateProgress();
-  
-  console.log('toggleComplete завершена для задачи:', id);
 }
 
 function updateProgress() {
@@ -6097,6 +6091,24 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
       // Отмечаем как выполненное - с анимацией
       checkbox.classList.add('checked');
       
+      // 📋 СИНХРОНИЗАЦИЯ С ЗАДАЧАМИ: отмечаем связанную задачу как выполненную
+      const relatedTask = plans.find(plan => 
+        plan.createdFromMeal && 
+        plan.mealId === mealTypeId && 
+        plan.date === dateStr
+      );
+      
+      if (relatedTask) {
+        console.log('Отмечаем связанную задачу как выполненную:', relatedTask.title);
+        relatedTask.completed = true;
+        savePlans();
+        
+        // Обновляем отображение задач если мы на этой вкладке
+        if (currentTab === 'tasks') {
+          render();
+        }
+      }
+      
       // Измеряем точную ширину текста для красивого зачеркивания
       if (mealLabel) {
         try {
@@ -6163,6 +6175,24 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
       mealData.completed = false;
       mealElement.classList.remove('completed');
       checkbox.classList.remove('checked');
+      
+      // 📋 СИНХРОНИЗАЦИЯ С ЗАДАЧАМИ: убираем выполнение связанной задачи
+      const relatedTask = plans.find(plan => 
+        plan.createdFromMeal && 
+        plan.mealId === mealTypeId && 
+        plan.date === dateStr
+      );
+      
+      if (relatedTask) {
+        console.log('Убираем выполнение связанной задачи:', relatedTask.title);
+        relatedTask.completed = false;
+        savePlans();
+        
+        // Обновляем отображение задач если мы на этой вкладке
+        if (currentTab === 'tasks') {
+          render();
+        }
+      }
     }
     
     saveNutritionData();

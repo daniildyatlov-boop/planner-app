@@ -4956,8 +4956,10 @@ function toggleComplete(id, event) {
     event.preventDefault();
   }
   
-  const plan = plans.find(p => p.id === id);
+  const plan = plans.find(p => p.id == id || p.id === id.toString() || p.id === parseInt(id));
+  console.log('toggleComplete - ID:', id, 'Найден план:', plan);
   if (!plan) {
+    console.error('План не найден для ID:', id);
     return;
   }
   

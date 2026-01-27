@@ -623,23 +623,84 @@ body{
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* BUTTONS */
-.btn{
-  background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color:white;
-  border:none;
-  border-radius:var(--border-radius);
-  padding:var(--spacing-md) var(--spacing-2xl);
-  font-size:var(--spacing-lg);
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:var(--shadow-medium);
-  transform: translateZ(0);
+/* ЕДИНАЯ ДИЗАЙН-СИСТЕМА КНОПОК - iOS СТИЛЬ */
+
+/* БАЗОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ КНОПОК */
+:root {
+  --btn-height-primary: 52px;
+  --btn-height-secondary: 44px;
+  --btn-height-tertiary: 36px;
+  --btn-radius: 12px;
+  --btn-radius-small: 8px;
+  --btn-spacing: 16px;
+  --btn-font-weight-primary: 600;
+  --btn-font-weight-secondary: 500;
+  --btn-font-weight-tertiary: 500;
+  --btn-shadow-primary: 0 4px 16px rgba(99, 102, 241, 0.25);
+  --btn-shadow-secondary: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --btn-shadow-hover: 0 8px 24px rgba(99, 102, 241, 0.35);
+}
+
+/* БАЗОВЫЙ КЛАСС ДЛЯ ВСЕХ КНОПОК */
+.btn-base {
+  border: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
 }
-.btn::before {
+
+.btn-base:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-base:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 1. PRIMARY КНОПКИ - главное действие экрана */
+.btn-primary {
+  border: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 17px;
+  line-height: 1.2;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  height: var(--btn-height-primary);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border-radius: var(--btn-radius);
+  font-weight: var(--btn-font-weight-primary);
+  box-shadow: var(--btn-shadow-primary);
+  padding: 0 24px;
+  min-width: 120px;
+}
+
+.btn-primary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -649,96 +710,289 @@ body{
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.btn:hover::before {
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-shadow-hover);
+}
+
+.btn-primary:hover:not(:disabled)::before {
   left: 100%;
 }
-.btn:hover{
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:0 16px 48px rgba(99,102,241,0.4);
-  animation: gentle-pulse 2s infinite;
-}
-.btn:active{
-  opacity:0.9;
-  transform:scale(0.96) translateY(-2px);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
-.header-btn{
-  background:none;
-  border:none;
-  font-size:var(--spacing-lg);
-  color:#6366f1;
-  cursor:pointer;
-  padding:var(--spacing-sm) var(--spacing-md);
-  border-radius:var(--spacing-sm);
-  font-weight:500;
-  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
-  position: relative;
-  overflow: hidden;
-}
-.header-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(99,102,241,0.1);
-  border-radius: var(--spacing-sm);
-  transform: scale(0);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.header-btn:hover::before {
-  transform: scale(1);
-}
-.header-btn:hover {
-  color: #8b5cf6;
-  transform: translateY(-2px) scale(1.05);
-  text-shadow: 0 4px 12px rgba(99,102,241,0.4);
-}
-.header-btn:active{
-  opacity:0.7;
-  transform:scale(0.95);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.header-btn-primary{
-  background:linear-gradient(135deg, #6366f1, #8b5cf6);
-  border:none;
-  font-size:var(--spacing-lg);
-  color:white;
-  cursor:pointer;
-  padding:var(--spacing-sm) var(--spacing-lg);
-  border-radius:var(--spacing-sm);
-  font-weight:600;
-  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
+/* 2. SECONDARY КНОПКИ - дополнительные действия */
+.btn-secondary {
+  border: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow:0 4px 16px rgba(99,102,241,0.3);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  height: var(--btn-height-secondary);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--btn-radius);
+  font-weight: var(--btn-font-weight-secondary);
+  box-shadow: var(--btn-shadow-secondary);
+  padding: 0 20px;
+  min-width: 100px;
+  backdrop-filter: blur(20px);
 }
-.header-btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. TERTIARY КНОПКИ - навигационные и вспомогательные */
+.btn-tertiary {
+  border: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  height: var(--btn-height-tertiary);
+  background: transparent;
+  color: var(--accent-primary);
+  border-radius: var(--btn-radius-small);
+  font-weight: var(--btn-font-weight-tertiary);
+  padding: 0 16px;
+  min-width: 80px;
+}
+
+.btn-tertiary:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent-secondary);
+}
+
+.btn-tertiary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-tertiary:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 4. DESTRUCTIVE КНОПКИ - удаление и опасные действия */
+.btn-destructive {
+  border: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  height: var(--btn-height-secondary);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--btn-radius);
+  font-weight: var(--btn-font-weight-secondary);
+  padding: 0 20px;
+  min-width: 100px;
+  backdrop-filter: blur(20px);
+}
+
+.btn-destructive:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+}
+
+.btn-destructive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-destructive:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* СПЕЦИАЛЬНЫЕ ВАРИАНТЫ КНОПОК */
+
+/* Круглые кнопки для навигации */
+.btn-round {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  padding: 0;
+  min-width: unset;
+}
+
+.btn-round-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  padding: 0;
+  min-width: unset;
+}
+
+/* FAB кнопки */
+.btn-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  padding: 0;
+  min-width: unset;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  font-size: 24px;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+}
+
+.btn-fab:hover:not(:disabled) {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.5);
+}
+
+/* Полноширинные кнопки */
+.btn-full-width {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.header-btn-primary:hover::before {
-  left: 100%;
+
+/* Группы кнопок */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
-.header-btn-primary:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow:0 8px 24px rgba(99,102,241,0.5);
+
+.btn-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.header-btn-primary:active{
-  opacity:0.9;
-  transform:scale(0.95);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* СПЕЦИАЛЬНЫЕ СОСТОЯНИЯ */
+.btn-loading::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ПОЗИЦИОНИРОВАНИЕ КНОПОК */
+
+/* Шапка экрана */
+.screen-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Подвал экрана */
+.screen-footer-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  background: var(--bg-modal);
+  border-top: 1px solid var(--border-soft);
+}
+
+/* Модальные окна */
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* АДАПТИВНОСТЬ */
+@media (max-width: 375px) {
+  .btn-primary {
+    font-size: 16px;
+    padding: 0 20px;
+  }
+  
+  .btn-secondary {
+    font-size: 15px;
+    padding: 0 16px;
+  }
+}
+
+/* ТЕМНАЯ ТЕМА */
+@media (prefers-color-scheme: dark) {
+  .btn-secondary {
+    background: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+  }
+  
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--bg-card);
+    border-color: var(--accent-primary);
+  }
 }
 
 /* PLANS LIST */
@@ -755,68 +1009,7 @@ body{
 }
 .plans::-webkit-scrollbar{display:none}
 
-.add-task-btn{
-  width: 100%;
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xl);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  color: var(--accent-primary);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.05) inset;
-  transform: translateZ(0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-md);
-  position: relative;
-  overflow: hidden;
-  margin-top: var(--spacing-lg);
-}
-.add-task-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
-  opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.add-task-btn:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: var(--accent-secondary);
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.1) inset;
-}
-.add-task-btn:hover::before {
-  opacity: 1;
-}
-.add-task-btn:active {
-  opacity: 0.8;
-  transform: scale(0.98);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.add-icon {
-  font-size: 20px;
-  font-weight: 300;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
-}
-.add-task-btn:hover .add-icon {
-  transform: rotate(90deg) scale(1.1);
-  text-shadow: 0 0 12px rgba(99, 102, 241, 0.5);
-}
+/* СТАРЫЕ КЛАССЫ КНОПОК - УДАЛЕНЫ И ЗАМЕНЕНЫ НА ЕДИНУЮ СИСТЕМУ */
 
 .plan{
   background: var(--bg-card);
@@ -1492,45 +1685,7 @@ textarea.input {
   font-weight:500;
 }
 
-.delete-btn{
-  width:100%;
-  background:none;
-  border:none;
-  color:#ef4444;
-  font-size:var(--spacing-lg);
-  font-weight:500;
-  padding:var(--spacing-lg);
-  text-align:center;
-  cursor:pointer;
-  border-radius:var(--spacing-md);
-  transition:all 0.2s ease;
-  margin-top:var(--spacing-xl);
-}
-.delete-btn:active{
-  background:rgba(239,68,68,0.1);
-}
-
-.screen-footer{
-  padding:var(--spacing-lg) var(--spacing-xl) var(--spacing-3xl);
-  background:#0a0a0a;
-  border-top:1px solid #2c2c2e;
-}
-.save-btn{
-  width:100%;
-  background:#6366f1;
-  color:white;
-  border:none;
-  border-radius:var(--spacing-md);
-  padding:var(--spacing-lg);
-  font-size:var(--spacing-lg);
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s ease;
-}
-.save-btn:active{
-  opacity:0.8;
-  transform:scale(0.98);
-}
+/* СТАРЫЕ КЛАССЫ delete-btn И save-btn - УДАЛЕНЫ И ЗАМЕНЕНЫ НА ЕДИНУЮ СИСТЕМУ */
 
 /* SIMPLE MENU */
 .overlay{
@@ -1567,52 +1722,7 @@ textarea.input {
   transform: scale(1);
   animation: scale-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
-.menu-btn{
-  width:100%;
-  background:none;
-  border:none;
-  padding:var(--spacing-lg) var(--spacing-xl);
-  font-size:var(--spacing-lg);
-  text-align:center;
-  cursor:pointer;
-  color:#6366f1;
-  font-weight:500;
-  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-.menu-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(99,102,241,0.1);
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.menu-btn:hover::before {
-  left: 0;
-}
-.menu-btn:not(:last-child){
-  border-bottom:1px solid rgba(44,44,46,0.6);
-}
-.menu-btn:hover{
-  color: #8b5cf6;
-  text-shadow: 0 0 8px rgba(99,102,241,0.3);
-}
-.menu-btn:active{
-  transform:scale(0.95);
-  opacity: 0.7;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.menu-btn.del{
-  color:#ef4444;
-}
-.menu-btn.del:hover{
-  color:#f87171;
-  text-shadow: 0 0 8px rgba(239,68,68,0.3);
-}
+/* СТАРЫЕ КЛАССЫ menu-btn - УДАЛЕНЫ И ЗАМЕНЕНЫ НА ЕДИНУЮ СИСТЕМУ */
 
 
 
@@ -2857,57 +2967,7 @@ textarea.input {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
 }
-.delete-room{
-  background:rgba(239,68,68,0.1);
-  backdrop-filter: blur(10px);
-  border:1px solid rgba(239,68,68,0.2);
-  color:#ef4444;
-  font-size:14px;
-  cursor:pointer;
-  padding:var(--spacing-xs);
-  border-radius:var(--spacing-xs);
-  font-weight:500;
-  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
-}
-.delete-room:hover{
-  background:rgba(239,68,68,0.2);
-  border-color:rgba(239,68,68,0.4);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(239,68,68,0.3);
-}
-.delete-room:active{
-  opacity:0.7;
-  transform:scale(0.95);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.edit-room{
-  background:rgba(99,102,241,0.1);
-  backdrop-filter: blur(10px);
-  border:1px solid rgba(99,102,241,0.2);
-  color:#6366f1;
-  font-size:14px;
-  cursor:pointer;
-  padding:var(--spacing-xs);
-  border-radius:var(--spacing-xs);
-  font-weight:500;
-  margin-right:var(--spacing-xs);
-  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
-}
-.edit-room:hover{
-  background:rgba(99,102,241,0.2);
-  border-color:rgba(99,102,241,0.4);
-  color:#8b5cf6;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-}
-.edit-room:active{
-  opacity:0.7;
-  transform:scale(0.95);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* СТАРЫЕ КЛАССЫ delete-room И edit-room - УДАЛЕНЫ И ЗАМЕНЕНЫ НА ЕДИНУЮ СИСТЕМУ */
 
 .add-room-fab{
   position:fixed;
@@ -3078,29 +3138,7 @@ textarea.input {
   display:flex;
   gap:var(--spacing-sm);
 }
-.popup-btn{
-  flex:1;
-  border:none;
-  border-radius:var(--spacing-sm);
-  padding:var(--spacing-md);
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s ease;
-}
-.popup-btn:active{opacity:0.8;transform:scale(0.95)}
-.popup-btn.cancel{
-  background:#2c2c2e;
-  color:#ffffff;
-}
-.popup-btn.confirm{
-  background:#6366f1;
-  color:white;
-}
-.popup-btn.danger{
-  background:#ef4444;
-  color:white;
-}
+/* СТАРЫЕ КЛАССЫ popup-btn - УДАЛЕНЫ И ЗАМЕНЕНЫ НА ЕДИНУЮ СИСТЕМУ */
 
 /* ICON SELECTOR */
 .icon-selector{
@@ -3144,16 +3182,16 @@ textarea.input {
 <body>
 <div class="app">
   <div class="header">
-    <button class="profile-btn" onclick="showProfile()">П</button>
+    <button class="btn-tertiary btn-round" onclick="showProfile()">П</button>
     <div class="date-nav">
-      <button class="nav-arrow" onclick="changeDay(-1)">‹</button>
+      <button class="btn-tertiary btn-round-small" onclick="changeDay(-1)">‹</button>
       <div class="date-content" onclick="showDatePicker()">
         <div class="date-title" id="dayTitle">Сегодня</div>
         <div class="date-subtitle" id="daySubtitle">Пн, 27 янв.</div>
       </div>
-      <button class="nav-arrow" onclick="changeDay(1)">›</button>
+      <button class="btn-tertiary btn-round-small" onclick="changeDay(1)">›</button>
     </div>
-    <button class="rooms-btn" onclick="showRooms()" id="roomsBtn">🏠</button>
+    <button class="btn-tertiary btn-round" onclick="showRooms()" id="roomsBtn">🏠</button>
   </div>
   
   <div class="content">
@@ -3174,7 +3212,7 @@ textarea.input {
     <div class="empty" id="empty">
       <h2>Планов нет</h2>
       <p>Добавьте первую задачу</p>
-      <button class="btn" onclick="showAdd()">Добавить задачу</button>
+      <button class="btn-primary" onclick="showAdd()">Добавить задачу</button>
     </div>
     
     <div class="plans-container" id="plansContainer" style="display:none">
@@ -3202,9 +3240,13 @@ textarea.input {
 <!-- ADD PLAN MODAL -->
 <div class="modal" id="addModal">
   <div class="modal-header">
-    <button class="header-btn" onclick="hideAdd()">Отмена</button>
+    <div class="modal-header-actions">
+      <button class="btn-tertiary" onclick="hideAdd()">Отмена</button>
+    </div>
     <div class="modal-title">Новая задача</div>
-    <button class="header-btn-primary" onclick="savePlan()">Готово</button>
+    <div class="modal-header-actions">
+      <button class="btn-primary" onclick="savePlan()">Готово</button>
+    </div>
   </div>
   <div class="modal-content">
     <div class="form-group">
@@ -3234,9 +3276,9 @@ textarea.input {
 <div class="calendar" id="calendar" onclick="hideCalendar()">
   <div class="calendar-content" onclick="event.stopPropagation()">
     <div class="calendar-header">
-      <button class="calendar-nav" onclick="changeCalendarMonth(-1)">‹</button>
+      <button class="btn-tertiary btn-round-small" onclick="changeCalendarMonth(-1)">‹</button>
       <div class="calendar-title" id="calendarTitle">Январь 2025</div>
-      <button class="calendar-nav" onclick="changeCalendarMonth(1)">›</button>
+      <button class="btn-tertiary btn-round-small" onclick="changeCalendarMonth(1)">›</button>
     </div>
     <div class="weekdays">
       <div class="weekday">Пн</div>
@@ -3254,7 +3296,9 @@ textarea.input {
 <!-- EDIT PLAN SCREEN -->
 <div class="screen" id="editPlanScreen">
   <div class="screen-header">
-    <button class="header-btn" onclick="hideEditPlan()">Назад</button>
+    <div class="screen-header-actions">
+      <button class="btn-tertiary" onclick="hideEditPlan()">Назад</button>
+    </div>
     <div class="modal-title">Изменить задачу</div>
     <div></div>
   </div>
@@ -3296,21 +3340,21 @@ textarea.input {
       <span class="premium-link">Премиум Трекер</span>
     </div>
     
-    <button class="delete-btn" onclick="deletePlanFromEdit()">
+    <button class="btn-destructive btn-full-width" onclick="deletePlanFromEdit()">
       Удалить задачу
     </button>
   </div>
   
-  <div class="screen-footer">
-    <button class="save-btn" onclick="savePlanEdit()">Сохранить</button>
+  <div class="screen-footer-actions">
+    <button class="btn-primary btn-full-width" onclick="savePlanEdit()">Сохранить</button>
   </div>
 </div>
 
 <!-- MENU OVERLAY (simplified) -->
 <div class="overlay" id="overlay" onclick="hideMenu()">
   <div class="menu" id="menu" onclick="event.stopPropagation()">
-    <button class="menu-btn" onclick="editPlan()">Редактировать</button>
-    <button class="menu-btn del" onclick="deletePlan()">Удалить</button>
+    <button class="btn-secondary btn-full-width" onclick="editPlan()">Редактировать</button>
+    <button class="btn-destructive btn-full-width" onclick="deletePlan()">Удалить</button>
   </div>
 </div>
 
@@ -3318,9 +3362,13 @@ textarea.input {
 <!-- ROOMS SCREEN -->
 <div class="screen" id="roomsScreen">
   <div class="screen-header">
-    <button class="header-btn" onclick="hideRooms()">Назад</button>
+    <div class="screen-header-actions">
+      <button class="btn-tertiary" onclick="hideRooms()">Назад</button>
+    </div>
     <div class="modal-title">Разделы</div>
-    <button class="header-btn-primary" onclick="hideRooms()">Готово</button>
+    <div class="screen-header-actions">
+      <button class="btn-primary" onclick="hideRooms()">Готово</button>
+    </div>
   </div>
   <div class="screen-content">
     <!-- Красивая кнопка управления рутинными разделами -->
@@ -3464,40 +3512,31 @@ textarea.input {
         font-weight: 600;
       ">Обычные разделы</h3>
       <div id="roomsList"></div>
-      <button onclick="showAddRoom()" style="
-        width: 100%;
-        background: var(--bg-card);
-        border: 2px dashed var(--border-primary);
-        border-radius: var(--border-radius);
-        padding: var(--spacing-lg);
-        color: var(--accent-primary);
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        margin-top: var(--spacing-md);
-        transition: all 0.3s ease;
-      " onmouseover="this.style.background='var(--bg-card-hover)'; this.style.borderStyle='solid';" 
-         onmouseout="this.style.background='var(--bg-card)'; this.style.borderStyle='dashed';">
+      <button onclick="showAddRoom()" class="btn-secondary btn-full-width" style="margin-top: 16px;">
         + Добавить обычный раздел
       </button>
     </div>
   </div>
-  <button class="add-room-fab" onclick="showAddSection()">+</button>
+  <button class="btn-primary btn-fab" onclick="showAddSection()">+</button>
 </div>
 
 <!-- PROFILE SCREEN -->
 <div class="screen" id="profileScreen">
   <div class="screen-header">
-    <button class="header-btn" onclick="hideProfile()">Назад</button>
+    <div class="screen-header-actions">
+      <button class="btn-tertiary" onclick="hideProfile()">Назад</button>
+    </div>
     <div class="modal-title">Профиль</div>
-    <button class="header-btn-primary" onclick="hideProfile()">Готово</button>
+    <div class="screen-header-actions">
+      <button class="btn-primary" onclick="hideProfile()">Готово</button>
+    </div>
   </div>
   <div class="screen-content">
     <div class="profile-section">
       <div class="profile-avatar">
         <div class="avatar-circle">П</div>
         <div class="profile-name" id="profileName">Пользователь</div>
-        <button class="edit-name-btn" onclick="editName()">Изменить имя</button>
+        <button class="btn-tertiary" onclick="editName()">Изменить имя</button>
       </div>
     </div>
     
@@ -4360,7 +4399,7 @@ function render() {
       
       // Добавляем кнопку "Добавить задачу" в конец списка
       html += `
-        <button class="add-task-btn" onclick="showAdd()">
+        <button class="btn-secondary btn-full-width" onclick="showAdd()" style="margin-top: 16px;">
           <span class="add-icon">+</span>
           Добавить задачу
         </button>
@@ -4418,8 +4457,10 @@ function renderRooms() {
           <div class="room-item">
             <div class="room-icon">${roomIcon}</div>
             <div class="room-name">${escapeHtml(roomName)}</div>
-            <button class="edit-room" onclick="editRoom('${escapeHtml(roomName)}')">Редактировать</button>
-            <button class="delete-room" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
+            <div class="btn-group">
+              <button class="btn-tertiary" onclick="editRoom('${escapeHtml(roomName)}')">Редактировать</button>
+              <button class="btn-destructive" onclick="deleteRoom('${escapeHtml(roomName)}')">Удалить</button>
+            </div>
           </div>
         `;
       } catch (e) {
@@ -5792,8 +5833,8 @@ function showRoomIconSelector() {
   
   const buttonsContainer = document.getElementById('popupButtons');
   buttonsContainer.innerHTML = `
-    <button class="popup-btn cancel" onclick="hidePopup()">Отмена</button>
-    <button class="popup-btn confirm" onclick="showRoomNameInput()">Далее</button>
+    <button class="btn-secondary" onclick="hidePopup()">Отмена</button>
+    <button class="btn-primary" onclick="showRoomNameInput()">Далее</button>
   `;
   
   document.getElementById('popup').classList.add('show');
@@ -5906,8 +5947,8 @@ function editRoom(roomName) {
   
   const buttonsContainer = document.getElementById('popupButtons');
   buttonsContainer.innerHTML = `
-    <button class="popup-btn cancel" onclick="hidePopup()">Отмена</button>
-    <button class="popup-btn confirm" onclick="saveEditedRoom('${escapeHtml(currentName)}')">Сохранить</button>
+    <button class="btn-secondary" onclick="hidePopup()">Отмена</button>
+    <button class="btn-primary" onclick="saveEditedRoom('${escapeHtml(currentName)}')">Сохранить</button>
   `;
   
   document.getElementById('popup').classList.add('show');
@@ -5996,14 +6037,17 @@ function showSectionsManager() {
   
   modal.innerHTML = `
     <div class="modal-header">
+      <div class="modal-header-actions">
+        <button class="btn-tertiary" onclick="hideSectionsManager()">Закрыть</button>
+      </div>
       <h2 class="modal-title">Управление разделами</h2>
-      <button class="header-btn" onclick="hideSectionsManager()">Закрыть</button>
+      <div></div>
     </div>
     <div class="modal-content">
       <div class="sections-list" id="sectionsList">
         <!-- Список разделов будет здесь -->
       </div>
-      <button class="btn" onclick="showAddSection()" style="margin-top: 20px;">
+      <button class="btn-primary btn-full-width" onclick="showAddSection()" style="margin-top: 20px;">
         + Добавить раздел
       </button>
     </div>
@@ -6134,10 +6178,10 @@ function editSection(sectionId) {
             </div>
           `).join('')}
         </div>
-        <button type="button" onclick="addEditTemplateTask()" class="btn" style="margin-top: 8px;">Добавить задачу</button>
+        <button type="button" onclick="addEditTemplateTask()" class="btn-secondary" style="margin-top: 8px;">Добавить задачу</button>
       </div>
       
-      <button onclick="saveEditedSection(${section.id})" class="btn" style="width: 100%; margin-top: 20px;">Сохранить изменения</button>
+      <button onclick="saveEditedSection(${section.id})" class="btn-primary btn-full-width" style="margin-top: 20px;">Сохранить изменения</button>
     </div>
   `;
   
@@ -6387,10 +6431,10 @@ function showAddSection() {
             <button type="button" onclick="removeTemplateTask(this)" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 8px;">×</button>
           </div>
         </div>
-        <button type="button" onclick="addTemplateTask()" class="header-btn" style="margin-top: 8px;">+ Добавить задачу</button>
+        <button type="button" onclick="addTemplateTask()" class="btn-secondary" style="margin-top: 8px;">+ Добавить задачу</button>
       </div>
       
-      <button class="btn" onclick="saveNewSection()" style="margin-top: 20px; width: 100%;">
+      <button class="btn-primary btn-full-width" onclick="saveNewSection()" style="margin-top: 20px;">
         Создать раздел
       </button>
     </div>
@@ -6702,7 +6746,10 @@ function showPopup(title, message, buttons, hasInput = false, inputValue = '') {
   
   buttons.forEach(btn => {
     const button = document.createElement('button');
-    button.className = `popup-btn ${btn.type}`;
+    let buttonClass = 'btn-secondary'; // По умолчанию secondary
+    if (btn.type === 'confirm') buttonClass = 'btn-primary';
+    if (btn.type === 'danger') buttonClass = 'btn-destructive';
+    button.className = buttonClass;
     button.textContent = btn.text;
     button.onclick = btn.action;
     buttonsContainer.appendChild(button);
@@ -6895,7 +6942,7 @@ document.addEventListener('keydown', (e) => {
     // В попапах
     if (activeElement && activeElement.classList.contains('popup-input')) {
       e.preventDefault();
-      const confirmBtn = document.querySelector('.popup-btn.confirm');
+      const confirmBtn = document.querySelector('.btn-primary');
       if (confirmBtn && !confirmBtn.disabled) {
         confirmBtn.click();
       }
@@ -7074,7 +7121,7 @@ function showTasksTab() {
     <div class="empty" id="empty">
       <h2>Планов нет</h2>
       <p>Добавьте первую задачу</p>
-      <button class="btn" onclick="showAdd()">Добавить задачу</button>
+      <button class="btn-primary" onclick="showAdd()">Добавить задачу</button>
     </div>
     
     <div class="plans-container" id="plansContainer" style="display:none">

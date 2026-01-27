@@ -3629,6 +3629,297 @@ textarea.input {
     transform: translateY(0) scale(1);
   }
 }
+
+/* HABIT MODAL - МОДАЛЬНОЕ ОКНО ПРИВЫЧЕК */
+
+/* HABIT ICON SELECTOR - СЕЛЕКТОР ИКОНОК */
+.habit-icon-selector {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+}
+
+.habit-icon-option {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-secondary);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.habit-icon-option:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-medium);
+}
+
+.habit-icon-option.selected {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-color: var(--accent-primary);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+}
+
+.habit-icon-option:active {
+  transform: scale(0.95);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* FREQUENCY SELECTOR - СЕЛЕКТОР ЧАСТОТЫ */
+.habit-frequency-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.frequency-option {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-soft);
+}
+
+.frequency-option:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.frequency-option.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+}
+
+.frequency-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.frequency-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* WEEKLY COUNTER - СЧЕТЧИК ДЛЯ НЕДЕЛЬНОЙ ЧАСТОТЫ */
+.weekly-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-lg) 0;
+}
+
+.counter-btn {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-primary);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.counter-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: var(--shadow-medium);
+}
+
+.counter-btn:active {
+  transform: scale(1.05);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.counter-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 40px;
+  text-align: center;
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* HABIT CONTEXT MENU - КОНТЕКСТНОЕ МЕНЮ ПРИВЫЧКИ */
+.habit-context-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-modal);
+  backdrop-filter: blur(40px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-strong);
+  z-index: 200;
+  min-width: 180px;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.9) translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.habit-context-menu.show {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.habit-context-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.habit-context-item:last-child {
+  border-bottom: none;
+}
+
+.habit-context-item:hover {
+  background: var(--bg-card-hover);
+}
+
+.habit-context-item.destructive {
+  color: #ef4444;
+}
+
+.habit-context-item.destructive:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.habit-context-icon {
+  margin-right: var(--spacing-md);
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* HABIT MENU BUTTON - КНОПКА МЕНЮ ПРИВЫЧКИ */
+.habit-menu-btn {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.habit-card:hover .habit-menu-btn {
+  opacity: 1;
+}
+
+.habit-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.habit-menu-btn:active {
+  transform: scale(0.95);
+}
+
+/* SNACKBAR - УВЕДОМЛЕНИЯ */
+.snackbar {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-modal);
+  backdrop-filter: blur(40px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  box-shadow: var(--shadow-strong);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 90%;
+  min-width: 280px;
+}
+
+.snackbar.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.snackbar-text {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.snackbar-action {
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--spacing-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.snackbar-action:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.snackbar-action:active {
+  transform: scale(0.95);
+}
 </style>
 </head>
 <body>
@@ -3750,6 +4041,99 @@ textarea.input {
       <div class="weekday">Вс</div>
     </div>
     <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+</div>
+
+<!-- HABIT MODAL - МОДАЛЬНОЕ ОКНО ПРИВЫЧЕК -->
+<div class="modal" id="habitModal">
+  <div class="modal-header">
+    <div class="modal-header-actions">
+      <button class="btn-tertiary" onclick="hideHabitModal()">Отмена</button>
+    </div>
+    <div class="modal-title" id="habitModalTitle">Новая привычка</div>
+    <div class="modal-header-actions">
+      <button class="btn-primary" onclick="saveHabit()">Готово</button>
+    </div>
+  </div>
+  <div class="modal-content">
+    <div class="form-group">
+      <label class="label">Название привычки</label>
+      <input class="input" id="habitTitle" placeholder="Например: Выпить стакан воды" autofocus>
+    </div>
+    
+    <div class="form-group">
+      <label class="label">Иконка</label>
+      <div class="habit-icon-selector" id="habitIconSelector">
+        <div class="habit-icon-option selected" data-icon="🎯">🎯</div>
+        <div class="habit-icon-option" data-icon="💧">💧</div>
+        <div class="habit-icon-option" data-icon="🏃">🏃</div>
+        <div class="habit-icon-option" data-icon="📚">📚</div>
+        <div class="habit-icon-option" data-icon="🧘">🧘</div>
+        <div class="habit-icon-option" data-icon="🌱">🌱</div>
+        <div class="habit-icon-option" data-icon="💪">💪</div>
+        <div class="habit-icon-option" data-icon="🎵">🎵</div>
+        <div class="habit-icon-option" data-icon="✍️">✍️</div>
+        <div class="habit-icon-option" data-icon="🍎">🍎</div>
+        <div class="habit-icon-option" data-icon="😴">😴</div>
+        <div class="habit-icon-option" data-icon="🌅">🌅</div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="label">Частота</label>
+      <div class="habit-frequency-selector">
+        <div class="frequency-option active" data-type="daily">
+          <div class="frequency-title">Каждый день</div>
+          <div class="frequency-subtitle">Ежедневная привычка</div>
+        </div>
+        <div class="frequency-option" data-type="weekly">
+          <div class="frequency-title">Несколько раз в неделю</div>
+          <div class="frequency-subtitle">Гибкий график</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group" id="weeklyFrequencyGroup" style="display: none;">
+      <label class="label">Сколько раз в неделю</label>
+      <div class="weekly-counter">
+        <button class="counter-btn" onclick="changeWeeklyCount(-1)">−</button>
+        <span class="counter-value" id="weeklyCount">3</span>
+        <button class="counter-btn" onclick="changeWeeklyCount(1)">+</button>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="label">Время (необязательно)</label>
+      <input type="time" class="input" id="habitTime" placeholder="Выберите время">
+    </div>
+    
+    <div class="form-group" id="habitDeleteGroup" style="display: none;">
+      <button class="btn-destructive btn-full-width" onclick="showDeleteHabitConfirm()">
+        Удалить привычку
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HABIT DELETE CONFIRMATION -->
+<div class="modal" id="habitDeleteModal">
+  <div class="modal-header">
+    <div class="modal-header-actions">
+      <button class="btn-tertiary" onclick="hideDeleteHabitConfirm()">Отмена</button>
+    </div>
+    <div class="modal-title">Удалить привычку?</div>
+    <div class="modal-header-actions"></div>
+  </div>
+  <div class="modal-content">
+    <div style="text-align: center; padding: 20px 0;">
+      <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px;">
+        История останется, но привычка исчезнет из списка.
+      </p>
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="hideDeleteHabitConfirm()">Отмена</button>
+        <button class="btn-destructive" onclick="confirmDeleteHabit()">Удалить</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5543,10 +5927,16 @@ function hideCurrentModal() {
   const sectionsModal = document.getElementById('sectionsModal');
   const editSectionModal = document.getElementById('editSectionModal');
   const addSectionModal = document.getElementById('addSectionModal');
+  const habitModal = document.getElementById('habitModal');
+  const habitDeleteModal = document.getElementById('habitDeleteModal');
   
   // Закрываем в порядке приоритета (от самых верхних к базовым)
   if (popup && popup.classList.contains('show')) {
     hidePopup();
+  } else if (habitDeleteModal && habitDeleteModal.classList.contains('show')) {
+    hideDeleteHabitConfirm();
+  } else if (habitModal && habitModal.classList.contains('show')) {
+    hideHabitModal();
   } else if (mealInputModal && mealInputModal.classList.contains('show')) {
     closeMealInputModal();
   } else if (mealTypeModal && mealTypeModal.classList.contains('show')) {
@@ -8150,8 +8540,28 @@ function renderHabits() {
       return;
     }
     
-    // Фильтруем только активные привычки
-    const activeHabits = habits.filter(habit => habit.enabled);
+    // Фильтруем только активные привычки и сортируем их
+    const activeHabits = habits
+      .filter(habit => habit.enabled)
+      .sort((a, b) => {
+        const aCompleted = isHabitCompletedOnDate(a.id, currentDate);
+        const bCompleted = isHabitCompletedOnDate(b.id, currentDate);
+        
+        // Невыполненные привычки выше выполненных
+        if (aCompleted !== bCompleted) {
+          return aCompleted ? 1 : -1;
+        }
+        
+        // Внутри группы сортируем по времени, затем по дате создания
+        if (a.time && b.time) {
+          return a.time.localeCompare(b.time);
+        }
+        if (a.time && !b.time) return -1;
+        if (!a.time && b.time) return 1;
+        
+        // По дате создания (новые выше)
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
     
     if (activeHabits.length === 0) {
       // Показываем пустое состояние
@@ -8176,15 +8586,16 @@ function renderHabits() {
         
         html += `
           <div class="habit-card ${isCompleted ? 'completed' : ''}" 
-               onclick="toggleHabitCompletion('${habit.id}')"
-               style="animation-delay: ${index * 0.1}s">
+               data-habit-id="${habit.id}"
+               style="animation-delay: ${index * 0.1}s; position: relative;">
             <div class="habit-icon">${habit.icon}</div>
-            <div class="habit-content">
+            <div class="habit-content" onclick="toggleHabitCompletion('${habit.id}')">
               <div class="habit-title">${escapeHtml(habit.title)}</div>
               ${timeDisplay}
               <div class="habit-frequency">${getHabitFrequencyText(habit)}</div>
             </div>
-            <div class="habit-checkbox ${isCompleted ? 'checked' : ''}"></div>
+            <div class="habit-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleHabitCompletion('${habit.id}')"></div>
+            <button class="habit-menu-btn" onclick="showHabitContextMenu('${habit.id}', event)">⋯</button>
           </div>
         `;
       });
@@ -8283,6 +8694,405 @@ function showAddHabit() {
   }
   
   console.log('✅ Привычка добавлена:', newHabit);
+}
+
+// HABIT MANAGEMENT - РАСШИРЕННОЕ УПРАВЛЕНИЕ ПРИВЫЧКАМИ
+
+// Глобальные переменные для модального окна
+let currentEditingHabit = null;
+let deletedHabit = null; // Для функции Undo
+
+// Показывает модальное окно добавления привычки
+function showAddHabitModal() {
+  currentEditingHabit = null;
+  
+  // Сбрасываем форму
+  document.getElementById('habitTitle').value = '';
+  document.getElementById('habitTime').value = '';
+  document.getElementById('weeklyCount').textContent = '3';
+  
+  // Устанавливаем заголовок
+  document.getElementById('habitModalTitle').textContent = 'Новая привычка';
+  
+  // Скрываем кнопку удаления
+  document.getElementById('habitDeleteGroup').style.display = 'none';
+  
+  // Сбрасываем селекторы
+  resetHabitSelectors();
+  
+  // Показываем модальное окно
+  showModal('habitModal');
+}
+
+// Показывает модальное окно редактирования привычки
+function showEditHabitModal(habitId) {
+  const habit = habits.find(h => h.id === habitId);
+  if (!habit) return;
+  
+  currentEditingHabit = habit;
+  
+  // Заполняем форму данными привычки
+  document.getElementById('habitTitle').value = habit.title;
+  document.getElementById('habitTime').value = habit.time || '';
+  
+  // Устанавливаем заголовок
+  document.getElementById('habitModalTitle').textContent = 'Редактировать привычку';
+  
+  // Показываем кнопку удаления
+  document.getElementById('habitDeleteGroup').style.display = 'block';
+  
+  // Устанавливаем иконку
+  setSelectedHabitIcon(habit.icon);
+  
+  // Устанавливаем частоту
+  setHabitFrequency(habit.frequency);
+  
+  // Показываем модальное окно
+  showModal('habitModal');
+}
+
+// Скрывает модальное окно привычки
+function hideHabitModal() {
+  hideModal('habitModal');
+  currentEditingHabit = null;
+}
+
+// Сбрасывает селекторы в модальном окне
+function resetHabitSelectors() {
+  // Сбрасываем иконки
+  document.querySelectorAll('.habit-icon-option').forEach(option => {
+    option.classList.remove('selected');
+  });
+  document.querySelector('.habit-icon-option[data-icon="🎯"]').classList.add('selected');
+  
+  // Сбрасываем частоту
+  document.querySelectorAll('.frequency-option').forEach(option => {
+    option.classList.remove('active');
+  });
+  document.querySelector('.frequency-option[data-type="daily"]').classList.add('active');
+  document.getElementById('weeklyFrequencyGroup').style.display = 'none';
+}
+
+// Устанавливает выбранную иконку
+function setSelectedHabitIcon(icon) {
+  document.querySelectorAll('.habit-icon-option').forEach(option => {
+    option.classList.remove('selected');
+  });
+  const iconOption = document.querySelector(`[data-icon="${icon}"]`);
+  if (iconOption) {
+    iconOption.classList.add('selected');
+  }
+}
+
+// Устанавливает частоту привычки
+function setHabitFrequency(frequency) {
+  document.querySelectorAll('.frequency-option').forEach(option => {
+    option.classList.remove('active');
+  });
+  
+  const frequencyOption = document.querySelector(`[data-type="${frequency.type}"]`);
+  if (frequencyOption) {
+    frequencyOption.classList.add('active');
+  }
+  
+  if (frequency.type === 'weekly') {
+    document.getElementById('weeklyFrequencyGroup').style.display = 'block';
+    document.getElementById('weeklyCount').textContent = frequency.value || 3;
+  } else {
+    document.getElementById('weeklyFrequencyGroup').style.display = 'none';
+  }
+}
+
+// Сохраняет привычку (создание или редактирование)
+function saveHabit() {
+  const title = document.getElementById('habitTitle').value.trim();
+  if (!title) {
+    showPopup('Ошибка', 'Введите название привычки', [
+      { text: 'OK', type: 'confirm', action: hidePopup }
+    ]);
+    return;
+  }
+  
+  // Получаем данные из формы
+  const selectedIcon = document.querySelector('.habit-icon-option.selected');
+  const icon = selectedIcon ? selectedIcon.dataset.icon : '🎯';
+  
+  const selectedFrequency = document.querySelector('.frequency-option.active');
+  const frequencyType = selectedFrequency ? selectedFrequency.dataset.type : 'daily';
+  
+  const time = document.getElementById('habitTime').value || null;
+  const weeklyCount = parseInt(document.getElementById('weeklyCount').textContent) || 3;
+  
+  const frequency = {
+    type: frequencyType,
+    ...(frequencyType === 'weekly' && { value: weeklyCount })
+  };
+  
+  if (currentEditingHabit) {
+    // Редактирование существующей привычки
+    currentEditingHabit.title = title;
+    currentEditingHabit.icon = icon;
+    currentEditingHabit.frequency = frequency;
+    currentEditingHabit.time = time;
+    
+    console.log('✅ Привычка обновлена:', currentEditingHabit);
+  } else {
+    // Создание новой привычки
+    const newHabit = {
+      id: Date.now().toString(),
+      title: title,
+      icon: icon,
+      frequency: frequency,
+      time: time,
+      enabled: true,
+      createdAt: new Date().toISOString()
+    };
+    
+    habits.push(newHabit);
+    console.log('✅ Привычка создана:', newHabit);
+  }
+  
+  // Сохраняем и обновляем отображение
+  saveHabits();
+  if (currentTab === 'habits') {
+    renderHabits();
+  }
+  
+  hideHabitModal();
+}
+
+// Показывает контекстное меню привычки
+function showHabitContextMenu(habitId, event) {
+  event.stopPropagation();
+  
+  // Скрываем все существующие меню
+  document.querySelectorAll('.habit-context-menu').forEach(menu => {
+    menu.remove();
+  });
+  
+  const habitCard = document.querySelector(`[data-habit-id="${habitId}"]`);
+  if (!habitCard) return;
+  
+  // Создаем контекстное меню
+  const menu = document.createElement('div');
+  menu.className = 'habit-context-menu';
+  menu.innerHTML = `
+    <div class="habit-context-item" onclick="showEditHabitModal('${habitId}'); hideHabitContextMenu();">
+      <span class="habit-context-icon">✏️</span>
+      Редактировать
+    </div>
+    <div class="habit-context-item" onclick="toggleHabitEnabled('${habitId}'); hideHabitContextMenu();">
+      <span class="habit-context-icon">⏸️</span>
+      Приостановить
+    </div>
+    <div class="habit-context-item destructive" onclick="showDeleteHabitConfirm('${habitId}'); hideHabitContextMenu();">
+      <span class="habit-context-icon">🗑️</span>
+      Удалить
+    </div>
+  `;
+  
+  // Позиционируем меню
+  habitCard.style.position = 'relative';
+  habitCard.appendChild(menu);
+  
+  // Показываем меню с анимацией
+  setTimeout(() => {
+    menu.classList.add('show');
+  }, 10);
+  
+  // Закрываем меню при клике вне его
+  setTimeout(() => {
+    document.addEventListener('click', hideHabitContextMenu, { once: true });
+  }, 100);
+}
+
+// Скрывает контекстное меню
+function hideHabitContextMenu() {
+  document.querySelectorAll('.habit-context-menu').forEach(menu => {
+    menu.classList.remove('show');
+    setTimeout(() => menu.remove(), 300);
+  });
+}
+
+// Переключает состояние включена/выключена привычка
+function toggleHabitEnabled(habitId) {
+  const habit = habits.find(h => h.id === habitId);
+  if (!habit) return;
+  
+  habit.enabled = !habit.enabled;
+  saveHabits();
+  
+  if (currentTab === 'habits') {
+    renderHabits();
+  }
+  
+  // Показываем уведомление
+  const action = habit.enabled ? 'возобновлена' : 'приостановлена';
+  showSnackbar(`Привычка ${action}`, null);
+}
+
+// Показывает подтверждение удаления привычки
+function showDeleteHabitConfirm(habitId) {
+  currentEditingHabit = habits.find(h => h.id === habitId);
+  if (!currentEditingHabit) return;
+  
+  showModal('habitDeleteModal');
+}
+
+// Скрывает подтверждение удаления
+function hideDeleteHabitConfirm() {
+  hideModal('habitDeleteModal');
+  currentEditingHabit = null;
+}
+
+// Подтверждает удаление привычки
+function confirmDeleteHabit() {
+  if (!currentEditingHabit) return;
+  
+  // Сохраняем привычку для возможности восстановления
+  deletedHabit = { ...currentEditingHabit };
+  
+  // Удаляем привычку из массива
+  const index = habits.findIndex(h => h.id === currentEditingHabit.id);
+  if (index >= 0) {
+    habits.splice(index, 1);
+  }
+  
+  // Сохраняем и обновляем отображение
+  saveHabits();
+  if (currentTab === 'habits') {
+    renderHabits();
+  }
+  
+  // Скрываем модальное окно
+  hideDeleteHabitConfirm();
+  
+  // Показываем snackbar с возможностью отмены
+  showSnackbar('Привычка удалена', 'Отменить', undoDeleteHabit);
+}
+
+// Отменяет удаление привычки (Undo)
+function undoDeleteHabit() {
+  if (!deletedHabit) return;
+  
+  // Восстанавливаем привычку
+  habits.push(deletedHabit);
+  
+  // Сохраняем и обновляем отображение
+  saveHabits();
+  if (currentTab === 'habits') {
+    renderHabits();
+  }
+  
+  // Очищаем сохраненную привычку
+  deletedHabit = null;
+  
+  // Скрываем snackbar
+  hideSnackbar();
+  
+  console.log('✅ Удаление привычки отменено');
+}
+
+// Показывает snackbar уведомление
+function showSnackbar(text, actionText = null, actionCallback = null) {
+  // Удаляем существующий snackbar
+  const existingSnackbar = document.querySelector('.snackbar');
+  if (existingSnackbar) {
+    existingSnackbar.remove();
+  }
+  
+  // Создаем новый snackbar
+  const snackbar = document.createElement('div');
+  snackbar.className = 'snackbar';
+  
+  let actionHtml = '';
+  if (actionText && actionCallback) {
+    actionHtml = `<button class="snackbar-action" onclick="(${actionCallback.toString()})()">${actionText}</button>`;
+  }
+  
+  snackbar.innerHTML = `
+    <span class="snackbar-text">${text}</span>
+    ${actionHtml}
+  `;
+  
+  document.body.appendChild(snackbar);
+  
+  // Показываем с анимацией
+  setTimeout(() => {
+    snackbar.classList.add('show');
+  }, 10);
+  
+  // Автоматически скрываем через 4 секунды
+  setTimeout(() => {
+    hideSnackbar();
+  }, 4000);
+}
+
+// Скрывает snackbar
+function hideSnackbar() {
+  const snackbar = document.querySelector('.snackbar');
+  if (snackbar) {
+    snackbar.classList.remove('show');
+    setTimeout(() => snackbar.remove(), 400);
+  }
+}
+
+// Изменяет количество раз в неделю
+function changeWeeklyCount(delta) {
+  const countElement = document.getElementById('weeklyCount');
+  let count = parseInt(countElement.textContent) || 3;
+  count = Math.max(1, Math.min(7, count + delta));
+  countElement.textContent = count;
+}
+
+// Обновляем функцию showAddHabit для использования нового модального окна
+function showAddHabit() {
+  showAddHabitModal();
+}
+
+// Универсальные функции для работы с модальными окнами
+function showModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) {
+    console.error(`Модальное окно ${modalId} не найдено`);
+    return;
+  }
+  
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    modal.classList.add('show');
+  }, 10);
+  
+  // Обновляем текущее модальное окно
+  currentModal = modalId;
+  
+  // Показываем кнопку "Назад" в Telegram
+  if (typeof tg !== 'undefined' && tg.BackButton) {
+    tg.BackButton.show();
+  }
+}
+
+function hideModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) {
+    console.error(`Модальное окно ${modalId} не найдено`);
+    return;
+  }
+  
+  modal.classList.remove('show');
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 300);
+  
+  // Сбрасываем текущее модальное окно
+  if (currentModal === modalId) {
+    currentModal = null;
+  }
+  
+  // Скрываем кнопку "Назад" в Telegram
+  if (typeof tg !== 'undefined' && tg.BackButton) {
+    tg.BackButton.hide();
+  }
 }
 
 // Трекер воды
@@ -9410,6 +10220,96 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   `;
   document.head.appendChild(enhancedAnimationsStyle);
+  
+  // ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ МОДАЛЬНОГО ОКНА ПРИВЫЧЕК
+  
+  // Обработчики для селектора иконок
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('habit-icon-option')) {
+      // Убираем выделение со всех иконок
+      document.querySelectorAll('.habit-icon-option').forEach(option => {
+        option.classList.remove('selected');
+      });
+      // Выделяем выбранную иконку
+      e.target.classList.add('selected');
+    }
+  });
+  
+  // Обработчики для селектора частоты
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.frequency-option')) {
+      const option = e.target.closest('.frequency-option');
+      
+      // Убираем активное состояние со всех опций
+      document.querySelectorAll('.frequency-option').forEach(opt => {
+        opt.classList.remove('active');
+      });
+      
+      // Активируем выбранную опцию
+      option.classList.add('active');
+      
+      // Показываем/скрываем группу недельной частоты
+      const weeklyGroup = document.getElementById('weeklyFrequencyGroup');
+      if (option.dataset.type === 'weekly') {
+        weeklyGroup.style.display = 'block';
+      } else {
+        weeklyGroup.style.display = 'none';
+      }
+    }
+  });
+  
+  // Обработчик для долгого тапа на привычках
+  let longPressTimer = null;
+  let isLongPress = false;
+  
+  document.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.habit-card')) {
+      const habitCard = e.target.closest('.habit-card');
+      const habitId = habitCard.dataset.habitId;
+      
+      isLongPress = false;
+      longPressTimer = setTimeout(() => {
+        isLongPress = true;
+        // Вибрация для обратной связи (если поддерживается)
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+        showHabitContextMenu(habitId, e);
+      }, 500); // 500ms для долгого тапа
+    }
+  });
+  
+  document.addEventListener('touchend', (e) => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  });
+  
+  // Обработчик для обычного клика (не долгий тап)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.habit-card') && !isLongPress) {
+      const habitCard = e.target.closest('.habit-card');
+      const habitId = habitCard.dataset.habitId;
+      
+      // Проверяем, что клик не по кнопке меню или чекбоксу
+      if (!e.target.closest('.habit-menu-btn') && !e.target.closest('.habit-checkbox')) {
+        toggleHabitCompletion(habitId);
+      }
+    }
+    
+    // Сбрасываем флаг долгого тапа
+    setTimeout(() => {
+      isLongPress = false;
+    }, 100);
+  });
   
   console.log('🚀 Планер v6.28 - Улучшенная навигация и UX загружен');
 });

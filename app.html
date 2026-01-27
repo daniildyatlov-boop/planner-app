@@ -3634,8 +3634,7 @@ let currentDate = new Date();
 let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
-let deletedSectionTasks = {}; // НОВАЯ СИСТЕМА: запоминаем удаленные пользователем задачи из разделов
-let deletedTaskIds = new Set(); // НОВАЯ СИСТЕМА: запоминаем ID всех удаленных задач
+let deletedTasks = {}; // РЕФАКТОРИНГ: контекстное удаление {date: {sourceKey: true}}
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
@@ -3675,6 +3674,156 @@ function initializeIcons() {
     
   } catch (e) {
     console.error('❌ Ошибка при инициализации иконок:', e);
+  }
+}
+
+// TASK SOURCE SYSTEM - УНИФИЦИРОВАННАЯ СИСТЕМА ИСТОЧНИКОВ ЗАДАЧ
+function createTaskSource(type, options = {}) {
+  const source = { type };
+  
+  switch (type) {
+    case 'manual':
+      // Обычные задачи, созданные пользователем
+      break;
+    case 'section':
+      source.sectionId = options.sectionId;
+      source.templateId = options.templateId;
+      break;
+    case 'meal':
+      source.mealId = options.mealId;
+      break;
+    default:
+      console.warn('Неизвестный тип источника задачи:', type);
+      source.type = 'manual';
+  }
+  
+  return source;
+}
+
+function getSourceKey(source) {
+  switch (source.type) {
+    case 'manual':
+      return 'manual';
+    case 'section':
+      return `section_${source.sectionId}_${source.templateId}`;
+    case 'meal':
+      return `meal_${source.mealId}`;
+    default:
+      return 'manual';
+  }
+}
+
+function isTaskDeleted(date, source) {
+  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const sourceKey = getSourceKey(source);
+  return deletedTasks[dateStr] && deletedTasks[dateStr][sourceKey];
+}
+
+function markTaskAsDeleted(date, source) {
+  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const sourceKey = getSourceKey(source);
+  
+  if (!deletedTasks[dateStr]) {
+    deletedTasks[dateStr] = {};
+  }
+  
+  deletedTasks[dateStr][sourceKey] = true;
+  saveDeletedTasks();
+}
+
+function restoreTask(date, source) {
+  const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const sourceKey = getSourceKey(source);
+  
+  if (deletedTasks[dateStr] && deletedTasks[dateStr][sourceKey]) {
+    delete deletedTasks[dateStr][sourceKey];
+    
+    // Очищаем пустые объекты
+    if (Object.keys(deletedTasks[dateStr]).length === 0) {
+      delete deletedTasks[dateStr];
+    }
+    
+    saveDeletedTasks();
+  }
+}
+
+// MIGRATION HELPERS - ПОМОЩНИКИ ДЛЯ МИГРАЦИИ СТАРЫХ ДАННЫХ
+function migrateTaskToNewSource(task) {
+  // Если уже есть source, не мигрируем
+  if (task.source) {
+    return task;
+  }
+  
+  // Мигрируем из старых флагов
+  if (task.createdFromSection && task.sectionId && task.templateId) {
+    task.source = createTaskSource('section', {
+      sectionId: task.sectionId,
+      templateId: task.templateId
+    });
+  } else if (task.createdFromMeal && task.mealId) {
+    task.source = createTaskSource('meal', {
+      mealId: task.mealId
+    });
+  } else {
+    task.source = createTaskSource('manual');
+  }
+  
+  // Удаляем старые флаги для чистоты (но сохраняем для обратной совместимости)
+  // delete task.createdFromSection;
+  // delete task.sectionId;
+  // delete task.templateId;
+  // delete task.createdFromMeal;
+  // delete task.mealId;
+  
+  return task;
+}
+
+function migrateDeletedTasks() {
+  // Мигрируем из старой системы deletedTaskIds и deletedSectionTasks
+  const oldDeletedTaskIds = localStorage.getItem('planner_deleted_task_ids');
+  const oldDeletedSectionTasks = localStorage.getItem('planner_deleted_section_tasks');
+  
+  if (oldDeletedTaskIds) {
+    try {
+      const deletedIds = JSON.parse(oldDeletedTaskIds);
+      console.log('Мигрируем deletedTaskIds:', deletedIds.length, 'записей');
+      
+      // Находим задачи с этими ID и помечаем их как удаленные
+      deletedIds.forEach(taskId => {
+        const task = plans.find(p => p.id === taskId);
+        if (task) {
+          markTaskAsDeleted(task.date, task.source || createTaskSource('manual'));
+        }
+      });
+      
+      // Удаляем старые данные после миграции
+      localStorage.removeItem('planner_deleted_task_ids');
+    } catch (e) {
+      console.error('Ошибка миграции deletedTaskIds:', e);
+    }
+  }
+  
+  if (oldDeletedSectionTasks) {
+    try {
+      const oldDeleted = JSON.parse(oldDeletedSectionTasks);
+      console.log('Мигрируем deletedSectionTasks');
+      
+      Object.keys(oldDeleted).forEach(dateStr => {
+        const dayDeleted = oldDeleted[dateStr];
+        Object.keys(dayDeleted).forEach(sectionId => {
+          const templateIds = dayDeleted[sectionId];
+          templateIds.forEach(templateId => {
+            const source = createTaskSource('section', { sectionId, templateId });
+            markTaskAsDeleted(dateStr, source);
+          });
+        });
+      });
+      
+      // Удаляем старые данные после миграции
+      localStorage.removeItem('planner_deleted_section_tasks');
+    } catch (e) {
+      console.error('Ошибка миграции deletedSectionTasks:', e);
+    }
   }
 }
 
@@ -3790,6 +3939,13 @@ function loadData() {
           }
         }
       }
+      
+      // РЕФАКТОРИНГ: Мигрируем к новой системе источников
+      plan = migrateTaskToNewSource(plan);
+      if (!plan.source) {
+        needsSave = true;
+      }
+      
       return plan;
     });
     
@@ -3797,18 +3953,6 @@ function loadData() {
     if (needsSave) {
       savePlans();
     }
-    
-    // НОВАЯ СИСТЕМА: Фильтруем удаленные задачи после загрузки данных об удаленных ID
-    // Эта функция будет вызвана после loadDeletedTaskIds() в инициализации
-    window.filterDeletedTasksAfterLoad = function() {
-      const initialLength = plans.length;
-      plans = plans.filter(plan => !deletedTaskIds.has(plan.id));
-      const filteredCount = initialLength - plans.length;
-      if (filteredCount > 0) {
-        console.log(`🗑️ Отфильтровано ${filteredCount} удаленных задач при загрузке`);
-        savePlans(); // Сохраняем очищенный список
-      }
-    };
     
     // Миграция старых разделов (строки) в новый формат (объекты)
     if (rooms.length > 0 && typeof rooms[0] === 'string') {
@@ -3905,91 +4049,25 @@ function loadSections() {
   }
 }
 
-// НОВАЯ СИСТЕМА: Управление удаленными задачами разделов
-function saveDeletedSectionTasks() {
+// РЕФАКТОРИНГ: Упрощенная система удаления задач
+function saveDeletedTasks() {
   try {
-    localStorage.setItem('planner_deleted_section_tasks', JSON.stringify(deletedSectionTasks));
+    localStorage.setItem('planner_deleted_tasks', JSON.stringify(deletedTasks));
   } catch (e) {
-    console.error('Ошибка при сохранении удаленных задач разделов:', e);
+    console.error('Ошибка при сохранении удаленных задач:', e);
   }
 }
 
-function loadDeletedSectionTasks() {
+function loadDeletedTasks() {
   try {
-    const saved = localStorage.getItem('planner_deleted_section_tasks');
-    deletedSectionTasks = saved ? JSON.parse(saved) : {};
+    const saved = localStorage.getItem('planner_deleted_tasks');
+    deletedTasks = saved ? JSON.parse(saved) : {};
   } catch (e) {
-    console.error('Ошибка при загрузке удаленных задач разделов:', e);
-    deletedSectionTasks = {};
+    console.error('Ошибка при загрузке удаленных задач:', e);
+    deletedTasks = {};
   }
 }
 
-// НОВАЯ СИСТЕМА: Управление удаленными ID задач
-function saveDeletedTaskIds() {
-  try {
-    localStorage.setItem('planner_deleted_task_ids', JSON.stringify([...deletedTaskIds]));
-  } catch (e) {
-    console.error('Ошибка при сохранении удаленных ID задач:', e);
-  }
-}
-
-function loadDeletedTaskIds() {
-  try {
-    const saved = localStorage.getItem('planner_deleted_task_ids');
-    deletedTaskIds = saved ? new Set(JSON.parse(saved)) : new Set();
-  } catch (e) {
-    console.error('Ошибка при загрузке удаленных ID задач:', e);
-    deletedTaskIds = new Set();
-  }
-}
-
-// Помечает задачу раздела как удаленную пользователем
-function markSectionTaskAsDeleted(dateStr, sectionId, templateId) {
-  if (!deletedSectionTasks[dateStr]) {
-    deletedSectionTasks[dateStr] = {};
-  }
-  if (!deletedSectionTasks[dateStr][sectionId]) {
-    deletedSectionTasks[dateStr][sectionId] = [];
-  }
-  if (!deletedSectionTasks[dateStr][sectionId].includes(templateId)) {
-    deletedSectionTasks[dateStr][sectionId].push(templateId);
-    saveDeletedSectionTasks();
-  }
-}
-
-// Проверяет, была ли задача раздела удалена пользователем
-function isSectionTaskDeleted(dateStr, sectionId, templateId) {
-  return deletedSectionTasks[dateStr] && 
-         deletedSectionTasks[dateStr][sectionId] && 
-         deletedSectionTasks[dateStr][sectionId].includes(templateId);
-}
-
-// НОВАЯ ФУНКЦИЯ: Восстанавливает удаленную задачу раздела
-function restoreSectionTask(dateStr, sectionId, templateId) {
-  // Удаляем из списка удаленных
-  if (deletedSectionTasks[dateStr] && deletedSectionTasks[dateStr][sectionId]) {
-    const index = deletedSectionTasks[dateStr][sectionId].indexOf(templateId);
-    if (index > -1) {
-      deletedSectionTasks[dateStr][sectionId].splice(index, 1);
-      
-      // Если массив пустой, удаляем его
-      if (deletedSectionTasks[dateStr][sectionId].length === 0) {
-        delete deletedSectionTasks[dateStr][sectionId];
-      }
-      
-      // Если объект даты пустой, удаляем его
-      if (Object.keys(deletedSectionTasks[dateStr]).length === 0) {
-        delete deletedSectionTasks[dateStr];
-      }
-      
-      saveDeletedSectionTasks();
-      
-      // Пересинхронизируем разделы, чтобы восстановить задачу
-      syncSectionsToPlans(new Date(dateStr));
-      render();
-    }
-  }
-}
 function cleanupOldDeletedTasks() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -3997,28 +4075,41 @@ function cleanupOldDeletedTasks() {
   
   let hasChanges = false;
   
-  // Очищаем удаленные задачи разделов
-  Object.keys(deletedSectionTasks).forEach(dateStr => {
+  // Очищаем удаленные задачи старше 30 дней
+  Object.keys(deletedTasks).forEach(dateStr => {
     if (dateStr < cutoffDateStr) {
-      delete deletedSectionTasks[dateStr];
+      delete deletedTasks[dateStr];
       hasChanges = true;
     }
   });
   
   if (hasChanges) {
-    saveDeletedSectionTasks();
+    saveDeletedTasks();
+    console.log('🧹 Очищены старые записи об удаленных задачах');
   }
+}
+
+// РЕФАКТОРИНГ: Функция очистки старых ключей localStorage после миграции
+function cleanupOldStorageKeys() {
+  const oldKeys = [
+    'planner_deleted_task_ids',
+    'planner_deleted_section_tasks',
+    'plans', // Старый ключ для планов
+    'teams', // Старый ключ для команд
+    'planner_rooms' // Старый ключ для комнат
+  ];
   
-  // Очищаем удаленные ID задач (удаляем ID задач старше 30 дней)
-  // Для этого нужно проверить, есть ли еще задачи с этими ID в актуальных данных
-  const currentTaskIds = new Set(plans.map(p => p.id));
-  const oldDeletedIds = [...deletedTaskIds].filter(id => !currentTaskIds.has(id));
+  let cleanedCount = 0;
+  oldKeys.forEach(key => {
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+      cleanedCount++;
+      console.log(`🧹 Удален старый ключ localStorage: ${key}`);
+    }
+  });
   
-  // Если есть старые ID, которых уже нет в актуальных задачах, можем их удалить
-  if (oldDeletedIds.length > 0) {
-    oldDeletedIds.forEach(id => deletedTaskIds.delete(id));
-    saveDeletedTaskIds();
-    console.log(`🧹 Очищено ${oldDeletedIds.length} старых удаленных ID задач`);
+  if (cleanedCount > 0) {
+    console.log(`🧹 Очищено ${cleanedCount} старых ключей localStorage`);
   }
 }
 
@@ -4047,9 +4138,13 @@ function isSectionActiveOnDate(section, date) {
   }
 }
 
-// Синхронизирует разделы с планами на указанную дату
-function syncSectionsToPlans(date) {
+// РЕФАКТОРИНГ: Стабильная синхронизация разделов
+function syncSectionsToPlans(date, force = false) {
   const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  console.log(`🔄 Синхронизация разделов для ${dateStr}${force ? ' (принудительно)' : ''}`);
+  
+  let hasChanges = false;
   
   sections.forEach(section => {
     if (isSectionActiveOnDate(section, date)) {
@@ -4075,18 +4170,24 @@ function syncSectionsToPlans(date) {
       
       // Проверяем каждую шаблонную задачу из раздела
       section.templateTasks.forEach(template => {
-        // НОВАЯ ЛОГИКА: Проверяем, не была ли задача удалена пользователем
-        const isDeleted = isSectionTaskDeleted(dateStr, section.id, template.id);
+        const source = createTaskSource('section', {
+          sectionId: section.id,
+          templateId: template.id
+        });
         
-        if (isDeleted) {
+        // РЕФАКТОРИНГ: Проверяем через новую систему удаления
+        if (isTaskDeleted(dateStr, source)) {
+          console.log(`⏭️ Пропускаем удаленную задачу: ${template.title}`);
           return; // Пропускаем удаленные пользователем задачи
         }
         
         // Проверяем, не существует ли уже такая задача
         const existingTask = plans.find(plan => 
           plan.date === dateStr && 
-          plan.sectionId === section.id && 
-          plan.templateId === template.id
+          plan.source && 
+          plan.source.type === 'section' &&
+          plan.source.sectionId == section.id && 
+          plan.source.templateId == template.id
         );
         
         if (!existingTask) {
@@ -4098,12 +4199,12 @@ function syncSectionsToPlans(date) {
             room: section.name, // Связываем с разделом
             date: dateStr,
             completed: false,
-            sectionId: section.id, // ID раздела
-            templateId: template.id, // ID шаблона
-            createdFromSection: true // Флаг что задача создана из раздела
+            source: source
           };
           
           plans.push(newTask);
+          hasChanges = true;
+          console.log(`➕ Создана задача из раздела: ${template.title}`);
         }
       });
     } else {
@@ -4112,19 +4213,24 @@ function syncSectionsToPlans(date) {
       const initialCount = plans.length;
       plans = plans.filter(plan => !(
         plan.date === dateStr && 
-        plan.sectionId === section.id && 
-        plan.createdFromSection
+        plan.source &&
+        plan.source.type === 'section' &&
+        plan.source.sectionId == section.id
       ));
       
       const removedCount = initialCount - plans.length;
       if (removedCount > 0) {
         console.log(`🗑️ Удалено ${removedCount} задач неактивного раздела "${section.name}"`);
+        hasChanges = true;
       }
     }
   });
   
-  // Сохраняем изменения
-  savePlans();
+  // Сохраняем изменения только если они были
+  if (hasChanges) {
+    savePlans();
+    console.log('💾 Изменения синхронизации сохранены');
+  }
   
   // Обновляем интерфейс если нужно
   if (typeof updateRoomsSelect === 'function') {
@@ -4132,13 +4238,17 @@ function syncSectionsToPlans(date) {
   }
 }
 
-// Инициализирует синхронизацию разделов при старте приложения
+// РЕФАКТОРИНГ: Упрощенная инициализация разделов
 function initSectionsSync() {
+  console.log('🔧 Инициализация системы разделов');
+  
   // Загружаем разделы
   loadSections();
   
   // Создаем демонстрационные разделы если их нет
   if (sections.length === 0) {
+    console.log('📝 Создаем демонстрационные разделы');
+    
     // Утренняя зарядка - каждый день
     sections.push({
       id: Date.now() + 1,
@@ -4186,8 +4296,7 @@ function initSectionsSync() {
   // Очищаем старые записи об удаленных задачах
   cleanupOldDeletedTasks();
   
-  // Синхронизируем на текущую дату (данные об удаленных задачах уже загружены)
-  syncSectionsToPlans(currentDate);
+  console.log(`✅ Система разделов инициализирована: ${sections.length} разделов`);
 }
 
 // RENDER
@@ -4377,7 +4486,8 @@ function changeDay(direction) {
     
     currentDate = newDate;
     
-    // НОВАЯ СИСТЕМА: Синхронизируем разделы при смене даты
+    // РЕФАКТОРИНГ: Контролируемая синхронизация разделов при смене даты
+    console.log(`📅 Смена даты на ${currentDate.toISOString().split('T')[0]}`);
     syncSectionsToPlans(currentDate);
     
     // Анимация смены дня для задач
@@ -4576,10 +4686,12 @@ function updateSectionsStats() {
       isSectionActiveOnDate(section, currentDate)
     ).length;
     
-    // Автоматически созданные задачи сегодня
+    // Автоматически созданные задачи сегодня через новую систему источников
     const dateStr = currentDate.toISOString().split('T')[0];
     const autoTasksToday = plans.filter(plan => 
-      plan.date === dateStr && plan.createdFromSection
+      plan.date === dateStr && 
+      plan.source && 
+      plan.source.type === 'section'
     ).length;
     
     // Анимированное обновление чисел
@@ -4888,7 +5000,8 @@ function savePlan() {
     date: date,
     time: time || null,
     room: room || null,
-    completed: false
+    completed: false,
+    source: createTaskSource('manual') // РЕФАКТОРИНГ: Используем новую систему источников
   };
   
   try {
@@ -4896,6 +5009,8 @@ function savePlan() {
       // Обновляем существующую задачу
       const index = plans.findIndex(p => p.id === selectedPlanId);
       if (index !== -1) {
+        // Сохраняем источник при обновлении
+        plan.source = plans[index].source || createTaskSource('manual');
         plans[index] = plan;
       } else {
         console.error('Задача для обновления не найдена');
@@ -5174,18 +5289,15 @@ function confirmDeleteFromEdit() {
     return;
   }
   
-  // НОВАЯ ЛОГИКА: Находим задачу и проверяем, создана ли она из раздела
+  // РЕФАКТОРИНГ: Находим задачу и используем новую систему удаления
   const planToDelete = plans.find(p => p.id === selectedPlanId);
   
   if (planToDelete) {
-    // Добавляем ID в список удаленных задач
-    deletedTaskIds.add(selectedPlanId);
-    saveDeletedTaskIds();
+    // Помечаем задачу как удаленную через новую систему
+    const source = planToDelete.source || createTaskSource('manual');
+    markTaskAsDeleted(planToDelete.date, source);
     
-    // Если задача создана из раздела, помечаем ее специально
-    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
-      markSectionTaskAsDeleted(planToDelete.date, planToDelete.sectionId, planToDelete.templateId);
-    }
+    console.log(`🗑️ Задача помечена как удаленная: ${planToDelete.title}`);
   }
   
   const initialLength = plans.length;
@@ -5254,18 +5366,15 @@ function confirmDeletePlan() {
     return;
   }
   
-  // НОВАЯ ЛОГИКА: Находим задачу и проверяем, создана ли она из раздела
+  // РЕФАКТОРИНГ: Находим задачу и используем новую систему удаления
   const planToDelete = plans.find(p => p.id === selectedPlanId);
   
   if (planToDelete) {
-    // Добавляем ID в список удаленных задач
-    deletedTaskIds.add(selectedPlanId);
-    saveDeletedTaskIds();
+    // Помечаем задачу как удаленную через новую систему
+    const source = planToDelete.source || createTaskSource('manual');
+    markTaskAsDeleted(planToDelete.date, source);
     
-    // Если задача создана из раздела, помечаем ее специально
-    if (planToDelete.createdFromSection && planToDelete.sectionId && planToDelete.templateId) {
-      markSectionTaskAsDeleted(planToDelete.date, planToDelete.sectionId, planToDelete.templateId);
-    }
+    console.log(`🗑️ Задача помечена как удаленная: ${planToDelete.title}`);
   }
   
   const initialLength = plans.length;
@@ -5310,15 +5419,15 @@ function toggleComplete(id, event) {
       if (planElement) planElement.classList.remove('completed');
       if (checkbox) checkbox.classList.remove('checked');
       
-      // 🍽️ СИНХРОНИЗАЦИЯ С ПИТАНИЕМ: убираем выполнение приема пищи
-      if (plan.createdFromMeal && plan.mealId && plan.date) {
+      // РЕФАКТОРИНГ: Синхронизация с питанием через источники
+      if (plan.source && plan.source.type === 'meal' && plan.source.mealId && plan.date) {
         if (!nutritionData.meals[plan.date]) {
           nutritionData.meals[plan.date] = {};
         }
-        if (!nutritionData.meals[plan.date][plan.mealId]) {
-          nutritionData.meals[plan.date][plan.mealId] = {};
+        if (!nutritionData.meals[plan.date][plan.source.mealId]) {
+          nutritionData.meals[plan.date][plan.source.mealId] = {};
         }
-        nutritionData.meals[plan.date][plan.mealId].completed = false;
+        nutritionData.meals[plan.date][plan.source.mealId].completed = false;
         saveNutritionData();
         
         // Обновляем отображение питания если мы на этой вкладке
@@ -5333,15 +5442,15 @@ function toggleComplete(id, event) {
       // Сначала анимируем чекбокс
       if (checkbox) checkbox.classList.add('checked');
       
-      // 🍽️ СИНХРОНИЗАЦИЯ С ПИТАНИЕМ: отмечаем прием пищи как выполненный
-      if (plan.createdFromMeal && plan.mealId && plan.date) {
+      // РЕФАКТОРИНГ: Синхронизация с питанием через источники
+      if (plan.source && plan.source.type === 'meal' && plan.source.mealId && plan.date) {
         if (!nutritionData.meals[plan.date]) {
           nutritionData.meals[plan.date] = {};
         }
-        if (!nutritionData.meals[plan.date][plan.mealId]) {
-          nutritionData.meals[plan.date][plan.mealId] = {};
+        if (!nutritionData.meals[plan.date][plan.source.mealId]) {
+          nutritionData.meals[plan.date][plan.source.mealId] = {};
         }
-        nutritionData.meals[plan.date][plan.mealId].completed = true;
+        nutritionData.meals[plan.date][plan.source.mealId].completed = true;
         saveNutritionData();
         
         // Обновляем отображение питания если мы на этой вкладке
@@ -5594,7 +5703,8 @@ function changeCalendarMonth(direction) {
 function selectDate(selectedDate) {
   currentDate = new Date(selectedDate);
   
-  // НОВАЯ СИСТЕМА: Синхронизируем разделы при выборе даты
+  // РЕФАКТОРИНГ: Контролируемая синхронизация разделов при выборе даты
+  console.log(`📅 Выбор даты ${currentDate.toISOString().split('T')[0]} из календаря`);
   syncSectionsToPlans(currentDate);
   
   render();
@@ -6188,17 +6298,25 @@ function deleteSection(sectionId, event) {
   if (!section) return;
   
   if (confirm(`Удалить раздел "${section.name}"? Все связанные задачи будут удалены.`)) {
-    // Удаляем раздел
-    sections = sections.filter(s => s.id != sectionId);
+    // РЕФАКТОРИНГ: Удаляем все задачи, созданные из этого раздела через новую систему
+    const initialCount = plans.length;
+    plans = plans.filter(plan => !(
+      plan.source && 
+      plan.source.type === 'section' && 
+      plan.source.sectionId == sectionId
+    ));
+    const removedTasksCount = initialCount - plans.length;
     
-    // Удаляем связанные задачи
-    plans = plans.filter(plan => plan.sectionId != sectionId);
+    // Удаляем сам раздел
+    sections = sections.filter(s => s.id != sectionId);
     
     // Удаляем из rooms
     rooms = rooms.filter(room => {
       const roomName = typeof room === 'string' ? room : room.name;
       return roomName !== section.name;
     });
+    
+    console.log(`🗑️ Удален раздел "${section.name}" и ${removedTasksCount} связанных задач`);
     
     saveSections();
     savePlans();
@@ -6440,13 +6558,19 @@ function deleteSection(sectionId, event) {
   if (!section) return;
   
   if (confirm(`Удалить раздел "${section.name}"?\n\nВсе связанные задачи также будут удалены.`)) {
-    // Удаляем все задачи, созданные из этого раздела
+    // РЕФАКТОРИНГ: Удаляем все задачи, созданные из этого раздела через новую систему
     const initialCount = plans.length;
-    plans = plans.filter(plan => plan.sectionId != sectionId);
+    plans = plans.filter(plan => !(
+      plan.source && 
+      plan.source.type === 'section' && 
+      plan.source.sectionId == sectionId
+    ));
     const removedTasksCount = initialCount - plans.length;
     
     // Удаляем сам раздел
     sections = sections.filter(s => s.id != sectionId);
+    
+    console.log(`🗑️ Удален раздел "${section.name}" и ${removedTasksCount} связанных задач`);
     
     saveSections();
     savePlans();
@@ -7747,11 +7871,11 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     completed: false // Новые приемы пищи по умолчанию не выполнены
   };
   
-  // 🍽️ АВТОМАТИЧЕСКИ СОЗДАЕМ ЗАДАЧУ В ПЛАНАХ
+  // РЕФАКТОРИНГ: Автоматически создаем задачу через новую систему источников
   const taskTitle = `${mealIcon} ${mealName}: ${mealContent}`;
   const taskTime = mealTime || null;
   
-  // Создаем новую задачу
+  // Создаем новую задачу с источником
   const newTask = {
     id: Date.now().toString() + '_meal_' + mealId,
     title: taskTitle,
@@ -7759,8 +7883,7 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     time: taskTime,
     room: 'Питание',
     completed: false,
-    createdFromMeal: true, // Помечаем что задача создана из приема пищи
-    mealId: mealId // Связываем с приемом пищи
+    source: createTaskSource('meal', { mealId: mealId })
   };
   
   // Добавляем задачу в планы
@@ -7815,9 +7938,14 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   console.log('Типы приемов пищи до удаления:', nutritionData.mealTypes[dateStr]);
   console.log('Данные приемов пищи до удаления:', nutritionData.meals[dateStr]);
   
-  // 🗑️ УДАЛЯЕМ СВЯЗАННУЮ ЗАДАЧУ ИЗ ПЛАНОВ
+  // РЕФАКТОРИНГ: Удаляем связанную задачу через новую систему источников
   const initialPlansCount = plans.length;
-  plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealTypeId && plan.date === dateStr));
+  plans = plans.filter(plan => !(
+    plan.source && 
+    plan.source.type === 'meal' && 
+    plan.source.mealId === mealTypeId && 
+    plan.date === dateStr
+  ));
   const deletedTasksCount = initialPlansCount - plans.length;
   
   if (deletedTasksCount > 0) {
@@ -7914,50 +8042,58 @@ function saveMeal(dateStr, mealType) {
     console.log('mealInfo:', mealInfo);
     console.log('taskTitle:', taskTitle);
     
-    // Создаем новую задачу
-    const newTask = {
-      id: Date.now().toString() + '_meal_' + mealType,
-      title: taskTitle,
-      date: dateStr,
-      time: null, // Стандартные приемы пищи без времени
-      room: 'Питание',
-      completed: false,
-      createdFromMeal: true, // Помечаем что задача создана из приема пищи
-      mealId: mealType // Связываем с приемом пищи
-    };
+    // РЕФАКТОРИНГ: Создаем источник задачи через новую систему
+    const taskSource = createTaskSource('meal', { mealId: mealType });
     
-    console.log('Создали новую задачу:', newTask);
-    
-    // Проверяем, не существует ли уже такая задача
+    // Проверяем, не существует ли уже такая задача через новую систему
     const existingTask = plans.find(plan => 
-      plan.createdFromMeal && 
-      plan.mealId === mealType && 
+      plan.source && 
+      plan.source.type === 'meal' && 
+      plan.source.mealId === mealType && 
       plan.date === dateStr
     );
-    
-    console.log('Существующая задача:', existingTask);
-    
     if (existingTask) {
       // Обновляем существующую задачу
       existingTask.title = taskTitle;
       console.log('Обновлена существующая задача из приема пищи:', existingTask);
     } else {
-      // Добавляем новую задачу
-      plans.push(newTask);
-      console.log('Добавили новую задачу в plans. Теперь plans.length:', plans.length);
-      console.log('Автоматически создана задача из приема пищи:', newTask);
+      // РЕФАКТОРИНГ: Создаем новую задачу с новой системой источников
+      const newTask = {
+        id: Date.now().toString() + '_meal_' + mealType,
+        title: taskTitle,
+        date: dateStr,
+        time: null, // Стандартные приемы пищи без времени
+        room: 'Питание',
+        completed: false,
+        source: taskSource // РЕФАКТОРИНГ: Используем новую систему источников
+      };
+      
+      // Добавляем задачу только если она не была удалена
+      if (!isTaskDeleted(dateStr, taskSource)) {
+        plans.push(newTask);
+        console.log('Добавили новую задачу в plans. Теперь plans.length:', plans.length);
+        console.log('Автоматически создана задача из приема пищи:', newTask);
+      } else {
+        console.log('Задача была удалена ранее, не создаем повторно');
+      }
     }
     
     console.log('Сохраняем планы...');
     savePlans();
     console.log('Планы сохранены');
   } else {
-    // Если содержимое пустое, удаляем прием пищи и связанную задачу
+    // РЕФАКТОРИНГ: Если содержимое пустое, удаляем прием пищи и связанную задачу через новую систему
     delete nutritionData.meals[dateStr][mealType];
     
-    // Удаляем связанную задачу
+    // Удаляем связанную задачу через новую систему источников
+    const taskSource = createTaskSource('meal', { mealId: mealType });
     const initialPlansCount = plans.length;
-    plans = plans.filter(plan => !(plan.createdFromMeal && plan.mealId === mealType && plan.date === dateStr));
+    plans = plans.filter(plan => !(
+      plan.source && 
+      plan.source.type === 'meal' && 
+      plan.source.mealId === mealType && 
+      plan.date === dateStr
+    ));
     const deletedTasksCount = initialPlansCount - plans.length;
     
     if (deletedTasksCount > 0) {
@@ -8009,10 +8145,11 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
       // Отмечаем как выполненное - с анимацией
       checkbox.classList.add('checked');
       
-      // 📋 СИНХРОНИЗАЦИЯ С ЗАДАЧАМИ: отмечаем связанную задачу как выполненную
+      // 📋 РЕФАКТОРИНГ: СИНХРОНИЗАЦИЯ С ЗАДАЧАМИ через новую систему источников
       const relatedTask = plans.find(plan => 
-        plan.createdFromMeal && 
-        plan.mealId === mealTypeId && 
+        plan.source && 
+        plan.source.type === 'meal' && 
+        plan.source.mealId === mealTypeId && 
         plan.date === dateStr
       );
       
@@ -8094,10 +8231,11 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
       mealElement.classList.remove('completed');
       checkbox.classList.remove('checked');
       
-      // 📋 СИНХРОНИЗАЦИЯ С ЗАДАЧАМИ: убираем выполнение связанной задачи
+      // 📋 РЕФАКТОРИНГ: СИНХРОНИЗАЦИЯ С ЗАДАЧАМИ через новую систему источников
       const relatedTask = plans.find(plan => 
-        plan.createdFromMeal && 
-        plan.mealId === mealTypeId && 
+        plan.source && 
+        plan.source.type === 'meal' && 
+        plan.source.mealId === mealTypeId && 
         plan.date === dateStr
       );
       
@@ -8163,16 +8301,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // КРИТИЧЕСКИ ВАЖНО: Загружаем данные
     loadData();
     
-    // НОВАЯ СИСТЕМА: Загружаем данные об удаленных задачах ПЕРЕД синхронизацией
-    loadDeletedSectionTasks();
-    loadDeletedTaskIds();
+    // РЕФАКТОРИНГ: Загружаем данные об удаленных задачах через новую систему
+    loadDeletedTasks();
     
-    // НОВАЯ СИСТЕМА: Фильтруем удаленные задачи после загрузки ID
-    if (typeof window.filterDeletedTasksAfterLoad === 'function') {
-      window.filterDeletedTasksAfterLoad();
-    }
+    // РЕФАКТОРИНГ: Выполняем миграцию старых данных об удаленных задачах
+    migrateDeletedTasks();
     
-    // НОВАЯ СИСТЕМА: Инициализируем синхронизацию разделов
+    // РЕФАКТОРИНГ: Очищаем старые ключи localStorage после миграции
+    cleanupOldStorageKeys();
+    
+    // РЕФАКТОРИНГ: Инициализируем систему разделов с автоматической синхронизацией
     initSectionsSync();
     
     // Загружаем данные профиля

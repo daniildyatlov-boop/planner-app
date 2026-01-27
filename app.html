@@ -5005,6 +5005,28 @@ const ICONS = {
 };
 
 // ================================
+// DEBUG SYSTEM
+// ================================
+const DEBUG = false; // Set to true for development
+
+function debugLog(...args) {
+  if (DEBUG) {
+    console.log(...args);
+  }
+}
+
+function debugWarn(...args) {
+  if (DEBUG) {
+    console.warn(...args);
+  }
+}
+
+function debugError(...args) {
+  // Always show errors
+  console.error(...args);
+}
+
+// ================================
 // CENTRALIZED APP STATE
 // ================================
 const appState = {
@@ -5050,7 +5072,7 @@ const appState = {
 // SINGLE ENTRY POINT
 // ================================
 function initApp() {
-  console.log('🚀 Initializing Planner v6.28');
+  debugLog('🚀 Initializing Planner v6.28');
   
   try {
     // 1. Initialize icons
@@ -5077,9 +5099,9 @@ function initApp() {
     // 8. Render app
     renderApp();
     
-    console.log('✅ App initialized successfully');
+    debugLog('✅ App initialized successfully');
   } catch (error) {
-    console.error('❌ App initialization failed:', error);
+    debugError('❌ App initialization failed:', error);
     showErrorState(error);
   }
 }
@@ -5374,8 +5396,13 @@ function getPlansForDate(date) {
   return sortedPlans;
 }
 
-// STORAGE
+// ================================
+// LEGACY STORAGE FUNCTIONS (TO BE REMOVED)
+// ================================
+// These functions are kept for compatibility but should be replaced
 function loadData() {
+  console.warn('⚠️ loadData() is deprecated. Use loadStorage() instead.');
+  // Legacy function - keeping for compatibility
   try {
     // Проверяем, что есть в localStorage
     const savedPlans = localStorage.getItem('planner_plans');
@@ -11162,10 +11189,59 @@ function loadStorage() {
 
 function migrateData() {
   try {
-    // TODO: Implement data migration from old structure
+    console.log('🔄 Starting data migration...');
+    
+    // Migrate old localStorage keys
+    migrateOldStorageKeys();
+    
+    // Migrate deleted tasks
+    migrateDeletedTasks();
+    
+    // Clean up old keys
+    cleanupOldStorageKeys();
+    
     console.log('✅ Data migration completed');
   } catch (error) {
     console.error('❌ Error during data migration:', error);
+  }
+}
+
+function migrateOldStorageKeys() {
+  const migrations = [
+    { old: 'plans', new: 'planner_plans' },
+    { old: 'teams', new: 'planner_teams' },
+    { old: 'planner_rooms', new: 'planner_teams' },
+    { old: 'planner_deleted_tasks', new: 'planner_deleted_tasks_v2' }
+  ];
+  
+  migrations.forEach(({ old, new: newKey }) => {
+    const oldData = localStorage.getItem(old);
+    if (oldData && !localStorage.getItem(newKey)) {
+      localStorage.setItem(newKey, oldData);
+      localStorage.removeItem(old);
+      console.log(`🔄 Migrated ${old} → ${newKey}`);
+    }
+  });
+}
+
+function cleanupOldStorageKeys() {
+  const oldKeys = [
+    'plans', 'teams', 'planner_rooms',
+    'planner_deleted_task_ids', 'planner_deleted_section_tasks',
+    'planner_deleted_tasks' // old version
+  ];
+  
+  let cleanedCount = 0;
+  oldKeys.forEach(key => {
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+      cleanedCount++;
+      console.log(`🧹 Removed old localStorage key: ${key}`);
+    }
+  });
+  
+  if (cleanedCount > 0) {
+    console.log(`✅ Cleaned up ${cleanedCount} old localStorage keys`);
   }
 }
 

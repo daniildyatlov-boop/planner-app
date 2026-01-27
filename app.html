@@ -3206,10 +3206,115 @@ textarea.input {
 .icon-option:active{
   transform:scale(0.95);
 }
+
+/* SPLASH SCREEN - ПРИВЕТСТВЕННЫЙ ЭКРАН */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, 
+    #fefefe 0%, 
+    #f8faf8 50%, 
+    #f1f5f1 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+}
+
+/* Темная тема для splash */
+@media (prefers-color-scheme: dark) {
+  .splash-screen {
+    background: linear-gradient(135deg, 
+      #0f1419 0%, 
+      #1a1f2e 50%, 
+      #252a3a 100%);
+  }
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+.splash-content {
+  text-align: center;
+  padding: 40px 20px;
+  animation: splash-fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.splash-greeting {
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  letter-spacing: 0.3px;
+  opacity: 0;
+  animation: splash-text-appear 1s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+
+.splash-subtitle {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 12px 0 0 0;
+  opacity: 0;
+  animation: splash-text-appear 1s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
+}
+
+/* Мягкие анимации для splash экрана */
+@keyframes splash-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes splash-text-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+/* Скрываем основное приложение пока показывается splash */
+.app.splash-loading {
+  opacity: 0;
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
-<div class="app">
+<!-- SPLASH SCREEN - ПРИВЕТСТВЕННЫЙ ЭКРАН -->
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-content">
+    <h1 class="splash-greeting" id="splashGreeting">Добро пожаловать</h1>
+    <p class="splash-subtitle" id="splashSubtitle">Готовим ваш день</p>
+  </div>
+</div>
+
+<div class="app splash-loading" id="mainApp">
   <div class="header">
     <button class="btn-tertiary btn-round" onclick="showProfile()">П</button>
     <div class="date-nav">
@@ -8372,10 +8477,120 @@ function showHabitsTab() {
 
 // INIT
 
+// SPLASH SCREEN - ПРИВЕТСТВЕННЫЙ ЭКРАН
+function initSplashScreen() {
+  const splashScreen = document.getElementById('splashScreen');
+  const splashGreeting = document.getElementById('splashGreeting');
+  const splashSubtitle = document.getElementById('splashSubtitle');
+  const mainApp = document.getElementById('mainApp');
+  
+  if (!splashScreen || !splashGreeting || !splashSubtitle || !mainApp) {
+    console.warn('⚠️ Элементы splash экрана не найдены');
+    return;
+  }
+  
+  // Получаем персонализированное приветствие
+  const greeting = getPersonalizedGreeting();
+  splashGreeting.textContent = greeting.main;
+  splashSubtitle.textContent = greeting.subtitle;
+  
+  // Показываем splash экран
+  splashScreen.style.display = 'flex';
+  mainApp.classList.add('splash-loading');
+}
+
+function getPersonalizedGreeting() {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = воскресенье, 1 = понедельник, и т.д.
+  const hour = now.getHours();
+  
+  // Получаем имя пользователя из профиля (если есть)
+  const userName = localStorage.getItem('planner_userName') || '';
+  const namePrefix = userName ? `${userName}, ` : '';
+  
+  // Массивы спокойных фраз для разных ситуаций
+  const sundayGreetings = [
+    'Воскресенье — день для планирования',
+    'Сегодня готовим планы на неделю',
+    'Время подумать о предстоящих днях'
+  ];
+  
+  const weekdayGreetings = [
+    'Сегодня просто идём по течению',
+    'План готов. Можно жить',
+    'Хороший день, чтобы не спешить',
+    'Всё уже разложено',
+    'Спокойно движемся по списку',
+    'День за днём, шаг за шагом'
+  ];
+  
+  const morningSubtitles = [
+    'Доброе утро',
+    'Новый день начинается',
+    'Утро — время возможностей'
+  ];
+  
+  const daySubtitles = [
+    'Продолжаем день',
+    'Всё идёт по плану',
+    'Движемся дальше'
+  ];
+  
+  const eveningSubtitles = [
+    'Завершаем день',
+    'Подводим итоги',
+    'Готовимся к отдыху'
+  ];
+  
+  // Выбираем основное приветствие
+  let mainGreeting;
+  if (dayOfWeek === 0) { // Воскресенье
+    mainGreeting = sundayGreetings[Math.floor(Math.random() * sundayGreetings.length)];
+  } else {
+    mainGreeting = weekdayGreetings[Math.floor(Math.random() * weekdayGreetings.length)];
+  }
+  
+  // Выбираем подзаголовок в зависимости от времени
+  let subtitle;
+  if (hour < 12) {
+    subtitle = morningSubtitles[Math.floor(Math.random() * morningSubtitles.length)];
+  } else if (hour < 18) {
+    subtitle = daySubtitles[Math.floor(Math.random() * daySubtitles.length)];
+  } else {
+    subtitle = eveningSubtitles[Math.floor(Math.random() * eveningSubtitles.length)];
+  }
+  
+  return {
+    main: namePrefix + mainGreeting,
+    subtitle: subtitle
+  };
+}
+
+function hideSplashScreen() {
+  const splashScreen = document.getElementById('splashScreen');
+  const mainApp = document.getElementById('mainApp');
+  
+  if (!splashScreen || !mainApp) {
+    return;
+  }
+  
+  // Плавно скрываем splash экран
+  splashScreen.classList.add('fade-out');
+  mainApp.classList.remove('splash-loading');
+  
+  // Полностью убираем splash экран после анимации
+  setTimeout(() => {
+    splashScreen.style.display = 'none';
+  }, 800);
+}
+
 // УЛУЧШЕННАЯ ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
 document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('🚀 Начинаем инициализацию Планера v6.28');
+    
+    // Показываем splash экран сразу
+    initSplashScreen();
     
     // Проверяем доступность основных элементов DOM
     const requiredElements = [
@@ -8463,6 +8678,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('🎉 Инициализация завершена успешно!');
         
+        // Скрываем splash экран после завершения инициализации
+        setTimeout(() => {
+          hideSplashScreen();
+        }, 200);
+        
       } catch (renderError) {
         console.error('❌ Ошибка при рендеринге:', renderError);
         showPopup('Ошибка отображения', 'Не удалось отобразить интерфейс. Попробуйте перезагрузить приложение.', [
@@ -8473,6 +8693,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
   } catch (error) {
     console.error('❌ Критическая ошибка при инициализации:', error);
+    
+    // Скрываем splash экран даже при ошибке
+    hideSplashScreen();
     
     // Показываем пользователю сообщение об ошибке
     const errorMessage = `

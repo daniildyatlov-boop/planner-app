@@ -4238,16 +4238,16 @@ textarea.input {
 
 <div class="app splash-loading" id="mainApp">
   <div class="header">
-    <button class="btn-tertiary btn-round" onclick="showProfile()">П</button>
+    <button class="btn-tertiary btn-round" data-action="show-profile">П</button>
     <div class="date-nav">
-      <button class="btn-tertiary btn-round-small" onclick="changeDay(-1)">‹</button>
-      <div class="date-content" onclick="showDatePicker()">
+      <button class="btn-tertiary btn-round-small" data-action="change-day" data-direction="-1">‹</button>
+      <div class="date-content" data-action="show-date-picker">
         <div class="date-title" id="dayTitle">Сегодня</div>
         <div class="date-subtitle" id="daySubtitle">Пн, 27 янв.</div>
       </div>
-      <button class="btn-tertiary btn-round-small" onclick="changeDay(1)">›</button>
+      <button class="btn-tertiary btn-round-small" data-action="change-day" data-direction="1">›</button>
     </div>
-    <button class="btn-tertiary btn-round" onclick="showRooms()" id="roomsBtn">🏠</button>
+    <button class="btn-tertiary btn-round" data-action="show-rooms" id="roomsBtn">🏠</button>
   </div>
   
   <div class="content">
@@ -4268,7 +4268,7 @@ textarea.input {
     <div class="empty" id="empty">
       <h2>Планов нет</h2>
       <p>Добавьте первую задачу</p>
-      <button class="btn-primary" onclick="showAdd()">Добавить задачу</button>
+      <button class="btn-primary" data-action="show-add">Добавить задачу</button>
     </div>
     
     <div class="plans-container" id="plansContainer" style="display:none">
@@ -4279,15 +4279,15 @@ textarea.input {
 
 <!-- BOTTOM NAVIGATION -->
 <div class="bottom-nav" id="bottomNav">
-  <button class="nav-item active" onclick="switchTab('tasks')" data-tab="tasks">
+  <button class="nav-item active" data-tab="tasks">
     <div class="nav-icon" id="tasksIcon">📝</div>
     <div class="nav-label">Задачи</div>
   </button>
-  <button class="nav-item" onclick="switchTab('nutrition')" data-tab="nutrition">
+  <button class="nav-item" data-tab="nutrition">
     <div class="nav-icon" id="nutritionIcon">🍽️</div>
     <div class="nav-label">Питание</div>
   </button>
-  <button class="nav-item" onclick="switchTab('habits')" data-tab="habits">
+  <button class="nav-item" data-tab="habits">
     <div class="nav-icon" id="habitsIcon">🎯</div>
     <div class="nav-label">Привычки</div>
   </button>
@@ -4297,11 +4297,11 @@ textarea.input {
 <div class="modal" id="addModal">
   <div class="modal-header">
     <div class="modal-header-actions">
-      <button class="btn-tertiary" onclick="hideAdd()">Отмена</button>
+      <button class="btn-tertiary" data-action="hide-modal" data-modal-type="add">Отмена</button>
     </div>
     <div class="modal-title">Новая задача</div>
     <div class="modal-header-actions">
-      <button class="btn-primary" onclick="savePlan()">Готово</button>
+      <button class="btn-primary" data-action="save" data-save-type="plan">Готово</button>
     </div>
   </div>
   <div class="modal-content">
@@ -5978,8 +5978,8 @@ function render() {
       todayPlans.forEach(plan => {
         try {
           html += `
-            <div class="plan ${plan.completed ? 'completed' : ''}" onclick="showPlanMenu('${plan.id}', event)">
-              <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
+            <div class="plan ${plan.completed ? 'completed' : ''}" data-action="show-plan-menu" data-plan-id="${plan.id}">
+              <div class="checkbox ${plan.completed ? 'checked' : ''}" data-action="toggle-complete" data-plan-id="${plan.id}"></div>
               <div class="plan-content">
                 <div class="plan-title">
                   ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
@@ -5995,7 +5995,7 @@ function render() {
       
       // Добавляем кнопку "Добавить задачу" в конец списка
       html += `
-        <button class="btn-secondary btn-full-width" onclick="showAdd()" style="margin-top: 16px;">
+        <button class="btn-secondary btn-full-width" data-action="show-add" style="margin-top: 16px;">
           <span class="add-icon">+</span>
           Добавить задачу
         </button>
@@ -8731,7 +8731,7 @@ function showTasksTab() {
     <div class="empty" id="empty">
       <h2>Планов нет</h2>
       <p>Добавьте первую задачу</p>
-      <button class="btn-primary" onclick="showAdd()">Добавить задачу</button>
+      <button class="btn-primary" data-action="show-add">Добавить задачу</button>
     </div>
     
     <div class="plans-container" id="plansContainer" style="display:none">
@@ -11185,11 +11185,135 @@ function initDailyState() {
 
 function bindUIEvents() {
   try {
-    // TODO: Bind all UI event handlers in a centralized way
+    // Remove all inline onclick handlers and replace with centralized event delegation
+    document.addEventListener('click', handleGlobalClick);
+    
+    // Bind specific UI events
+    bindNavigationEvents();
+    bindModalEvents();
+    bindFormEvents();
+    
     console.log('✅ UI events bound');
   } catch (error) {
     console.error('❌ Error binding UI events:', error);
   }
+}
+
+function handleGlobalClick(event) {
+  const target = event.target;
+  const closest = (selector) => target.closest(selector);
+  
+  // Prevent double-click issues
+  if (event.detail > 1) {
+    event.preventDefault();
+    return;
+  }
+  
+  try {
+    // Navigation buttons
+    if (closest('[data-action="show-profile"]')) {
+      event.preventDefault();
+      showProfile();
+      return;
+    }
+    
+    if (closest('[data-action="change-day"]')) {
+      event.preventDefault();
+      const direction = parseInt(target.dataset.direction) || 0;
+      changeDay(direction);
+      return;
+    }
+    
+    if (closest('[data-action="show-date-picker"]')) {
+      event.preventDefault();
+      showDatePicker();
+      return;
+    }
+    
+    if (closest('[data-action="show-rooms"]')) {
+      event.preventDefault();
+      showRooms();
+      return;
+    }
+    
+    // Tab switching
+    if (closest('[data-tab]')) {
+      event.preventDefault();
+      const tab = target.closest('[data-tab]').dataset.tab;
+      switchTab(tab);
+      return;
+    }
+    
+    // Plan actions
+    if (closest('[data-action="toggle-complete"]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      const planId = target.dataset.planId || target.closest('[data-plan-id]')?.dataset.planId;
+      if (planId) {
+        toggleComplete(planId, event);
+      }
+      return;
+    }
+    
+    if (closest('[data-action="show-plan-menu"]')) {
+      event.preventDefault();
+      const planId = target.dataset.planId || target.closest('[data-plan-id]')?.dataset.planId;
+      if (planId) {
+        showPlanMenu(planId, event);
+      }
+      return;
+    }
+    
+    // Add task button
+    if (closest('[data-action="show-add"]')) {
+      event.preventDefault();
+      showAdd();
+      return;
+    }
+    
+    // Modal actions
+    if (closest('[data-action="hide-modal"]')) {
+      event.preventDefault();
+      const modalType = target.dataset.modalType;
+      switch (modalType) {
+        case 'add': hideAdd(); break;
+        case 'calendar': hideCalendar(); break;
+        case 'habit': hideHabitModal(); break;
+        case 'emoji': hideEmojiSelector(); break;
+        case 'profile': hideProfile(); break;
+        case 'rooms': hideRooms(); break;
+        default: hideModal(); break;
+      }
+      return;
+    }
+    
+    if (closest('[data-action="save"]')) {
+      event.preventDefault();
+      const saveType = target.dataset.saveType;
+      switch (saveType) {
+        case 'plan': savePlan(); break;
+        case 'habit': saveHabit(); break;
+        case 'plan-edit': savePlanEdit(); break;
+        default: break;
+      }
+      return;
+    }
+    
+  } catch (error) {
+    console.error('Error in global click handler:', error);
+  }
+}
+
+function bindNavigationEvents() {
+  // Bind navigation-specific events
+}
+
+function bindModalEvents() {
+  // Bind modal-specific events
+}
+
+function bindFormEvents() {
+  // Bind form-specific events
 }
 
 function renderApp() {

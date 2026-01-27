@@ -3945,7 +3945,7 @@ function renderRooms() {
               <div class="room-name">${escapeHtml(roomName)}</div>
             </div>
             <div class="room-actions">
-              <button class="room-action-btn configure-room" onclick="window.configureRoom('${roomName}')" title="Настроить шаблоны">⚙️</button>
+              <button class="room-action-btn configure-room" onclick="console.log('Клик по настройкам!'); try { window.configureRoom('${roomName}'); } catch(e) { console.error('Ошибка:', e); alert('Ошибка: ' + e.message); }" title="Настроить шаблоны">⚙️</button>
               <button class="room-action-btn delete-room" onclick="deleteRoom('${roomName}')" title="Удалить раздел">🗑️</button>
             </div>
           </div>
@@ -4183,6 +4183,9 @@ function showRooms() {
 }
 
 function hideRooms() {
+  console.log('hideRooms вызвана');
+  console.log('Stack trace:', new Error().stack);
+  
   const roomsScreen = document.getElementById('roomsScreen');
   const header = document.querySelector('.header');
   const bottomNav = document.getElementById('bottomNav');

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо системы разделов</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+        }
+        .section h3 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        .section-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .tasks {
+            margin-left: 20px;
+        }
+        .task {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task.active {
+            border-color: #4ade80;
+            background: #f0fdf4;
+        }
+        .date-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .date-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+        .date-btn.active {
+            background: #4ade80;
+            color: white;
+            border-color: #4ade80;
+        }
+        .status {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .status.active {
+            background: #4ade80;
+            color: white;
+        }
+        .status.inactive {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Демо системы разделов с автоматической синхронизацией</h1>
+        <p>Эта система автоматически создает задачи из разделов в зависимости от правил активности.</p>
+        
+        <div class="date-selector">
+            <span>Выберите дату:</span>
+            <button class="date-btn active" onclick="selectDemoDate(0)">Сегодня</button>
+            <button class="date-btn" onclick="selectDemoDate(1)">Завтра</button>
+            <button class="date-btn" onclick="selectDemoDate(2)">Послезавтра</button>
+            <button class="date-btn" onclick="selectDemoDate(-1)">Вчера</button>
+        </div>
+        
+        <div id="currentDate" style="font-weight: 600; margin-bottom: 20px;"></div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Разделы с правилами активности</h2>
+        <div id="sectionsDemo"></div>
+    </div>
+
+    <div class="container">
+        <h2>✅ Активные задачи на выбранную дату</h2>
+        <div id="activeTasks"></div>
+    </div>
+
+    <script>
+        // Демонстрационные разделы
+        const demoSections = [
+            {
+                id: 1,
+                name: 'Утренняя зарядка',
+                icon: '🏃',
+                activityRule: { type: 'daily' },
+                templateTasks: [
+                    { id: 1, title: 'Разминка', time: '07:00' },
+                    { id: 2, title: 'Упражнения', time: '07:15' },
+                    { id: 3, title: 'Растяжка', time: '07:30' }
+                ]
+            },
+            {
+                id: 2,
+                name: 'Уборка дома',
+                icon: '🧹',
+                activityRule: { type: 'every_other_day', value: 0 },
+                templateTasks: [
+                    { id: 4, title: 'Пропылесосить', time: '10:00' },
+                    { id: 5, title: 'Протереть пыль', time: '10:30' }
+                ]
+            },
+            {
+                id: 3,
+                name: 'Рабочие задачи',
+                icon: '💼',
+                activityRule: { type: 'weekdays', value: [1, 2, 3, 4, 5] }, // Пн-Пт
+                templateTasks: [
+                    { id: 6, title: 'Проверить почту', time: '09:00' },
+                    { id: 7, title: 'Планерка', time: '10:00' },
+                    { id: 8, title: 'Отчет за день', time: '18:00' }
+                ]
+            }
+        ];
+
+        let selectedDate = new Date();
+
+        // Проверяет, активен ли раздел в указанную дату
+        function isSectionActiveOnDate(section, date) {
+            if (!section.activityRule) return false;
+            
+            const { type, value } = section.activityRule;
+            const dayOfWeek = date.getDay(); // 0 = воскресенье, 1 = понедельник, ...
+            
+            switch (type) {
+                case 'daily':
+                    return true;
+                
+                case 'every_other_day':
+                    // Используем количество дней с эпохи для определения четности
+                    const daysSinceEpoch = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+                    return daysSinceEpoch % 2 === (value || 0);
+                
+                case 'weekdays':
+                    // value - массив дней недели [1,2,3,4,5] для пн-пт
+                    return Array.isArray(value) && value.includes(dayOfWeek);
+                
+                default:
+                    return false;
+            }
+        }
+
+        function getActivityRuleText(rule) {
+            if (!rule) return 'Не активен';
+            
+            switch (rule.type) {
+                case 'daily':
+                    return 'Каждый день';
+                case 'every_other_day':
+                    return 'Через день';
+                case 'weekdays':
+                    if (Array.isArray(rule.value)) {
+                        const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+                        const selectedDays = rule.value.map(d => days[d]).join(', ');
+                        return `По дням: ${selectedDays}`;
+                    }
+                    return 'По дням недели';
+                default:
+                    return 'Не активен';
+            }
+        }
+
+        function selectDemoDate(offset) {
+            selectedDate = new Date();
+            selectedDate.setDate(selectedDate.getDate() + offset);
+            
+            // Обновляем кнопки
+            document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderDemo();
+        }
+
+        function renderDemo() {
+            // Обновляем отображение текущей даты
+            const dateStr = selectedDate.toLocaleDateString('ru-RU', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('currentDate').textContent = `📅 ${dateStr}`;
+
+            // Рендерим разделы
+            let sectionsHtml = '';
+            demoSections.forEach(section => {
+                const isActive = isSectionActiveOnDate(section, selectedDate);
+                const activityText = getActivityRuleText(section.activityRule);
+                
+                sectionsHtml += `
+                    <div class="section">
+                        <h3>${section.icon} ${section.name}</h3>
+                        <div class="section-info">
+                            ${activityText} 
+                            <span class="status ${isActive ? 'active' : 'inactive'}">
+                                ${isActive ? 'Активен' : 'Неактивен'}
+                            </span>
+                        </div>
+                        <div class="tasks">
+                            ${section.templateTasks.map(task => `
+                                <div class="task ${isActive ? 'active' : ''}">
+                                    <span>${task.title}</span>
+                                    <span>${task.time || 'Без времени'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('sectionsDemo').innerHTML = sectionsHtml;
+
+            // Рендерим активные задачи
+            let activeTasksHtml = '';
+            const activeTasks = [];
+            
+            demoSections.forEach(section => {
+                if (isSectionActiveOnDate(section, selectedDate)) {
+                    section.templateTasks.forEach(task => {
+                        activeTasks.push({
+                            ...task,
+                            sectionName: section.name,
+                            sectionIcon: section.icon
+                        });
+                    });
+                }
+            });
+
+            if (activeTasks.length === 0) {
+                activeTasksHtml = '<p style="color: #666; text-align: center; padding: 20px;">На эту дату нет активных задач из разделов</p>';
+            } else {
+                // Сортируем по времени
+                activeTasks.sort((a, b) => {
+                    if (!a.time && !b.time) return 0;
+                    if (!a.time) return 1;
+                    if (!b.time) return -1;
+                    return a.time.localeCompare(b.time);
+                });
+
+                activeTasksHtml = activeTasks.map(task => `
+                    <div class="task active">
+                        <span>${task.sectionIcon} ${task.title} <small>(из раздела "${task.sectionName}")</small></span>
+                        <span>${task.time || 'Без времени'}</span>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('activeTasks').innerHTML = activeTasksHtml;
+        }
+
+        // Инициализация
+        renderDemo();
+    </script>
+</body>
+</html>

@@ -3255,7 +3255,35 @@ textarea.input {
     <div class="modal-title">Разделы</div>
     <button class="header-btn-primary" onclick="hideRooms()">Готово</button>
   </div>
-  <div class="screen-content" id="roomsList"></div>
+  <div class="screen-content">
+    <!-- Кнопка управления разделами с правилами -->
+    <button class="profile-menu-btn" onclick="showSectionsManager()" style="
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-lg);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    ">
+      <div style="font-size: 24px;">⚙️</div>
+      <div style="flex: 1; text-align: left;">
+        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Рутинные разделы</div>
+        <div style="font-size: 14px; color: var(--text-secondary);">Управление автоматическими задачами</div>
+      </div>
+      <div style="color: var(--accent-primary);">›</div>
+    </button>
+    
+    <!-- Обычные разделы -->
+    <div style="margin-bottom: var(--spacing-lg);">
+      <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: var(--spacing-md); text-transform: uppercase; letter-spacing: 0.5px;">Обычные разделы</h3>
+      <div id="roomsList"></div>
+    </div>
+  </div>
   <button class="add-room-fab" onclick="showAddRoom()">+</button>
 </div>
 
@@ -3355,6 +3383,7 @@ if (tg) {
 let currentDate = new Date();
 let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
+let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = '🏠'; // Выбранная иконка для нового раздела
@@ -3591,6 +3620,173 @@ function saveRooms() {
   }
 }
 
+// SECTIONS SYSTEM - СИСТЕМА РАЗДЕЛОВ С АВТОМАТИЧЕСКОЙ СИНХРОНИЗАЦИЕЙ
+function saveSections() {
+  try {
+    localStorage.setItem('planner_sections', JSON.stringify(sections));
+    console.log('Разделы с правилами успешно сохранены');
+  } catch (e) {
+    console.error('Ошибка при сохранении разделов:', e);
+  }
+}
+
+function loadSections() {
+  try {
+    const savedSections = localStorage.getItem('planner_sections');
+    sections = savedSections ? JSON.parse(savedSections) : [];
+    console.log(`Загружено разделов с правилами: ${sections.length}`);
+  } catch (e) {
+    console.error('Ошибка при загрузке разделов:', e);
+    sections = [];
+  }
+}
+
+// Проверяет, активен ли раздел в указанную дату
+function isSectionActiveOnDate(section, date) {
+  if (!section.activityRule) return false;
+  
+  const { type, value } = section.activityRule;
+  const dayOfWeek = date.getDay(); // 0 = воскресенье, 1 = понедельник, ...
+  
+  switch (type) {
+    case 'daily':
+      return true;
+    
+    case 'every_other_day':
+      // Используем количество дней с эпохи для определения четности
+      const daysSinceEpoch = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+      return daysSinceEpoch % 2 === (value || 0);
+    
+    case 'weekdays':
+      // value - массив дней недели [1,2,3,4,5] для пн-пт
+      return Array.isArray(value) && value.includes(dayOfWeek);
+    
+    default:
+      return false;
+  }
+}
+
+// Синхронизирует разделы с планами на указанную дату
+function syncSectionsToPlans(date) {
+  console.log('Синхронизация разделов с планами для даты:', date);
+  
+  const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  sections.forEach(section => {
+    if (isSectionActiveOnDate(section, date)) {
+      console.log(`Раздел "${section.name}" активен на ${dateStr}`);
+      
+      // Проверяем каждую шаблонную задачу из раздела
+      section.templateTasks.forEach(template => {
+        // Проверяем, не существует ли уже такая задача
+        const existingTask = plans.find(plan => 
+          plan.date === dateStr && 
+          plan.sectionId === section.id && 
+          plan.templateId === template.id
+        );
+        
+        if (!existingTask) {
+          // Создаем новую задачу из шаблона
+          const newTask = {
+            id: Date.now() + Math.random(), // Уникальный ID
+            title: template.title,
+            time: template.time || '',
+            room: section.name, // Связываем с разделом
+            date: dateStr,
+            completed: false,
+            sectionId: section.id, // ID раздела
+            templateId: template.id, // ID шаблона
+            createdFromSection: true // Флаг что задача создана из раздела
+          };
+          
+          plans.push(newTask);
+          console.log(`Создана задача из раздела: "${newTask.title}"`);
+        }
+      });
+    } else {
+      console.log(`Раздел "${section.name}" НЕ активен на ${dateStr}`);
+      
+      // Удаляем задачи этого раздела на эту дату (если они были созданы автоматически)
+      const initialCount = plans.length;
+      plans = plans.filter(plan => !(
+        plan.date === dateStr && 
+        plan.sectionId === section.id && 
+        plan.createdFromSection
+      ));
+      
+      const removedCount = initialCount - plans.length;
+      if (removedCount > 0) {
+        console.log(`Удалено ${removedCount} задач неактивного раздела "${section.name}"`);
+      }
+    }
+  });
+  
+  // Сохраняем изменения
+  savePlans();
+}
+
+// Инициализирует синхронизацию разделов при старте приложения
+function initSectionsSync() {
+  console.log('Инициализация синхронизации разделов...');
+  
+  // Загружаем разделы
+  loadSections();
+  
+  // Создаем демонстрационные разделы если их нет
+  if (sections.length === 0) {
+    console.log('Создаем демонстрационные разделы...');
+    
+    // Утренняя зарядка - каждый день
+    sections.push({
+      id: Date.now() + 1,
+      name: 'Утренняя зарядка',
+      icon: '🏃',
+      activityRule: { type: 'daily' },
+      templateTasks: [
+        { id: 1, title: 'Разминка', time: '07:00' },
+        { id: 2, title: 'Упражнения', time: '07:15' },
+        { id: 3, title: 'Растяжка', time: '07:30' }
+      ],
+      createdAt: new Date().toISOString()
+    });
+    
+    // Уборка - через день
+    sections.push({
+      id: Date.now() + 2,
+      name: 'Уборка дома',
+      icon: '🧹',
+      activityRule: { type: 'every_other_day', value: 0 },
+      templateTasks: [
+        { id: 4, title: 'Пропылесосить', time: '10:00' },
+        { id: 5, title: 'Протереть пыль', time: '10:30' }
+      ],
+      createdAt: new Date().toISOString()
+    });
+    
+    // Работа - только в будни
+    sections.push({
+      id: Date.now() + 3,
+      name: 'Рабочие задачи',
+      icon: '💼',
+      activityRule: { type: 'weekdays', value: [1, 2, 3, 4, 5] }, // Пн-Пт
+      templateTasks: [
+        { id: 6, title: 'Проверить почту', time: '09:00' },
+        { id: 7, title: 'Планерка', time: '10:00' },
+        { id: 8, title: 'Отчет за день', time: '18:00' }
+      ],
+      createdAt: new Date().toISOString()
+    });
+    
+    saveSections();
+    console.log('Демонстрационные разделы созданы');
+  }
+  
+  // Синхронизируем на текущую дату
+  syncSectionsToPlans(currentDate);
+  
+  console.log('Синхронизация разделов завершена');
+}
+
 // RENDER
 function render() {
   try {
@@ -3745,6 +3941,10 @@ function changeDay(direction) {
   } else {
     // Для вкладки задач
     currentDate.setDate(currentDate.getDate() + direction);
+    
+    // НОВАЯ СИСТЕМА: Синхронизируем разделы при смене даты
+    syncSectionsToPlans(currentDate);
+    
     render();
   }
 }
@@ -4533,6 +4733,10 @@ function changeCalendarMonth(direction) {
 
 function selectDate(selectedDate) {
   currentDate = new Date(selectedDate);
+  
+  // НОВАЯ СИСТЕМА: Синхронизируем разделы при выборе даты
+  syncSectionsToPlans(currentDate);
+  
   render();
   hideCalendar();
 }
@@ -4708,6 +4912,348 @@ function confirmDeleteRoom(roomName) {
   renderRooms();
   updateRoomsSelect();
   hidePopup();
+}
+
+// SECTIONS MANAGEMENT - УПРАВЛЕНИЕ РАЗДЕЛАМИ С ПРАВИЛАМИ
+function showSectionsManager() {
+  // Создаем модальное окно для управления разделами
+  const modal = document.createElement('div');
+  modal.className = 'modal show';
+  modal.id = 'sectionsModal';
+  
+  modal.innerHTML = `
+    <div class="modal-header">
+      <h2 class="modal-title">Управление разделами</h2>
+      <button class="header-btn" onclick="hideSectionsManager()">Закрыть</button>
+    </div>
+    <div class="modal-content">
+      <div class="sections-list" id="sectionsList">
+        <!-- Список разделов будет здесь -->
+      </div>
+      <button class="btn" onclick="showAddSection()" style="margin-top: 20px;">
+        + Добавить раздел
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  renderSectionsList();
+}
+
+function hideSectionsManager() {
+  const modal = document.getElementById('sectionsModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+function renderSectionsList() {
+  const container = document.getElementById('sectionsList');
+  if (!container) return;
+  
+  let html = '';
+  
+  sections.forEach(section => {
+    const activityText = getActivityRuleText(section.activityRule);
+    const tasksCount = section.templateTasks ? section.templateTasks.length : 0;
+    
+    html += `
+      <div class="section-item" style="
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--border-radius);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+        cursor: pointer;
+      " onclick="editSection('${section.id}')">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 8px 0; color: var(--text-primary);">${section.icon} ${section.name}</h3>
+            <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 14px;">${activityText}</p>
+            <p style="margin: 0; color: var(--text-muted); font-size: 12px;">${tasksCount} задач(и)</p>
+          </div>
+          <button class="delete-meal-btn" onclick="deleteSection('${section.id}', event)" style="margin-left: 12px;">×</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  if (sections.length === 0) {
+    html = `
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <p>Пока нет разделов</p>
+        <p style="font-size: 14px; margin-top: 8px;">Создайте раздел с рутинными задачами</p>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
+}
+
+function getActivityRuleText(rule) {
+  if (!rule) return 'Не активен';
+  
+  switch (rule.type) {
+    case 'daily':
+      return 'Каждый день';
+    case 'every_other_day':
+      return 'Через день';
+    case 'weekdays':
+      if (Array.isArray(rule.value)) {
+        const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+        const selectedDays = rule.value.map(d => days[d]).join(', ');
+        return `По дням: ${selectedDays}`;
+      }
+      return 'По дням недели';
+    default:
+      return 'Не активен';
+  }
+}
+
+function showAddSection() {
+  hideSectionsManager();
+  
+  // Создаем форму для добавления раздела
+  const modal = document.createElement('div');
+  modal.className = 'modal show';
+  modal.id = 'addSectionModal';
+  
+  modal.innerHTML = `
+    <div class="modal-header">
+      <h2 class="modal-title">Новый раздел</h2>
+      <button class="header-btn" onclick="hideAddSection()">Отмена</button>
+    </div>
+    <div class="modal-content">
+      <div class="form-group">
+        <label class="label">Название раздела</label>
+        <input type="text" class="input" id="sectionName" placeholder="Например: Утренняя зарядка">
+      </div>
+      
+      <div class="form-group">
+        <label class="label">Иконка</label>
+        <div id="sectionIconSelector" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px;">
+          <!-- Иконки будут здесь -->
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="label">Правило активности</label>
+        <select class="select" id="activityType" onchange="updateActivityOptions()">
+          <option value="daily">Каждый день</option>
+          <option value="every_other_day">Через день</option>
+          <option value="weekdays">По дням недели</option>
+        </select>
+      </div>
+      
+      <div class="form-group" id="weekdaysSelector" style="display: none;">
+        <label class="label">Выберите дни недели</label>
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px;">
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="1"> Пн</label>
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="2"> Вт</label>
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="3"> Ср</label>
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="4"> Чт</label>
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="5"> Пт</label>
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="6"> Сб</label>
+          <label style="text-align: center; font-size: 12px;"><input type="checkbox" value="0"> Вс</label>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="label">Шаблонные задачи</label>
+        <div id="templateTasks">
+          <div class="template-task" style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" class="input" placeholder="Название задачи" style="flex: 1;">
+            <input type="time" class="input" style="width: 100px;">
+            <button type="button" onclick="removeTemplateTask(this)" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 8px;">×</button>
+          </div>
+        </div>
+        <button type="button" onclick="addTemplateTask()" class="header-btn" style="margin-top: 8px;">+ Добавить задачу</button>
+      </div>
+      
+      <button class="btn" onclick="saveNewSection()" style="margin-top: 20px; width: 100%;">
+        Создать раздел
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  renderSectionIcons();
+}
+
+function hideAddSection() {
+  const modal = document.getElementById('addSectionModal');
+  if (modal) {
+    modal.remove();
+  }
+  showSectionsManager();
+}
+
+function renderSectionIcons() {
+  const container = document.getElementById('sectionIconSelector');
+  if (!container) return;
+  
+  const icons = ['🏃', '🧘', '📚', '🍳', '🧹', '💼', '🎯', '🌱', '💪', '🎨', '🎵', '🛁', '🚿', '🛏️', '🏠'];
+  let selectedIcon = icons[0];
+  
+  let html = '';
+  icons.forEach((icon, index) => {
+    html += `
+      <button type="button" onclick="selectSectionIcon('${icon}', this)" 
+              class="section-icon-btn ${index === 0 ? 'selected' : ''}"
+              style="
+                background: ${index === 0 ? 'var(--accent-primary)' : 'var(--bg-tertiary)'};
+                color: ${index === 0 ? 'white' : 'var(--text-primary)'};
+                border: 1px solid var(--border-soft);
+                border-radius: 8px;
+                padding: 12px;
+                font-size: 20px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              ">${icon}</button>
+    `;
+  });
+  
+  container.innerHTML = html;
+  window.selectedSectionIcon = selectedIcon;
+}
+
+function selectSectionIcon(icon, button) {
+  // Убираем выделение с других кнопок
+  document.querySelectorAll('.section-icon-btn').forEach(btn => {
+    btn.style.background = 'var(--bg-tertiary)';
+    btn.style.color = 'var(--text-primary)';
+    btn.classList.remove('selected');
+  });
+  
+  // Выделяем выбранную кнопку
+  button.style.background = 'var(--accent-primary)';
+  button.style.color = 'white';
+  button.classList.add('selected');
+  
+  window.selectedSectionIcon = icon;
+}
+
+function updateActivityOptions() {
+  const activityType = document.getElementById('activityType').value;
+  const weekdaysSelector = document.getElementById('weekdaysSelector');
+  
+  if (activityType === 'weekdays') {
+    weekdaysSelector.style.display = 'block';
+  } else {
+    weekdaysSelector.style.display = 'none';
+  }
+}
+
+function addTemplateTask() {
+  const container = document.getElementById('templateTasks');
+  const taskDiv = document.createElement('div');
+  taskDiv.className = 'template-task';
+  taskDiv.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+  
+  taskDiv.innerHTML = `
+    <input type="text" class="input" placeholder="Название задачи" style="flex: 1;">
+    <input type="time" class="input" style="width: 100px;">
+    <button type="button" onclick="removeTemplateTask(this)" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 8px;">×</button>
+  `;
+  
+  container.appendChild(taskDiv);
+}
+
+function removeTemplateTask(button) {
+  button.parentElement.remove();
+}
+
+function saveNewSection() {
+  const name = document.getElementById('sectionName').value.trim();
+  if (!name) {
+    alert('Введите название раздела');
+    return;
+  }
+  
+  const activityType = document.getElementById('activityType').value;
+  let activityRule = { type: activityType };
+  
+  if (activityType === 'weekdays') {
+    const selectedDays = Array.from(document.querySelectorAll('#weekdaysSelector input:checked'))
+      .map(cb => parseInt(cb.value));
+    
+    if (selectedDays.length === 0) {
+      alert('Выберите хотя бы один день недели');
+      return;
+    }
+    
+    activityRule.value = selectedDays;
+  }
+  
+  // Собираем шаблонные задачи
+  const templateTasks = [];
+  document.querySelectorAll('.template-task').forEach((taskDiv, index) => {
+    const titleInput = taskDiv.querySelector('input[type="text"]');
+    const timeInput = taskDiv.querySelector('input[type="time"]');
+    
+    const title = titleInput.value.trim();
+    if (title) {
+      templateTasks.push({
+        id: Date.now() + index,
+        title: title,
+        time: timeInput.value || ''
+      });
+    }
+  });
+  
+  if (templateTasks.length === 0) {
+    alert('Добавьте хотя бы одну задачу');
+    return;
+  }
+  
+  // Создаем новый раздел
+  const newSection = {
+    id: Date.now(),
+    name: name,
+    icon: window.selectedSectionIcon || '🏃',
+    activityRule: activityRule,
+    templateTasks: templateTasks,
+    createdAt: new Date().toISOString()
+  };
+  
+  sections.push(newSection);
+  saveSections();
+  
+  // Синхронизируем с планами
+  syncSectionsToPlans(currentDate);
+  
+  // Обновляем отображение
+  render();
+  
+  hideAddSection();
+  showSectionsManager();
+}
+
+function deleteSection(sectionId, event) {
+  if (event) {
+    event.stopPropagation();
+  }
+  
+  const section = sections.find(s => s.id == sectionId);
+  if (!section) return;
+  
+  if (confirm(`Удалить раздел "${section.name}"?\n\nВсе связанные задачи также будут удалены.`)) {
+    // Удаляем все задачи, созданные из этого раздела
+    const initialCount = plans.length;
+    plans = plans.filter(plan => plan.sectionId != sectionId);
+    const removedTasksCount = initialCount - plans.length;
+    
+    // Удаляем сам раздел
+    sections = sections.filter(s => s.id != sectionId);
+    
+    saveSections();
+    savePlans();
+    
+    console.log(`Удален раздел "${section.name}" и ${removedTasksCount} связанных задач`);
+    
+    renderSectionsList();
+    render();
+  }
 }
 
 // PROFILE
@@ -6244,6 +6790,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
     console.log('После loadData - планы:', plans);
     console.log('После loadData - количество планов:', plans.length);
+    
+    // НОВАЯ СИСТЕМА: Инициализируем синхронизацию разделов
+    initSectionsSync();
     
     loadProfileData();
     

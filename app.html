@@ -4541,6 +4541,85 @@ function handleTaskClick(planElement, event) {
   }
 }
 
+// Переключение состояния выполнения задачи
+function toggleComplete(planId, event) {
+  event.stopPropagation();
+  event.preventDefault();
+  
+  try {
+    console.log('toggleComplete вызвана для задачи:', planId);
+    
+    // Находим задачу по ID
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) {
+      console.error('Задача не найдена:', planId);
+      return;
+    }
+    
+    const wasCompleted = plan.completed || false;
+    
+    // Переключаем состояние
+    plan.completed = !wasCompleted;
+    
+    console.log(`Задача "${plan.title}" ${plan.completed ? 'отмечена как выполненная' : 'отмечена как невыполненная'}`);
+    
+    // Находим элементы для анимации
+    const checkbox = event.target;
+    const planElement = checkbox.closest('.plan');
+    const planWrapper = checkbox.closest('.plan-wrapper');
+    
+    if (plan.completed) {
+      // Отмечаем как выполненное - с анимацией
+      checkbox.classList.add('checked');
+      
+      // Через небольшую задержку добавляем анимацию зачеркивания
+      setTimeout(() => {
+        if (planElement) planElement.classList.add('completed');
+        if (planWrapper) planWrapper.classList.add('completed');
+        
+        // Добавляем небольшую вибрацию для тактильной обратной связи
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+      }, 150);
+    } else {
+      // Убираем выполнение - мгновенно
+      checkbox.classList.remove('checked');
+      if (planElement) planElement.classList.remove('completed');
+      if (planWrapper) planWrapper.classList.remove('completed');
+    }
+    
+    // 🍽️ СИНХРОНИЗАЦИЯ С ПИТАНИЕМ: если задача создана из приема пищи
+    if (plan.createdFromMeal && plan.mealId) {
+      console.log('Синхронизируем с приемом пищи:', plan.mealId);
+      
+      // Находим соответствующий прием пищи и обновляем его состояние
+      const mealData = nutritionData.meals[plan.date];
+      if (mealData && mealData[plan.mealId]) {
+        mealData[plan.mealId].completed = plan.completed;
+        saveNutritionData();
+        
+        // Если мы на вкладке питания, обновляем отображение
+        if (currentTab === 'nutrition') {
+          renderNutritionDay();
+        }
+        
+        console.log(`Прием пищи "${plan.mealId}" синхронизирован с задачей`);
+      }
+    }
+    
+    // Сохраняем изменения
+    savePlans();
+    
+    // Обновляем прогресс
+    updateProgress();
+    
+    console.log('toggleComplete завершена успешно');
+  } catch (e) {
+    console.error('Ошибка в функции toggleComplete:', e);
+  }
+}
+
 
 
 

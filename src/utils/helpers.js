@@ -33,3 +33,4 @@ export function initializeIcons() {
         if (el) el.textContent = icon;
     }
 }
+export { initializeIcons as initIcons };

@@ -3,7 +3,7 @@ import { migrateData } from './state/migrate.js';
 import { initEventDelegation } from './events/delegation.js';
 import { render } from './render/index.js';
 import { state } from './state/state.js';
-import { initIcons } from './utils/helpers.js';
+import { initializeIcons as initIcons } from './utils/helpers.js';
 
 // Главная функция инициализации
 export function initApp() {

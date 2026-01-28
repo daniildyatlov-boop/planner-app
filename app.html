@@ -4987,18 +4987,28 @@ function confirmDeleteFromEdit() {
     return;
   }
   
-  console.log('Удаляем задачу с ID:', selectedPlanId);
-  console.log('Планы до удаления:', plans.length);
+  console.log('🗑️ НАЧАЛО УДАЛЕНИЯ ИЗ РЕДАКТОРА задачи с ID:', selectedPlanId);
+  console.log(`📊 ПЕРЕД УДАЛЕНИЕМ: планов: ${plans.length}`);
   
   // КРИТИЧЕСКИЙ ФИХ: Помечаем задачу как удаленную по ID
   markTaskAsDeleted(selectedPlanId);
   
   const initialLength = plans.length;
-  plans = plans.filter(p => p.id !== selectedPlanId);
   
-  console.log('Планы после удаления:', plans.length);
+  // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем из существующего
+  let taskFound = false;
+  for (let i = plans.length - 1; i >= 0; i--) {
+    if (plans[i].id === selectedPlanId) {
+      console.log(`🗑️ Найдена задача для удаления: "${plans[i].title}"`);
+      plans.splice(i, 1); // Удаляем из существующего массива
+      taskFound = true;
+      break;
+    }
+  }
   
-  if (plans.length === initialLength) {
+  console.log(`📊 ПОСЛЕ УДАЛЕНИЯ: планов: ${plans.length}, удаленных ID: ${deletedTaskIds.length}`);
+  
+  if (!taskFound) {
     console.error('Задача не была удалена - не найдена в массиве');
     return;
   }

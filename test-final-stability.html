@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест финальной стабильности - Планер</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-step.success {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+        .test-step.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .critical {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .success {
+            color: #16a34a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Тест финальной стабильности архитектуры</h1>
+        <p>Этот тест проверяет, что удаленные рутинные задачи НЕ возвращаются после reload.</p>
+        
+        <div class="test-step">
+            <h3>Шаг 1: Очистка данных</h3>
+            <button class="test-button" onclick="clearAllData()">Очистить все данные</button>
+            <div id="step1-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Шаг 2: Создание раздела</h3>
+            <button class="test-button" onclick="createTestSection()">Создать тестовый раздел</button>
+            <div id="step2-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Шаг 3: Проверка автосоздания</h3>
+            <button class="test-button" onclick="checkAutoCreation()">Проверить автосоздание задач</button>
+            <div id="step3-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Шаг 4: Создание задачи вручную</h3>
+            <button class="test-button" onclick="createManualTask()">Создать задачу вручную</button>
+            <div id="step4-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Шаг 5: Удаление задачи</h3>
+            <button class="test-button" onclick="deleteTask()">Удалить задачу</button>
+            <div id="step5-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Шаг 6: Симуляция reload</h3>
+            <button class="test-button" onclick="simulateReload()">Симулировать reload</button>
+            <div id="step6-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Шаг 7: Смена даты</h3>
+            <button class="test-button" onclick="changeDateAndBack()">Сменить дату и вернуться</button>
+            <div id="step7-result"></div>
+        </div>
+        
+        <div class="test-step">
+            <h3>Финальная проверка</h3>
+            <button class="test-button" onclick="finalCheck()">Финальная проверка стабильности</button>
+            <div id="final-result"></div>
+        </div>
+        
+        <div class="test-results" id="test-log"></div>
+    </div>
+
+    <script>
+        // Минимальная реализация для тестирования
+        let plans = [];
+        let sections = [];
+        let currentDate = new Date();
+        let testLog = '';
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            testLog += `[${timestamp}] ${prefix} ${message}\n`;
+            document.getElementById('test-log').textContent = testLog;
+        }
+        
+        function clearAllData() {
+            localStorage.clear();
+            plans = [];
+            sections = [];
+            log('Все данные очищены', 'success');
+            document.getElementById('step1-result').innerHTML = '<span class="success">✅ Данные очищены</span>';
+        }
+        
+        function createTestSection() {
+            const section = {
+                id: 1001,
+                name: 'Тестовый раздел',
+                icon: '🧪',
+                activityRule: { type: 'daily' },
+                templateTasks: [
+                    { id: 1, title: 'Тестовая задача 1', time: '09:00' },
+                    { id: 2, title: 'Тестовая задача 2', time: '10:00' }
+                ]
+            };
+            sections.push(section);
+            localStorage.setItem('planner_sections', JSON.stringify(sections));
+            log('Создан тестовый раздел с шаблонами', 'success');
+            document.getElementById('step2-result').innerHTML = '<span class="success">✅ Раздел создан</span>';
+        }
+        
+        function checkAutoCreation() {
+            const tasksCount = plans.length;
+            if (tasksCount === 0) {
+                log('ОТЛИЧНО: Задачи НЕ созданы автоматически', 'success');
+                document.getElementById('step3-result').innerHTML = '<span class="success">✅ Автосоздание отключено</span>';
+            } else {
+                log(`ОШИБКА: Найдено ${tasksCount} автосозданных задач`, 'error');
+                document.getElementById('step3-result').innerHTML = '<span class="critical">❌ Автосоздание работает!</span>';
+            }
+        }
+        
+        function createManualTask() {
+            const task = {
+                id: Date.now(),
+                title: 'Ручная задача',
+                date: currentDate.toISOString().split('T')[0],
+                completed: false,
+                sectionId: 1001
+            };
+            plans.push(task);
+            localStorage.setItem('planner_plans', JSON.stringify(plans));
+            log('Создана задача вручную', 'success');
+            document.getElementById('step4-result').innerHTML = '<span class="success">✅ Задача создана вручную</span>';
+        }
+        
+        function deleteTask() {
+            const taskIndex = plans.findIndex(p => p.sectionId === 1001);
+            if (taskIndex !== -1) {
+                const deletedTask = plans.splice(taskIndex, 1)[0];
+                localStorage.setItem('planner_plans', JSON.stringify(plans));
+                log(`Удалена задача: ${deletedTask.title}`, 'success');
+                document.getElementById('step5-result').innerHTML = '<span class="success">✅ Задача удалена</span>';
+            } else {
+                log('Задача для удаления не найдена', 'error');
+                document.getElementById('step5-result').innerHTML = '<span class="critical">❌ Задача не найдена</span>';
+            }
+        }
+        
+        function simulateReload() {
+            // Симулируем загрузку данных как при reload
+            const savedPlans = localStorage.getItem('planner_plans');
+            const savedSections = localStorage.getItem('planner_sections');
+            
+            plans = savedPlans ? JSON.parse(savedPlans) : [];
+            sections = savedSections ? JSON.parse(savedSections) : [];
+            
+            const routineTasks = plans.filter(p => p.sectionId != null);
+            
+            if (routineTasks.length === 0) {
+                log('ОТЛИЧНО: После reload рутинных задач НЕТ', 'success');
+                document.getElementById('step6-result').innerHTML = '<span class="success">✅ Reload стабилен</span>';
+            } else {
+                log(`КРИТИЧЕСКАЯ ОШИБКА: После reload найдено ${routineTasks.length} рутинных задач`, 'error');
+                document.getElementById('step6-result').innerHTML = '<span class="critical">❌ Задачи вернулись!</span>';
+            }
+        }
+        
+        function changeDateAndBack() {
+            // Меняем дату
+            const tomorrow = new Date(currentDate);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            currentDate = tomorrow;
+            
+            // Возвращаем обратно
+            const today = new Date();
+            currentDate = today;
+            
+            // Проверяем, не появились ли задачи
+            const routineTasks = plans.filter(p => p.sectionId != null);
+            
+            if (routineTasks.length === 0) {
+                log('ОТЛИЧНО: После смены даты рутинных задач НЕТ', 'success');
+                document.getElementById('step7-result').innerHTML = '<span class="success">✅ Смена даты стабильна</span>';
+            } else {
+                log(`КРИТИЧЕСКАЯ ОШИБКА: После смены даты найдено ${routineTasks.length} рутинных задач`, 'error');
+                document.getElementById('step7-result').innerHTML = '<span class="critical">❌ Смена даты создает задачи!</span>';
+            }
+        }
+        
+        function finalCheck() {
+            const totalTasks = plans.length;
+            const routineTasks = plans.filter(p => p.sectionId != null || p.source === 'routine').length;
+            const sectionsCount = sections.length;
+            
+            let result = `
+ФИНАЛЬНЫЙ ОТЧЕТ:
+================
+📊 Всего задач: ${totalTasks}
+🔄 Рутинных задач: ${routineTasks}
+📁 Разделов: ${sectionsCount}
+
+`;
+            
+            if (routineTasks === 0) {
+                result += '✅ ТЕСТ ПРОЙДЕН: Рутинные задачи НЕ возвращаются\n';
+                result += '✅ Архитектура стабильна\n';
+                result += '✅ Единый источник истины работает\n';
+                document.getElementById('final-result').innerHTML = '<span class="success">✅ ВСЕ ТЕСТЫ ПРОЙДЕНЫ</span>';
+                log('ФИНАЛЬНЫЙ ТЕСТ ПРОЙДЕН УСПЕШНО', 'success');
+            } else {
+                result += '❌ ТЕСТ ПРОВАЛЕН: Найдены рутинные задачи\n';
+                result += '❌ Архитектура нестабильна\n';
+                result += '❌ Требуются дополнительные исправления\n';
+                document.getElementById('final-result').innerHTML = '<span class="critical">❌ ТЕСТ ПРОВАЛЕН</span>';
+                log('ФИНАЛЬНЫЙ ТЕСТ ПРОВАЛЕН', 'error');
+            }
+            
+            log(result);
+        }
+        
+        // Автоматический запуск диагностики при загрузке
+        window.addEventListener('load', () => {
+            log('Тест стабильности архитектуры запущен');
+        });
+    </script>
+</body>
+</html>

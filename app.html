@@ -3696,6 +3696,17 @@ function generateDeterministicId(type, params) {
   }
 }
 
+// КРИТИЧЕСКИЙ ФИХ: Функция мониторинга состояния plans
+function logPlansState(context) {
+  console.log(`🔍 СОСТОЯНИЕ PLANS [${context}]:`, {
+    length: plans.length,
+    ids: plans.map(p => p.id),
+    deletedIds: deletedTaskIds.length,
+    isArray: Array.isArray(plans),
+    isFrozen: Object.isFrozen(plans)
+  });
+}
+
 function isTaskDeleted(taskId) {
   return deletedTaskIds.includes(taskId);
 }
@@ -3861,7 +3872,15 @@ function loadData() {
       console.log('Мигрированы старые разделы');
     }
 
-    plans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+    // КРИТИЧЕСКИЙ ФИХ: НЕ перезаписываем plans, а очищаем и заполняем существующий массив
+    const loadedPlans = JSON.parse(localStorage.getItem('planner_plans') || '[]');
+    
+    // Очищаем существующий массив
+    plans.length = 0;
+    
+    // Заполняем существующий массив
+    loadedPlans.forEach(plan => plans.push(plan));
+    
     rooms = JSON.parse(localStorage.getItem('planner_teams') || '[]');
     
     // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи ПЕРЕД синхронизацией
@@ -3870,6 +3889,13 @@ function loadData() {
     console.log(`✅ ПОСЛЕ ЗАГРУЗКИ: планов: ${plans.length}, разделов: ${rooms.length}, удаленных ID: ${deletedTaskIds.length}`);
     console.log('📋 Загруженные планы:', plans.map(p => `${p.id}: ${p.title}`));
     console.log('🗑️ Удаленные ID:', deletedTaskIds);
+    
+    // КРИТИЧЕСКИЙ ФИХ: Мониторинг состояния после загрузки
+    logPlansState('ПОСЛЕ ЗАГРУЗКИ');
+    
+    // КРИТИЧЕСКИЙ ФИХ: Временная защита от переприсваивания plans
+    // Если код упадет - значит где-то есть plans = newArray
+    // Object.freeze(plans); // Раскомментировать для отладки
     
     // КРИТИЧЕСКИ ВАЖНО: Миграция дат в правильный формат YYYY-MM-DD
     let needsSave = false;
@@ -3929,8 +3955,8 @@ function loadData() {
     }
   } catch (e) {
     console.error('Ошибка при загрузке данных:', e);
-    // Инициализируем пустыми данными в случае ошибки
-    plans = [];
+    // КРИТИЧЕСКИЙ ФИХ: НЕ перезаписываем plans, а очищаем существующий массив
+    plans.length = 0; // Очищаем существующий массив
     rooms = [];
     
     // Показываем уведомление пользователю
@@ -3944,7 +3970,9 @@ function loadData() {
 
 function savePlans() {
   try {
-    console.log('Сохраняем планы:', plans);
+    console.log('💾 СОХРАНЕНИЕ ПЛАНОВ:', plans.length, 'задач');
+    console.log('📋 ID задач:', plans.map(p => p.id));
+    console.log('🗑️ Удаленных ID:', deletedTaskIds.length);
     console.log('Количество планов для сохранения:', plans.length);
     
     const dataToSave = JSON.stringify(plans);
@@ -4133,6 +4161,9 @@ function syncSectionsToPlans(date) {
   
   console.log(`✅ КОНЕЦ syncSectionsToPlans: планов: ${plans.length}, удаленных ID: ${deletedTaskIds.length}`);
   console.log('📋 Планы после синхронизации:', plans.map(p => `${p.id}: ${p.title}`));
+  
+  // КРИТИЧЕСКИЙ ФИХ: Мониторинг состояния после синхронизации
+  logPlansState('ПОСЛЕ СИНХРОНИЗАЦИИ');
   
   // Обновляем интерфейс если нужно
   if (typeof updateRoomsSelect === 'function') {

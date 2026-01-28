@@ -3730,11 +3730,16 @@ function saveDeletedTaskIds() {
 function loadDeletedTaskIds() {
   try {
     const saved = localStorage.getItem('planner_deleted_task_ids');
-    deletedTaskIds = saved ? JSON.parse(saved) : [];
+    const loadedIds = saved ? JSON.parse(saved) : [];
+    
+    // КРИТИЧЕСКИЙ ФИХ: НЕ перезаписываем deletedTaskIds, а очищаем и заполняем
+    deletedTaskIds.length = 0;
+    loadedIds.forEach(id => deletedTaskIds.push(id));
+    
     console.log('Загружены удаленные задачи:', deletedTaskIds.length, 'ID');
   } catch (e) {
     console.error('Ошибка при загрузке удаленных задач:', e);
-    deletedTaskIds = [];
+    deletedTaskIds.length = 0; // Очищаем вместо переприсваивания
   }
 }
 
@@ -3745,19 +3750,27 @@ function cleanupOldDeletedTaskIds() {
   
   const initialCount = deletedTaskIds.length;
   
-  // Очищаем ID задач старше 30 дней (по дате в ID)
-  deletedTaskIds = deletedTaskIds.filter(taskId => {
+  // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем deletedTaskIds, удаляем из существующего массива
+  for (let i = deletedTaskIds.length - 1; i >= 0; i--) {
+    const taskId = deletedTaskIds[i];
+    let shouldRemove = false;
+    
     if (taskId.includes(':')) {
       const parts = taskId.split(':');
       if (parts.length >= 3) {
         const dateStr = parts[parts.length - 1]; // Последняя часть - дата
         if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          return dateStr >= cutoffDateStr;
+          if (dateStr < cutoffDateStr) {
+            shouldRemove = true;
+          }
         }
       }
     }
-    return true; // Оставляем задачи без даты или с неправильным форматом
-  });
+    
+    if (shouldRemove) {
+      deletedTaskIds.splice(i, 1);
+    }
+  }
   
   if (deletedTaskIds.length !== initialCount) {
     saveDeletedTaskIds();
@@ -3895,7 +3908,7 @@ function loadData() {
     
     // КРИТИЧЕСКИЙ ФИХ: Временная защита от переприсваивания plans
     // Если код упадет - значит где-то есть plans = newArray
-    // Object.freeze(plans); // Раскомментировать для отладки
+    Object.freeze(plans); // ВКЛЮЧАЕМ для поиска скрытых переприсваиваний
     
     // КРИТИЧЕСКИ ВАЖНО: Миграция дат в правильный формат YYYY-MM-DD
     let needsSave = false;

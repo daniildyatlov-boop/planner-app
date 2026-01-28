@@ -3867,12 +3867,16 @@ function loadData() {
     // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи ПЕРЕД синхронизацией
     loadDeletedTaskIds();
     
-    console.log(`Загружено планов: ${plans.length}, разделов: ${rooms.length}`);
-    console.log('Загруженные планы:', plans);
+    console.log(`✅ ПОСЛЕ ЗАГРУЗКИ: планов: ${plans.length}, разделов: ${rooms.length}, удаленных ID: ${deletedTaskIds.length}`);
+    console.log('📋 Загруженные планы:', plans.map(p => `${p.id}: ${p.title}`));
+    console.log('🗑️ Удаленные ID:', deletedTaskIds);
     
     // КРИТИЧЕСКИ ВАЖНО: Миграция дат в правильный формат YYYY-MM-DD
     let needsSave = false;
-    plans = plans.map(plan => {
+    
+    // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, изменяем существующие объекты
+    for (let i = 0; i < plans.length; i++) {
+      const plan = plans[i];
       if (plan.date && typeof plan.date === 'string') {
         // Проверяем, не в формате ли уже YYYY-MM-DD
         if (!/^\d{4}-\d{2}-\d{2}$/.test(plan.date)) {
@@ -3881,15 +3885,14 @@ function loadData() {
             const dateObj = new Date(plan.date);
             const newDate = dateObj.toISOString().split('T')[0];
             console.log(`Мигрируем дату плана "${plan.title}": ${plan.date} → ${newDate}`);
-            plan.date = newDate;
+            plan.date = newDate; // Изменяем существующий объект
             needsSave = true;
           } catch (e) {
             console.error('Ошибка миграции даты для плана:', plan.title, e);
           }
         }
       }
-      return plan;
-    });
+    }
     
     // Сохраняем если были изменения
     if (needsSave) {
@@ -4036,7 +4039,8 @@ function isSectionActiveOnDate(section, date) {
 
 // Синхронизирует разделы с планами на указанную дату
 function syncSectionsToPlans(date) {
-  console.log('Синхронизация разделов с планами для даты:', date);
+  console.log('🔄 НАЧАЛО syncSectionsToPlans для даты:', date);
+  console.log(`📊 ПЕРЕД СИНХРОНИЗАЦИЕЙ: планов: ${plans.length}, удаленных ID: ${deletedTaskIds.length}`);
   
   const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
   
@@ -4106,11 +4110,16 @@ function syncSectionsToPlans(date) {
       
       // Удаляем задачи этого раздела на эту дату (если они были созданы автоматически)
       const initialCount = plans.length;
-      plans = plans.filter(plan => !(
-        plan.date === dateStr && 
-        plan.sectionId === section.id && 
-        plan.createdFromSection
-      ));
+      
+      // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем элементы из существующего
+      for (let i = plans.length - 1; i >= 0; i--) {
+        const plan = plans[i];
+        if (plan.date === dateStr && 
+            plan.sectionId === section.id && 
+            plan.createdFromSection) {
+          plans.splice(i, 1); // Удаляем из существующего массива
+        }
+      }
       
       const removedCount = initialCount - plans.length;
       if (removedCount > 0) {
@@ -4121,6 +4130,9 @@ function syncSectionsToPlans(date) {
   
   // Сохраняем изменения
   savePlans();
+  
+  console.log(`✅ КОНЕЦ syncSectionsToPlans: планов: ${plans.length}, удаленных ID: ${deletedTaskIds.length}`);
+  console.log('📋 Планы после синхронизации:', plans.map(p => `${p.id}: ${p.title}`));
   
   // Обновляем интерфейс если нужно
   if (typeof updateRoomsSelect === 'function') {
@@ -5037,18 +5049,28 @@ function confirmDeletePlan() {
     return;
   }
   
-  console.log('Удаляем задачу с ID:', selectedPlanId);
-  console.log('Планы до удаления:', plans.length);
+  console.log('🗑️ НАЧАЛО УДАЛЕНИЯ задачи с ID:', selectedPlanId);
+  console.log(`📊 ПЕРЕД УДАЛЕНИЕМ: планов: ${plans.length}`);
   
   // КРИТИЧЕСКИЙ ФИХ: Помечаем задачу как удаленную по ID
   markTaskAsDeleted(selectedPlanId);
   
   const initialLength = plans.length;
-  plans = plans.filter(p => p.id !== selectedPlanId);
   
-  console.log('Планы после удаления:', plans.length);
+  // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем из существующего
+  let taskFound = false;
+  for (let i = plans.length - 1; i >= 0; i--) {
+    if (plans[i].id === selectedPlanId) {
+      console.log(`🗑️ Найдена задача для удаления: "${plans[i].title}"`);
+      plans.splice(i, 1); // Удаляем из существующего массива
+      taskFound = true;
+      break;
+    }
+  }
   
-  if (plans.length === initialLength) {
+  console.log(`📊 ПОСЛЕ УДАЛЕНИЯ: планов: ${plans.length}, удаленных ID: ${deletedTaskIds.length}`);
+  
+  if (!taskFound) {
     console.error('Задача не была удалена - не найдена в массиве');
     return;
   }
@@ -5971,7 +5993,12 @@ function deleteSection(sectionId, event) {
     sections = sections.filter(s => s.id != sectionId);
     
     // Удаляем связанные задачи
-    plans = plans.filter(plan => plan.sectionId != sectionId);
+    // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем из существующего
+    for (let i = plans.length - 1; i >= 0; i--) {
+      if (plans[i].sectionId == sectionId) {
+        plans.splice(i, 1); // Удаляем из существующего массива
+      }
+    }
     
     // Удаляем из rooms
     rooms = rooms.filter(room => {
@@ -6223,7 +6250,14 @@ function deleteSection(sectionId, event) {
   if (confirm(`Удалить раздел "${section.name}"?\n\nВсе связанные задачи также будут удалены.`)) {
     // Удаляем все задачи, созданные из этого раздела
     const initialCount = plans.length;
-    plans = plans.filter(plan => plan.sectionId != sectionId);
+    
+    // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем из существующего
+    for (let i = plans.length - 1; i >= 0; i--) {
+      if (plans[i].sectionId == sectionId) {
+        plans.splice(i, 1); // Удаляем из существующего массива
+      }
+    }
+    
     const removedTasksCount = initialCount - plans.length;
     
     // Удаляем сам раздел
@@ -7460,7 +7494,17 @@ function confirmDeleteMealType(dateStr, mealTypeId) {
   
   // 🗑️ УДАЛЯЕМ СВЯЗАННУЮ ЗАДАЧУ ИЗ ПЛАНОВ
   const initialPlansCount = plans.length;
-  plans = plans.filter(plan => plan.id !== taskId);
+  
+  // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем из существующего
+  let taskFound = false;
+  for (let i = plans.length - 1; i >= 0; i--) {
+    if (plans[i].id === taskId) {
+      plans.splice(i, 1); // Удаляем из существующего массива
+      taskFound = true;
+      break;
+    }
+  }
+  
   const deletedTasksCount = initialPlansCount - plans.length;
   
   if (deletedTasksCount > 0) {
@@ -7617,7 +7661,17 @@ function saveMeal(dateStr, mealType) {
     
     // Удаляем связанную задачу
     const initialPlansCount = plans.length;
-    plans = plans.filter(plan => plan.id !== taskId);
+    
+    // КРИТИЧЕСКИЙ ФИХ: НЕ пересоздаем массив plans, удаляем из существующего
+    let taskFound = false;
+    for (let i = plans.length - 1; i >= 0; i--) {
+      if (plans[i].id === taskId) {
+        plans.splice(i, 1); // Удаляем из существующего массива
+        taskFound = true;
+        break;
+      }
+    }
+    
     const deletedTasksCount = initialPlansCount - plans.length;
     
     if (deletedTasksCount > 0) {

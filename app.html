@@ -3640,6 +3640,33 @@ let deletedTaskIds = []; // КРИТИЧЕСКИЙ ФИХ: простой мас
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
+
+// 🕵️ ДЕТЕКТОР РУТИННЫХ ЗАДАЧ - найдем кто их создает
+const originalPush = Array.prototype.push;
+
+// Перехватываем все добавления в plans
+plans.push = function(...items) {
+  items.forEach(item => {
+    const isRoutine = item && (
+      item.sectionId != null || 
+      item.createdFromSection === true || 
+      (item.id && item.id.toString().startsWith('section:'))
+    );
+    
+    if (isRoutine) {
+      console.error('🚨 ДЕТЕКТОР: Попытка добавить рутинную задачу!');
+      console.error('📋 Задача:', item);
+      console.error('📍 Стек вызовов:', new Error().stack);
+      
+      // БЛОКИРУЕМ добавление рутинной задачи
+      console.error('🚫 ЗАБЛОКИРОВАНО: Рутинная задача НЕ добавлена');
+      return this.length; // Возвращаем текущую длину без добавления
+    }
+  });
+  
+  // Добавляем только НЕ рутинные задачи
+  return originalPush.apply(this, items);
+};
 let currentTab = 'tasks'; // Текущая активная вкладка
 
 // ИНИЦИАЛИЗАЦИЯ ИКОНОК - УСТАНАВЛИВАЕМ ИКОНКИ ЧЕРЕЗ JAVASCRIPT
@@ -3928,51 +3955,43 @@ function loadData() {
     if (!localStorage.getItem(migrationKey)) {
       console.log('🧹 МИГРАЦИЯ: Удаляем рутинные задачи из localStorage...');
       
-      const initialCount = plans.length;
+      // РАДИКАЛЬНОЕ РЕШЕНИЕ: Принудительно очищаем ВСЕ что связано с рутинными задачами
+      console.log('🚨 РАДИКАЛЬНАЯ ОЧИСТКА: Удаляем ВСЕ следы рутинных задач');
       
-      // Удаляем все рутинные задачи по критериям:
-      // 1. sectionId != null (задачи из разделов)
-      // 2. createdFromSection === true (флаг рутинной задачи)
-      // 3. ID начинается с "section:" (детерминированный ID рутинных задач)
-      for (let i = plans.length - 1; i >= 0; i--) {
-        const plan = plans[i];
-        const isRoutineTask = plan.sectionId != null || 
-                             plan.createdFromSection === true || 
-                             (plan.id && plan.id.toString().startsWith('section:'));
-        
-        if (isRoutineTask) {
-          console.log(`🗑️ Удаляем рутинную задачу: "${plan.title}" (ID: ${plan.id})`);
-          plans.splice(i, 1);
-        }
-      }
+      // 1. Очищаем plans массив полностью
+      plans.length = 0;
+      console.log('🗑️ Plans массив полностью очищен');
       
-      const removedCount = initialCount - plans.length;
-      console.log(`🧹 МИГРАЦИЯ ЗАВЕРШЕНА: удалено ${removedCount} рутинных задач из ${initialCount}`);
+      // 2. Удаляем ВСЕ ключи localStorage связанные с задачами и разделами
+      const keysToRemove = [
+        'planner_plans',
+        'planner_sections', 
+        'planner_teams',
+        'planner_rooms',
+        'plans',
+        'teams',
+        'rooms',
+        'sections'
+      ];
       
-      // Сохраняем очищенные планы
-      if (removedCount > 0) {
-        savePlans();
-      }
-      
-      // ДОПОЛНИТЕЛЬНАЯ ОЧИСТКА: Удаляем старые ключи localStorage которые могут содержать рутинные задачи
-      const oldKeys = ['plans', 'planner_rooms']; // Старые ключи
-      oldKeys.forEach(key => {
+      keysToRemove.forEach(key => {
         if (localStorage.getItem(key)) {
-          console.log(`🧹 Удаляем старый ключ localStorage: ${key}`);
+          console.log(`🗑️ Удаляем ключ localStorage: ${key}`);
           localStorage.removeItem(key);
         }
       });
       
-      // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Удаляем демонстрационные разделы которые создают рутинные задачи
-      console.log('🧹 МИГРАЦИЯ: Удаляем демонстрационные разделы...');
-      const sectionsKey = 'planner_sections';
-      if (localStorage.getItem(sectionsKey)) {
-        console.log(`🗑️ Удаляем разделы из localStorage: ${sectionsKey}`);
-        localStorage.removeItem(sectionsKey);
-        sections.length = 0; // Очищаем массив разделов в памяти
-      }
+      // 3. Очищаем массивы в памяти
+      sections.length = 0;
+      rooms.length = 0;
+      deletedTaskIds.length = 0;
       
-      // Устанавливаем флаг что миграция выполнена
+      console.log('🧹 РАДИКАЛЬНАЯ ОЧИСТКА ЗАВЕРШЕНА - все данные удалены');
+      
+      // 4. Сохраняем пустые массивы
+      savePlans(); // Сохранит пустой массив
+      
+      // 5. Устанавливаем флаг что миграция выполнена
       localStorage.setItem(migrationKey, 'true');
       console.log('✅ Флаг миграции установлен - больше не будет повторяться');
     }

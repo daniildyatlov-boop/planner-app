@@ -6114,223 +6114,131 @@ function showAddSection() {
       
       <div class="form-group" id="weekdaysSelector" style="display: none;">
         <label class="label">Выберите дни недели</label>
-        
-        <!-- Кнопки быстрого выбора -->
-        <div style="
-          display: flex;
-          gap: 8px;
-          margin: 8px 0 16px 0;
-          flex-wrap: wrap;
-        ">
-          <button type="button" onclick="selectWeekdayPreset('weekdays')" style="
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-secondary);
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-          ">Пн-Пт</button>
-          <button type="button" onclick="selectWeekdayPreset('weekend')" style="
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-secondary);
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-          ">Выходные</button>
-          <button type="button" onclick="selectWeekdayPreset('all')" style="
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-secondary);
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-          ">Все дни</button>
-          <button type="button" onclick="selectWeekdayPreset('clear')" style="
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-secondary);
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-          ">Очистить</button>
-        </div>
         <div style="
           display: grid; 
           grid-template-columns: repeat(7, 1fr); 
           gap: 8px; 
           margin-top: 12px;
-          padding: 16px;
-          background: var(--bg-tertiary);
-          border-radius: 12px;
-          border: 1px solid var(--border-secondary);
         ">
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="1" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Пн</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Понедельник</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Пн</span>
           </label>
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="2" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Вт</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Вторник</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Вт</span>
           </label>
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="3" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Ср</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Среда</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Ср</span>
           </label>
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="4" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Чт</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Четверг</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Чт</span>
           </label>
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="5" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Пт</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Пятница</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Пт</span>
           </label>
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="6" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Сб</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Суббота</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Сб</span>
           </label>
           <label style="
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 4px;
+            gap: 4px;
+            padding: 12px 8px;
             background: var(--bg-card);
-            border-radius: 8px;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 60px;
+            justify-content: center;
           " class="weekday-option" onclick="toggleWeekday(this)">
             <input type="checkbox" value="0" style="display: none;">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Вс</span>
-            <span style="font-size: 10px; color: var(--text-secondary);">Воскресенье</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Вс</span>
           </label>
-        </div>
-        <div style="margin-top: 12px; padding: 12px; background: rgba(99, 102, 241, 0.1); border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2);">
-          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">💡 Быстрый выбор:</div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button type="button" onclick="selectWeekdayPreset('weekdays')" style="
-              padding: 6px 12px;
-              background: var(--bg-card);
-              border: 1px solid var(--border-secondary);
-              border-radius: 6px;
-              font-size: 11px;
-              color: var(--text-primary);
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">Будни</button>
-            <button type="button" onclick="selectWeekdayPreset('weekend')" style="
-              padding: 6px 12px;
-              background: var(--bg-card);
-              border: 1px solid var(--border-secondary);
-              border-radius: 6px;
-              font-size: 11px;
-              color: var(--text-primary);
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">Выходные</button>
-            <button type="button" onclick="selectWeekdayPreset('all')" style="
-              padding: 6px 12px;
-              background: var(--bg-card);
-              border: 1px solid var(--border-secondary);
-              border-radius: 6px;
-              font-size: 11px;
-              color: var(--text-primary);
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">Все дни</button>
-            <button type="button" onclick="selectWeekdayPreset('clear')" style="
-              padding: 6px 12px;
-              background: var(--bg-card);
-              border: 1px solid var(--border-secondary);
-              border-radius: 6px;
-              font-size: 11px;
-              color: var(--text-primary);
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">Очистить</button>
-          </div>
-          <div style="font-size: 13px; color: var(--text-primary); margin-top: 8px;">Выберите дни недели, когда должны создаваться задачи этого раздела</div>
         </div>
       </div>
       
@@ -6460,81 +6368,6 @@ function updateActivityOptions() {
   }
 }
 
-// Функция для быстрого выбора пресетов дней недели
-function selectWeekdayPreset(preset) {
-  const weekdayOptions = document.querySelectorAll('#weekdaysSelector .weekday-option');
-  
-  // Сначала очищаем все выборы
-  weekdayOptions.forEach(option => {
-    const checkbox = option.querySelector('input[type="checkbox"]');
-    checkbox.checked = false;
-    
-    // Сбрасываем стили
-    option.style.background = 'var(--bg-card)';
-    option.style.borderColor = 'transparent';
-    option.style.transform = 'scale(1)';
-    option.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-    
-    const spans = option.querySelectorAll('span');
-    spans[0].style.color = 'var(--text-primary)';
-    spans[0].style.textShadow = '';
-    spans[1].style.color = 'var(--text-secondary)';
-    spans[1].style.textShadow = '';
-  });
-  
-  // Применяем выбранный пресет
-  let daysToSelect = [];
-  
-  switch(preset) {
-    case 'weekdays':
-      daysToSelect = [1, 2, 3, 4, 5]; // Пн-Пт
-      break;
-    case 'weekend':
-      daysToSelect = [6, 0]; // Сб-Вс
-      break;
-    case 'all':
-      daysToSelect = [1, 2, 3, 4, 5, 6, 0]; // Все дни
-      break;
-    case 'clear':
-      daysToSelect = []; // Очистить все
-      break;
-  }
-  
-  // Выбираем нужные дни
-  daysToSelect.forEach(dayValue => {
-    const option = document.querySelector(`#weekdaysSelector input[value="${dayValue}"]`).parentElement;
-    const checkbox = option.querySelector('input[type="checkbox"]');
-    
-    checkbox.checked = true;
-    
-    // Применяем стили выбранного дня
-    option.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-    option.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
-    option.style.borderColor = 'var(--accent-primary)';
-    option.style.transform = 'scale(1.05)';
-    option.style.boxShadow = '0 4px 16px rgba(99, 102, 241, 0.3)';
-    
-    const spans = option.querySelectorAll('span');
-    spans.forEach(span => {
-      span.style.color = 'white';
-      span.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    });
-  });
-  
-  // Добавляем анимацию для выбранных дней
-  setTimeout(() => {
-    daysToSelect.forEach((dayValue, index) => {
-      setTimeout(() => {
-        const option = document.querySelector(`#weekdaysSelector input[value="${dayValue}"]`).parentElement;
-        option.style.animation = 'gentle-pulse 0.6s ease-out';
-        setTimeout(() => {
-          option.style.animation = '';
-        }, 600);
-      }, index * 100);
-    });
-  }, 100);
-}
-
 // Функция для переключения выбора дня недели
 function toggleWeekday(labelElement) {
   const checkbox = labelElement.querySelector('input[type="checkbox"]');
@@ -6552,12 +6385,12 @@ function toggleWeekday(labelElement) {
     labelElement.style.transform = 'scale(1.05)';
     labelElement.style.boxShadow = '0 4px 16px rgba(99, 102, 241, 0.3)';
     
-    // Обновляем цвет текста внутри
-    const spans = labelElement.querySelectorAll('span');
-    spans.forEach(span => {
+    // Обновляем цвет текста
+    const span = labelElement.querySelector('span');
+    if (span) {
       span.style.color = 'white';
       span.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    });
+    }
     
     // Добавляем эффект пульсации при выборе
     labelElement.style.animation = 'gentle-pulse 0.6s ease-out';
@@ -6567,16 +6400,16 @@ function toggleWeekday(labelElement) {
     
   } else {
     labelElement.style.background = 'var(--bg-card)';
-    labelElement.style.borderColor = 'transparent';
+    labelElement.style.borderColor = 'var(--border-soft)';
     labelElement.style.transform = 'scale(1)';
-    labelElement.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+    labelElement.style.boxShadow = '';
     
-    // Восстанавливаем оригинальные цвета текста
-    const spans = labelElement.querySelectorAll('span');
-    spans[0].style.color = 'var(--text-primary)';
-    spans[0].style.textShadow = '';
-    spans[1].style.color = 'var(--text-secondary)';
-    spans[1].style.textShadow = '';
+    // Восстанавливаем оригинальный цвет текста
+    const span = labelElement.querySelector('span');
+    if (span) {
+      span.style.color = 'var(--text-primary)';
+      span.style.textShadow = '';
+    }
   }
 }
 
@@ -6590,24 +6423,24 @@ function toggleWeekdayVisual(labelElement, isSelected) {
     labelElement.style.transform = 'scale(1.05)';
     labelElement.style.boxShadow = '0 4px 16px rgba(99, 102, 241, 0.3)';
     
-    // Обновляем цвет текста внутри
-    const spans = labelElement.querySelectorAll('span');
-    spans.forEach(span => {
+    // Обновляем цвет текста
+    const span = labelElement.querySelector('span');
+    if (span) {
       span.style.color = 'white';
       span.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    });
+    }
   } else {
     labelElement.style.background = 'var(--bg-card)';
-    labelElement.style.borderColor = 'transparent';
+    labelElement.style.borderColor = 'var(--border-soft)';
     labelElement.style.transform = 'scale(1)';
-    labelElement.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+    labelElement.style.boxShadow = '';
     
-    // Восстанавливаем оригинальные цвета текста
-    const spans = labelElement.querySelectorAll('span');
-    spans[0].style.color = 'var(--text-primary)';
-    spans[0].style.textShadow = '';
-    spans[1].style.color = 'var(--text-secondary)';
-    spans[1].style.textShadow = '';
+    // Восстанавливаем оригинальный цвет текста
+    const span = labelElement.querySelector('span');
+    if (span) {
+      span.style.color = 'var(--text-primary)';
+      span.style.textShadow = '';
+    }
   }
 }
 

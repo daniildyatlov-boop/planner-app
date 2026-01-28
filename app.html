@@ -4438,7 +4438,7 @@ function debounceClick(fn, delay = 300) {
 }
 
 // MODALS & SCREENS
-function showAdd() {
+const showAdd = debounceClick(function() {
   console.log('showAdd вызвана');
   const addModal = document.getElementById('addModal');
   console.log('addModal найден:', addModal);
@@ -4465,7 +4465,7 @@ function showAdd() {
       planTitle.focus();
     }
   }, 300);
-}
+});
 
 function hideAdd() {
   const addModal = document.getElementById('addModal');
@@ -4480,7 +4480,7 @@ function hideAdd() {
   selectedPlanId = null;
 }
 
-function showRooms() {
+const showRooms = debounceClick(function() {
   console.log('🏠 Показываем экран разделов с улучшенной анимацией');
   
   const roomsScreen = document.getElementById('roomsScreen');
@@ -4538,7 +4538,7 @@ function showRooms() {
     updateSectionsStats();
     console.log('✅ Экран разделов успешно показан');
   }, 200);
-}
+});
 
 // Обновляет статистику разделов в интерфейсе
 function updateSectionsStats() {
@@ -4654,7 +4654,7 @@ function hideRooms() {
   if (tg) tg.BackButton.hide();
 }
 
-function showProfile() {
+const showProfile = debounceClick(function() {
   console.log('👤 Показываем экран профиля с улучшенной анимацией');
   
   const profileScreen = document.getElementById('profileScreen');
@@ -4711,7 +4711,7 @@ function showProfile() {
     loadProfileData();
     console.log('✅ Экран профиля успешно показан');
   }, 200);
-}
+});
 
 function hideProfile() {
   console.log('👤 Скрываем экран профиля с улучшенной анимацией');

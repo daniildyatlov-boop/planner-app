@@ -4173,6 +4173,9 @@ function syncSectionsToPlans(date) {
 function initSectionsSync() {
   console.log('Инициализация синхронизации разделов...');
   
+  // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные разделы ПЕРЕД созданием разделов
+  loadDeletedSectionIds();
+  
   // Загружаем разделы
   loadSections();
   

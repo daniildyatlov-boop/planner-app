@@ -3853,6 +3853,35 @@ function getPlansForDate(date) {
   return sortedPlans;
 }
 
+// ДИАГНОСТИКА: Функция для проверки состояния приложения
+function debugAppState() {
+  console.log('=== ДИАГНОСТИКА СОСТОЯНИЯ ПРИЛОЖЕНИЯ ===');
+  console.log('📋 Plans в памяти:', plans.length);
+  console.log('📋 Plans детали:', plans.map(p => `${p.id}: ${p.title} (sectionId: ${p.sectionId}, createdFromSection: ${p.createdFromSection})`));
+  
+  console.log('📁 localStorage plans:', localStorage.getItem('planner_plans'));
+  console.log('📁 localStorage sections:', localStorage.getItem('planner_sections'));
+  console.log('🧹 Флаг миграции:', localStorage.getItem('planner_migration_routine_cleanup'));
+  
+  console.log('🗑️ Удаленные ID:', deletedTaskIds);
+  console.log('📂 Sections в памяти:', sections.length);
+  console.log('📂 Sections детали:', sections.map(s => `${s.id}: ${s.name}`));
+  
+  // Проверяем есть ли рутинные задачи
+  const routineTasks = plans.filter(plan => 
+    plan.sectionId != null || 
+    plan.createdFromSection === true || 
+    (plan.id && plan.id.toString().startsWith('section:'))
+  );
+  console.log('🔄 Рутинные задачи найдены:', routineTasks.length);
+  routineTasks.forEach(task => console.log(`  - ${task.title} (ID: ${task.id})`));
+  
+  console.log('=== КОНЕЦ ДИАГНОСТИКИ ===');
+}
+
+// Добавляем функцию в глобальную область для вызова из консоли
+window.debugAppState = debugAppState;
+
 // STORAGE
 function loadData() {
   try {
@@ -3956,6 +3985,9 @@ function loadData() {
     console.log(`✅ ПОСЛЕ ЗАГРУЗКИ: планов: ${plans.length}, разделов: ${rooms.length}, удаленных ID: ${deletedTaskIds.length}`);
     console.log('📋 Загруженные планы:', plans.map(p => `${p.id}: ${p.title}`));
     console.log('🗑️ Удаленные ID:', deletedTaskIds);
+    
+    // ДИАГНОСТИКА: Проверяем состояние после загрузки
+    debugAppState();
     
     // КРИТИЧЕСКИЙ ФИХ: Мониторинг состояния после загрузки
     logPlansState('ПОСЛЕ ЗАГРУЗКИ');

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Storage</title>
+</head>
+<body>
+    <h1>Debug localStorage</h1>
+    <button onclick="checkStorage()">Проверить localStorage</button>
+    <button onclick="clearMigration()">Сбросить флаг миграции</button>
+    <button onclick="clearAll()">Очистить все</button>
+    <pre id="output"></pre>
+
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += message + '\n';
+            console.log(message);
+        }
+
+        function checkStorage() {
+            document.getElementById('output').innerHTML = '';
+            log('=== ПРОВЕРКА localStorage ===');
+            
+            const plans = localStorage.getItem('planner_plans');
+            const sections = localStorage.getItem('planner_sections');
+            const migration = localStorage.getItem('planner_migration_routine_cleanup');
+            const deletedIds = localStorage.getItem('planner_deleted_task_ids');
+            
+            log('📋 planner_plans: ' + (plans ? JSON.parse(plans).length + ' задач' : 'НЕТ'));
+            if (plans) {
+                const parsedPlans = JSON.parse(plans);
+                parsedPlans.forEach(plan => {
+                    const isRoutine = plan.sectionId != null || 
+                                     plan.createdFromSection === true || 
+                                     (plan.id && plan.id.toString().startsWith('section:'));
+                    log(`  - ${plan.title} (ID: ${plan.id}) ${isRoutine ? '🔄 РУТИННАЯ' : '✋ РУЧНАЯ'}`);
+                });
+            }
+            
+            log('📂 planner_sections: ' + (sections ? JSON.parse(sections).length + ' разделов' : 'НЕТ'));
+            log('🧹 Флаг миграции: ' + (migration || 'НЕТ'));
+            log('🗑️ Удаленные ID: ' + (deletedIds ? JSON.parse(deletedIds).length + ' ID' : 'НЕТ'));
+            
+            log('=== КОНЕЦ ПРОВЕРКИ ===');
+        }
+
+        function clearMigration() {
+            localStorage.removeItem('planner_migration_routine_cleanup');
+            log('🧹 Флаг миграции сброшен');
+        }
+
+        function clearAll() {
+            localStorage.clear();
+            log('🗑️ Весь localStorage очищен');
+        }
+
+        // Автоматическая проверка при загрузке
+        window.onload = checkStorage;
+    </script>
+</body>
+</html>

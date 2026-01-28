@@ -939,40 +939,67 @@ body{
   text-decoration-thickness: 2px;
 }
 
-/* LAYOUT ЗАДАЧ КАК В ПИТАНИИ */
+/* LAYOUT ЗАДАЧ - УЛУЧШЕННЫЙ */
 .plan-with-checkbox {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
+  position: relative;
 }
 
-/* ИНДИКАТОР ПОРЯДКА ЗАДАЧ */
-.task-order-indicator {
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
+/* УБИРАЕМ КРУЖКИ - ДОБАВЛЯЕМ ТОНКУЮ ПОЛОСКУ ПРИОРИТЕТА */
+.task-priority-bar {
+  width: 3px;
+  height: 100%;
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
+  border-radius: 2px;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.plan:hover .task-priority-bar {
+  opacity: 1;
+  width: 4px;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+.plan.completed .task-priority-bar {
+  background: var(--text-muted);
+  opacity: 0.3;
+}
+
+/* DRAG HANDLE - ПОЯВЛЯЕТСЯ ПРИ НАВЕДЕНИИ */
+.drag-handle {
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-right: var(--spacing-sm);
-  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+  color: var(--text-muted);
+  cursor: grab;
+  opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-left: var(--spacing-xs);
 }
 
-.plan:hover .task-order-indicator {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+.plan:hover .drag-handle {
+  opacity: 1;
 }
 
-.plan.completed .task-order-indicator {
-  background: var(--text-muted);
-  opacity: 0.6;
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle::before {
+  content: '⋮⋮';
+  letter-spacing: -2px;
 }
 
 .plan-main-content {
@@ -987,20 +1014,92 @@ body{
   margin-bottom: var(--spacing-sm);
 }
 
-/* КНОПКИ ДЕЙСТВИЙ КАК В ПИТАНИИ */
+/* КНОПКИ ДЕЙСТВИЙ - УЛУЧШЕННЫЕ */
 .plan-actions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   opacity: 0;
   transform: scale(0.8);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+  align-items: center;
 }
 
 .plan:hover .plan-actions {
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;
+}
+
+.edit-task-btn, .delete-task-btn, .priority-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+/* КНОПКА ПРИОРИТЕТА - ЗАМЕНЯЕТ ДВЕ КНОПКИ ↑↓ */
+.priority-btn {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: var(--accent-secondary);
+  font-size: 10px;
+  position: relative;
+}
+
+.priority-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--accent-primary);
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+}
+
+.priority-btn::before {
+  content: '⚡';
+}
+
+/* DRAG & DROP СТИЛИ */
+.plan-wrapper.dragging {
+  opacity: 0.7 !important;
+  transform: scale(0.98) !important;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.plan-wrapper.drop-above::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.plan-wrapper.drop-below::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
 }
 
 .edit-task-btn, .delete-task-btn, .order-up-btn, .order-down-btn {
@@ -1047,22 +1146,7 @@ body{
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 
-.order-up-btn, .order-down-btn {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.2);
-  color: var(--accent-secondary);
-  font-size: 12px;
-}
-
-.order-up-btn:hover, .order-down-btn:hover {
-  background: rgba(34, 197, 94, 0.2);
-  border-color: rgba(34, 197, 94, 0.4);
-  color: var(--accent-primary);
-  transform: scale(1.1);
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
-}
-
-.edit-task-btn:active, .delete-task-btn:active, .order-up-btn:active, .order-down-btn:active {
+.edit-task-btn:active, .delete-task-btn:active, .priority-btn:active {
   transform: scale(1.05);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -4003,6 +4087,201 @@ function reorderTasksForDate(dateStr) {
   console.log(`Переупорядочены задачи для даты ${dateStr}`);
 }
 
+// УЛУЧШЕННОЕ МЕНЮ ПРИОРИТЕТОВ
+function showPriorityMenu(taskId) {
+  const task = plans.find(p => p.id === taskId);
+  if (!task) return;
+  
+  // Получаем все задачи на эту дату
+  const dateTasks = plans
+    .filter(p => p.date === task.date)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  const currentIndex = dateTasks.findIndex(p => p.id === taskId);
+  const totalTasks = dateTasks.length;
+  
+  // Создаем кнопки для быстрых действий
+  const buttons = [
+    { text: 'Отмена', type: 'cancel', action: hidePopup }
+  ];
+  
+  // Добавляем кнопки в зависимости от позиции
+  if (currentIndex > 0) {
+    buttons.push({ text: '↑ Вверх', type: 'confirm', action: () => { hidePopup(); moveTaskUp(taskId); } });
+  }
+  
+  if (currentIndex < totalTasks - 1) {
+    buttons.push({ text: '↓ Вниз', type: 'confirm', action: () => { hidePopup(); moveTaskDown(taskId); } });
+  }
+  
+  if (currentIndex > 0) {
+    buttons.push({ text: '⬆️ В начало', type: 'confirm', action: () => { hidePopup(); moveTaskToTop(taskId); } });
+  }
+  
+  if (currentIndex < totalTasks - 1) {
+    buttons.push({ text: '⬇️ В конец', type: 'confirm', action: () => { hidePopup(); moveTaskToBottom(taskId); } });
+  }
+  
+  const positionText = `Позиция: ${currentIndex + 1} из ${totalTasks}`;
+  
+  showPopup(
+    `⚡ Приоритет задачи`,
+    `"${task.title}"\n\n${positionText}`,
+    buttons
+  );
+}
+
+function moveTaskToTop(taskId) {
+  const task = plans.find(p => p.id === taskId);
+  if (!task) return;
+  
+  // Получаем все задачи на эту дату
+  const dateTasks = plans
+    .filter(p => p.date === task.date)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  // Находим минимальный порядок и ставим задачу перед ним
+  const minOrder = Math.min(...dateTasks.map(t => t.order || 0));
+  task.order = minOrder - 10;
+  
+  savePlans();
+  render();
+  console.log(`Задача "${task.title}" перемещена в начало`);
+}
+
+// DRAG & DROP ДЛЯ ЗАДАЧ
+let draggedTaskId = null;
+let draggedElement = null;
+
+function initDragAndDrop() {
+  // Добавляем обработчики drag & drop для всех задач
+  document.querySelectorAll('.plan-wrapper').forEach(wrapper => {
+    const dragHandle = wrapper.querySelector('.drag-handle');
+    const planElement = wrapper.querySelector('.plan');
+    
+    if (dragHandle && planElement) {
+      // Делаем элемент перетаскиваемым при клике на handle
+      dragHandle.addEventListener('mousedown', (e) => {
+        wrapper.draggable = true;
+        draggedTaskId = wrapper.dataset.planId;
+        draggedElement = wrapper;
+        
+        // Добавляем визуальный эффект
+        wrapper.style.opacity = '0.7';
+        wrapper.style.transform = 'scale(0.98)';
+      });
+      
+      // Убираем перетаскивание при отпускании
+      document.addEventListener('mouseup', () => {
+        wrapper.draggable = false;
+        wrapper.style.opacity = '';
+        wrapper.style.transform = '';
+        draggedTaskId = null;
+        draggedElement = null;
+      });
+      
+      // Обработчики drag events
+      wrapper.addEventListener('dragstart', handleDragStart);
+      wrapper.addEventListener('dragover', handleDragOver);
+      wrapper.addEventListener('drop', handleDrop);
+      wrapper.addEventListener('dragend', handleDragEnd);
+    }
+  });
+}
+
+function handleDragStart(e) {
+  if (!draggedTaskId) {
+    e.preventDefault();
+    return;
+  }
+  
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', draggedTaskId);
+  
+  // Добавляем класс для стилизации
+  e.target.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+  if (!draggedTaskId) return;
+  
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  
+  // Добавляем визуальную подсказку
+  const rect = e.currentTarget.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  
+  if (e.clientY < midY) {
+    e.currentTarget.classList.add('drop-above');
+    e.currentTarget.classList.remove('drop-below');
+  } else {
+    e.currentTarget.classList.add('drop-below');
+    e.currentTarget.classList.remove('drop-above');
+  }
+}
+
+function handleDrop(e) {
+  if (!draggedTaskId) return;
+  
+  e.preventDefault();
+  
+  const targetTaskId = e.currentTarget.dataset.planId;
+  if (draggedTaskId === targetTaskId) return;
+  
+  // Определяем позицию вставки
+  const rect = e.currentTarget.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  const insertBefore = e.clientY < midY;
+  
+  // Перемещаем задачу
+  moveTaskRelativeTo(draggedTaskId, targetTaskId, insertBefore);
+  
+  // Убираем визуальные эффекты
+  e.currentTarget.classList.remove('drop-above', 'drop-below');
+}
+
+function handleDragEnd(e) {
+  // Убираем все визуальные эффекты
+  document.querySelectorAll('.plan-wrapper').forEach(wrapper => {
+    wrapper.classList.remove('dragging', 'drop-above', 'drop-below');
+    wrapper.style.opacity = '';
+    wrapper.style.transform = '';
+  });
+}
+
+function moveTaskRelativeTo(sourceTaskId, targetTaskId, insertBefore) {
+  const sourceTask = plans.find(p => p.id === sourceTaskId);
+  const targetTask = plans.find(p => p.id === targetTaskId);
+  
+  if (!sourceTask || !targetTask || sourceTask.date !== targetTask.date) return;
+  
+  // Получаем все задачи на эту дату, отсортированные по порядку
+  const dateTasks = plans
+    .filter(p => p.date === sourceTask.date)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  const targetIndex = dateTasks.findIndex(p => p.id === targetTaskId);
+  
+  if (insertBefore) {
+    // Вставляем перед целевой задачей
+    const newOrder = targetIndex > 0 
+      ? (dateTasks[targetIndex - 1].order + targetTask.order) / 2
+      : targetTask.order - 10;
+    sourceTask.order = newOrder;
+  } else {
+    // Вставляем после целевой задачи
+    const newOrder = targetIndex < dateTasks.length - 1
+      ? (targetTask.order + dateTasks[targetIndex + 1].order) / 2
+      : targetTask.order + 10;
+    sourceTask.order = newOrder;
+  }
+  
+  savePlans();
+  render();
+  console.log(`Задача "${sourceTask.title}" перемещена относительно "${targetTask.title}"`);
+}
+
 function isTaskDeleted(taskId) {
   return deletedTaskIds.includes(taskId);
 }
@@ -4663,12 +4942,12 @@ function render() {
       todayPlans.forEach((plan, index) => {
         try {
           console.log('Рендерим план:', plan);
-          const orderNumber = index + 1; // Порядковый номер для отображения
           html += `
             <div class="plan-wrapper" data-plan-id="${plan.id}">
               <div class="plan ${plan.completed ? 'completed' : ''}" data-plan-id="${plan.id}">
+                <div class="task-priority-bar"></div>
                 <div class="plan-with-checkbox">
-                  <div class="task-order-indicator">${orderNumber}</div>
+                  <div class="drag-handle" title="Перетащить для изменения порядка"></div>
                   <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
                   <div class="plan-main-content" onclick="handleTaskContentClick('${plan.id}', event)">
                     <div class="plan-header">
@@ -4676,8 +4955,7 @@ function render() {
                         ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
                       </div>
                       <div class="plan-actions">
-                        <button class="order-up-btn" onclick="event.stopPropagation(); moveTaskUp('${plan.id}')" title="Переместить вверх">↑</button>
-                        <button class="order-down-btn" onclick="event.stopPropagation(); moveTaskDown('${plan.id}')" title="Переместить вниз">↓</button>
+                        <button class="priority-btn" onclick="event.stopPropagation(); showPriorityMenu('${plan.id}')" title="Изменить приоритет"></button>
                         <button class="edit-task-btn" onclick="event.stopPropagation(); editPlanDirect('${plan.id}', event)" title="Редактировать">✏️</button>
                         <button class="delete-task-btn" onclick="event.stopPropagation(); deletePlanDirect('${plan.id}', event)" title="Удалить">×</button>
                       </div>
@@ -4725,6 +5003,11 @@ function initializeTaskHandlers() {
       console.log('Обработчики для задачи инициализированы');
     }
   });
+  
+  // 🎯 ИНИЦИАЛИЗИРУЕМ DRAG & DROP
+  initDragAndDrop();
+  
+  console.log('✅ Обработчики кликов и drag & drop инициализированы');
 }
 
 // ПРОСТЫЕ ФУНКЦИИ ДЛЯ ДЕЙСТВИЙ С ЗАДАЧАМИ
@@ -4748,8 +5031,8 @@ function handleTaskContentClick(planId, event) {
   // Если клик был по кнопкам действий, не обрабатываем
   if (event.target.classList.contains('edit-task-btn') || 
       event.target.classList.contains('delete-task-btn') ||
-      event.target.classList.contains('order-up-btn') ||
-      event.target.classList.contains('order-down-btn') ||
+      event.target.classList.contains('priority-btn') ||
+      event.target.classList.contains('drag-handle') ||
       event.target.closest('.plan-actions')) {
     return;
   }
@@ -4764,8 +5047,8 @@ function handleTaskClick(planElement, event) {
   if (event.target.classList.contains('checkbox') || 
       event.target.classList.contains('edit-task-btn') ||
       event.target.classList.contains('delete-task-btn') ||
-      event.target.classList.contains('order-up-btn') ||
-      event.target.classList.contains('order-down-btn') ||
+      event.target.classList.contains('priority-btn') ||
+      event.target.classList.contains('drag-handle') ||
       event.target.closest('.plan-actions')) {
     return;
   }

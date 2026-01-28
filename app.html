@@ -914,8 +914,6 @@ body{
   border-radius: 0;
   padding: var(--spacing-xl);
   margin: 0;
-  display: flex;
-  align-items: center;
   cursor: pointer;
   box-shadow: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -941,59 +939,88 @@ body{
   text-decoration-thickness: 2px;
 }
 
-/* КНОПКИ ДЕЙСТВИЙ ДЛЯ ЗАДАЧ */
+/* LAYOUT ЗАДАЧ КАК В ПИТАНИИ */
+.plan-with-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+}
+
+.plan-main-content {
+  flex: 1;
+  cursor: pointer;
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* КНОПКИ ДЕЙСТВИЙ КАК В ПИТАНИИ */
 .plan-actions {
   display: flex;
   gap: var(--spacing-sm);
-  margin-left: auto;
   opacity: 0;
-  transform: translateX(10px);
+  transform: scale(0.8);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
-.plan-wrapper:hover .plan-actions {
+.plan:hover .plan-actions {
   opacity: 1;
-  transform: translateX(0);
+  transform: scale(1);
+  pointer-events: auto;
 }
 
-.plan-action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
-  border: none;
+.edit-task-btn, .delete-task-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  border: 1px solid;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
-.edit-btn {
+.edit-task-btn {
   background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
   color: var(--accent-primary);
-  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-.edit-btn:hover {
-  background: var(--accent-primary);
-  color: white;
+.edit-task-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: var(--accent-secondary);
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
 }
 
-.delete-btn {
+.delete-task-btn {
   background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-.delete-btn:hover {
-  background: #ef4444;
-  color: white;
+.delete-task-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+}
+
+.edit-task-btn:active, .delete-task-btn:active {
+  transform: scale(1.05);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .checkbox{
@@ -4411,20 +4438,20 @@ function render() {
           html += `
             <div class="plan-wrapper" data-plan-id="${plan.id}">
               <div class="plan ${plan.completed ? 'completed' : ''}" data-plan-id="${plan.id}">
-                <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
-                <div class="plan-content">
-                  <div class="plan-title">
-                    ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
+                <div class="plan-with-checkbox">
+                  <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
+                  <div class="plan-main-content" onclick="handleTaskContentClick('${plan.id}', event)">
+                    <div class="plan-header">
+                      <div class="plan-title">
+                        ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
+                      </div>
+                      <div class="plan-actions">
+                        <button class="edit-task-btn" onclick="event.stopPropagation(); editPlanDirect('${plan.id}', event)" title="Редактировать">✏️</button>
+                        <button class="delete-task-btn" onclick="event.stopPropagation(); deletePlanDirect('${plan.id}', event)" title="Удалить">×</button>
+                      </div>
+                    </div>
+                    ${plan.room ? `<div class="room">${getRoomIcon(plan.room)} ${escapeHtml(plan.room)}</div>` : ''}
                   </div>
-                  ${plan.room ? `<div class="room">${getRoomIcon(plan.room)} ${escapeHtml(plan.room)}</div>` : ''}
-                </div>
-                <div class="plan-actions">
-                  <button class="plan-action-btn edit-btn" onclick="editPlanDirect('${plan.id}', event)" title="Редактировать">
-                    ✏️
-                  </button>
-                  <button class="plan-action-btn delete-btn" onclick="deletePlanDirect('${plan.id}', event)" title="Удалить">
-                    🗑️
-                  </button>
                 </div>
               </div>
             </div>
@@ -4462,13 +4489,8 @@ function initializeTaskHandlers() {
   planWrappers.forEach(wrapper => {
     const planElement = wrapper.querySelector('.plan');
     if (planElement && !planElement.classList.contains('add-task-btn')) {
-      // Добавляем обработчик клика на основную область задачи
-      const planContent = planElement.querySelector('.plan-content');
-      if (planContent) {
-        planContent.addEventListener('click', (e) => {
-          handleTaskClick(planElement, e);
-        });
-      }
+      // Обработчики уже добавлены в HTML через onclick
+      console.log('Обработчики для задачи инициализированы');
     }
   });
 }
@@ -4490,10 +4512,24 @@ function deletePlanDirect(planId, event) {
   deletePlan();
 }
 
+function handleTaskContentClick(planId, event) {
+  // Если клик был по кнопкам действий, не обрабатываем
+  if (event.target.classList.contains('edit-task-btn') || 
+      event.target.classList.contains('delete-task-btn') ||
+      event.target.closest('.plan-actions')) {
+    return;
+  }
+  
+  // При клике на содержимое задачи открываем редактирование
+  selectedPlanId = planId;
+  editPlan();
+}
+
 function handleTaskClick(planElement, event) {
   // Если клик был по чекбоксу или кнопкам действий, не обрабатываем
   if (event.target.classList.contains('checkbox') || 
-      event.target.classList.contains('plan-action-btn') ||
+      event.target.classList.contains('edit-task-btn') ||
+      event.target.classList.contains('delete-task-btn') ||
       event.target.closest('.plan-actions')) {
     return;
   }

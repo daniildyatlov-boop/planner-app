@@ -4412,6 +4412,31 @@ function changeDay(direction) {
   }
 }
 
+// КРИТИЧЕСКИЙ ФИХ: Защита от множественных кликов
+let clickTimeout = null;
+
+function debounceClick(fn, delay = 300) {
+  return function(...args) {
+    if (clickTimeout) {
+      console.log('⚠️ Клик заблокирован - слишком быстро');
+      return;
+    }
+    
+    clickTimeout = setTimeout(() => {
+      clickTimeout = null;
+    }, delay);
+    
+    // Выполняем функцию асинхронно
+    setTimeout(() => {
+      try {
+        fn.apply(this, args);
+      } catch (e) {
+        console.error('Ошибка при выполнении функции:', e);
+      }
+    }, 0);
+  };
+}
+
 // MODALS & SCREENS
 function showAdd() {
   console.log('showAdd вызвана');
@@ -6506,13 +6531,24 @@ document.addEventListener('keydown', (e) => {
 
 // BOTTOM NAVIGATION
 function switchTab(tabName) {
-  // Убираем активный класс со всех кнопок
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => {
-    item.classList.remove('active');
-  });
+  // Защита от множественных кликов
+  if (window.switchingTab) {
+    console.log('Переключение вкладки уже в процессе');
+    return;
+  }
   
-  // Добавляем активный класс к выбранной кнопке
+  window.switchingTab = true;
+  
+  try {
+    console.log('Переключение на вкладку:', tabName);
+    
+    // Убираем активный класс со всех кнопок
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.classList.remove('active');
+    });
+    
+    // Добавляем активный класс к выбранной кнопке
   const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
   if (selectedTab) {
     selectedTab.classList.add('active');
@@ -6539,6 +6575,15 @@ function switchTab(tabName) {
   // Обновляем заголовок дня для питания
   if (tabName === 'nutrition') {
     updateNutritionDayTitle();
+  }
+  
+  } catch (e) {
+    console.error('Ошибка при переключении вкладки:', e);
+  } finally {
+    // Разблокируем через небольшую задержку
+    setTimeout(() => {
+      window.switchingTab = false;
+    }, 100);
   }
 }
 

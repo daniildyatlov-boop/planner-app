@@ -3906,9 +3906,9 @@ function loadData() {
     // КРИТИЧЕСКИЙ ФИХ: Мониторинг состояния после загрузки
     logPlansState('ПОСЛЕ ЗАГРУЗКИ');
     
-    // КРИТИЧЕСКИЙ ФИХ: Временная защита от переприсваивания plans
-    // Если код упадет - значит где-то есть plans = newArray
-    Object.freeze(plans); // ВКЛЮЧАЕМ для поиска скрытых переприсваиваний
+    // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: Убираем заморозку массива plans
+    // Массив должен быть изменяемым для корректной работы кнопок
+    // Object.freeze(plans); // ОТКЛЮЧЕНО - блокирует работу кнопок
     
     // КРИТИЧЕСКИ ВАЖНО: Миграция дат в правильный формат YYYY-MM-DD
     let needsSave = false;
@@ -4765,7 +4765,8 @@ function hideCurrentModal() {
 
 // PLANS
 function savePlan() {
-  console.log('savePlan вызвана');
+  console.log('🔧 DEBUG: savePlan вызвана');
+  console.log('🔧 DEBUG: selectedPlanId:', selectedPlanId);
   
   const planTitleEl = document.getElementById('planTitle');
   if (!planTitleEl) {
@@ -4975,8 +4976,14 @@ function setEditDate(daysOffset) {
 }
 
 function savePlanEdit() {
+  console.log('🔧 DEBUG: savePlanEdit вызвана');
+  console.log('🔧 DEBUG: selectedPlanId:', selectedPlanId);
+  
   const plan = plans.find(p => p.id === selectedPlanId);
-  if (!plan) return;
+  if (!plan) {
+    console.error('🔧 DEBUG: План не найден для selectedPlanId:', selectedPlanId);
+    return;
+  }
   
   const editPlanTitle = document.getElementById('editPlanTitle');
   if (!editPlanTitle) {
@@ -4985,7 +4992,12 @@ function savePlanEdit() {
   }
   
   const newTitle = editPlanTitle.value.trim();
-  if (!newTitle) return;
+  if (!newTitle) {
+    console.error('🔧 DEBUG: Новый заголовок пустой');
+    return;
+  }
+  
+  console.log('🔧 DEBUG: Обновляем план:', plan.title, '→', newTitle);
   
   // Обновляем только название, дату изменяем только если была выбрана новая
   plan.title = newTitle;
@@ -4999,9 +5011,14 @@ function savePlanEdit() {
   savePlans();
   render();
   hideEditPlan();
+  
+  console.log('🔧 DEBUG: savePlanEdit завершена успешно');
 }
 
 function deletePlanFromEdit() {
+  console.log('🔧 DEBUG: deletePlanFromEdit вызвана');
+  console.log('🔧 DEBUG: selectedPlanId:', selectedPlanId);
+  
   if (!selectedPlanId) {
     console.error('Нет выбранной задачи для удаления');
     return;
@@ -5012,6 +5029,8 @@ function deletePlanFromEdit() {
     console.error('Задача не найдена:', selectedPlanId);
     return;
   }
+  
+  console.log('🔧 DEBUG: Показываем popup для удаления задачи:', plan.title);
   
   showPopup(
     'Удалить задачу?',
@@ -5024,6 +5043,9 @@ function deletePlanFromEdit() {
 }
 
 function confirmDeleteFromEdit() {
+  console.log('🔧 DEBUG: confirmDeleteFromEdit вызвана');
+  console.log('🔧 DEBUG: selectedPlanId:', selectedPlanId);
+  
   if (!selectedPlanId) {
     console.error('Нет ID задачи для удаления');
     return;
@@ -5060,7 +5082,7 @@ function confirmDeleteFromEdit() {
   hideEditPlan();
   render();
   
-  console.log('Задача успешно удалена');
+  console.log('🔧 DEBUG: Задача успешно удалена');
 }
 
 function hideMenu() {

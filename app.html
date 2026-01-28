@@ -3144,16 +3144,16 @@ textarea.input {
 <body>
 <div class="app">
   <div class="header">
-    <button class="profile-btn" onclick="showProfile()">П</button>
+    <button class="profile-btn" data-action="SHOW_PROFILE_MENU">П</button>
     <div class="date-nav">
-      <button class="nav-arrow" onclick="changeDay(-1)">‹</button>
-      <div class="date-content" onclick="showDatePicker()">
+      <button class="nav-arrow" data-action="CHANGE_DATE" data-params='{"days": -1}'>‹</button>
+      <div class="date-content" data-action="SHOW_DATE_PICKER">
         <div class="date-title" id="dayTitle">Сегодня</div>
         <div class="date-subtitle" id="daySubtitle">Пн, 27 янв.</div>
       </div>
-      <button class="nav-arrow" onclick="changeDay(1)">›</button>
+      <button class="nav-arrow" data-action="CHANGE_DATE" data-params='{"days": 1}'>›</button>
     </div>
-    <button class="rooms-btn" onclick="showRooms()" id="roomsBtn">🏠</button>
+    <button class="rooms-btn" data-action="SHOW_ROOMS_MODAL" id="roomsBtn">🏠</button>
   </div>
   
   <div class="content">
@@ -3174,7 +3174,7 @@ textarea.input {
     <div class="empty" id="empty">
       <h2>Планов нет</h2>
       <p>Добавьте первую задачу</p>
-      <button class="btn" onclick="showAdd()">Добавить задачу</button>
+      <button class="btn" data-action="ADD_TASK_MODAL">Добавить задачу</button>
     </div>
     
     <div class="plans-container" id="plansContainer" style="display:none">
@@ -3185,15 +3185,15 @@ textarea.input {
 
 <!-- BOTTOM NAVIGATION -->
 <div class="bottom-nav" id="bottomNav">
-  <button class="nav-item active" onclick="switchTab('tasks')" data-tab="tasks">
+  <button class="nav-item active" data-action="SWITCH_TAB" data-params='{"tab": "tasks"}' data-tab="tasks">
     <div class="nav-icon" id="tasksIcon">📝</div>
     <div class="nav-label">Задачи</div>
   </button>
-  <button class="nav-item" onclick="switchTab('nutrition')" data-tab="nutrition">
+  <button class="nav-item" data-action="SWITCH_TAB" data-params='{"tab": "nutrition"}' data-tab="nutrition">
     <div class="nav-icon" id="nutritionIcon">🍽️</div>
     <div class="nav-label">Питание</div>
   </button>
-  <button class="nav-item" onclick="switchTab('habits')" data-tab="habits">
+  <button class="nav-item" data-action="SWITCH_TAB" data-params='{"tab": "habits"}' data-tab="habits">
     <div class="nav-icon" id="habitsIcon">🎯</div>
     <div class="nav-label">Привычки</div>
   </button>
@@ -3202,9 +3202,9 @@ textarea.input {
 <!-- ADD PLAN MODAL -->
 <div class="modal" id="addModal">
   <div class="modal-header">
-    <button class="header-btn" onclick="hideAdd()">Отмена</button>
+    <button class="header-btn" data-action="CLOSE_MODAL">Отмена</button>
     <div class="modal-title">Новая задача</div>
-    <button class="header-btn-primary" onclick="savePlan()">Готово</button>
+    <button class="header-btn-primary" data-action="CREATE_TASK_FROM_MODAL">Готово</button>
   </div>
   <div class="modal-content">
     <div class="form-group">
@@ -3231,12 +3231,12 @@ textarea.input {
 </div>
 
 <!-- CALENDAR -->
-<div class="calendar" id="calendar" onclick="hideCalendar()">
-  <div class="calendar-content" onclick="event.stopPropagation()">
+<div class="calendar" id="calendar" data-action="HIDE_CALENDAR">
+  <div class="calendar-content" data-action="NONE">
     <div class="calendar-header">
-      <button class="calendar-nav" onclick="changeCalendarMonth(-1)">‹</button>
+      <button class="calendar-nav" data-action="CHANGE_CALENDAR_MONTH" data-params='{"delta": -1}'>‹</button>
       <div class="calendar-title" id="calendarTitle">Январь 2025</div>
-      <button class="calendar-nav" onclick="changeCalendarMonth(1)">›</button>
+      <button class="calendar-nav" data-action="CHANGE_CALENDAR_MONTH" data-params='{"delta": 1}'>›</button>
     </div>
     <div class="weekdays">
       <div class="weekday">Пн</div>
@@ -3254,7 +3254,7 @@ textarea.input {
 <!-- EDIT PLAN SCREEN -->
 <div class="screen" id="editPlanScreen">
   <div class="screen-header">
-    <button class="header-btn" onclick="hideEditPlan()">Назад</button>
+    <button class="header-btn" data-action="CLOSE_MODAL">Назад</button>
     <div class="modal-title">Изменить задачу</div>
     <div></div>
   </div>
@@ -3265,7 +3265,7 @@ textarea.input {
     
     <div class="form-group">
       <label class="label">Дата</label>
-      <div class="form-row" onclick="showEditDatePicker()">
+      <div class="form-row" data-action="SHOW_EDIT_DATE_PICKER">
         <span id="editPlanDate">26 янв. 2026г.</span>
       </div>
     </div>
@@ -3274,7 +3274,7 @@ textarea.input {
       <label class="label">Уведомление</label>
       <div class="form-row">
         <span>Уведомление</span>
-        <div class="toggle" id="notificationToggle" onclick="toggleNotification()">
+        <div class="toggle" id="notificationToggle" data-action="TOGGLE_NOTIFICATION">
           <div class="toggle-slider"></div>
         </div>
       </div>
@@ -3284,7 +3284,7 @@ textarea.input {
       <label class="label">Важная</label>
       <div class="form-row">
         <span>Важная</span>
-        <div class="toggle" id="importantToggle" onclick="toggleImportant()">
+        <div class="toggle" id="importantToggle" data-action="TOGGLE_IMPORTANT">
           <div class="toggle-slider"></div>
         </div>
       </div>
@@ -3296,21 +3296,21 @@ textarea.input {
       <span class="premium-link">Премиум Трекер</span>
     </div>
     
-    <button class="delete-btn" onclick="deletePlanFromEdit()">
+    <button class="delete-btn" data-action="DELETE_TASK_FROM_EDIT">
       Удалить задачу
     </button>
   </div>
   
   <div class="screen-footer">
-    <button class="save-btn" onclick="savePlanEdit()">Сохранить</button>
+    <button class="save-btn" data-action="SAVE_TASK_EDIT">Сохранить</button>
   </div>
 </div>
 
 <!-- MENU OVERLAY (simplified) -->
-<div class="overlay" id="overlay" onclick="hideMenu()">
-  <div class="menu" id="menu" onclick="event.stopPropagation()">
-    <button class="menu-btn" onclick="editPlan()">Редактировать</button>
-    <button class="menu-btn del" onclick="deletePlan()">Удалить</button>
+<div class="overlay" id="overlay" data-action="CLOSE_MODAL">
+  <div class="menu" id="menu" data-action="NONE">
+    <button class="menu-btn" data-action="EDIT_TASK_FROM_MENU">Редактировать</button>
+    <button class="menu-btn del" data-action="DELETE_TASK_FROM_MENU">Удалить</button>
   </div>
 </div>
 
@@ -3318,13 +3318,13 @@ textarea.input {
 <!-- ROOMS SCREEN -->
 <div class="screen" id="roomsScreen">
   <div class="screen-header">
-    <button class="header-btn" onclick="hideRooms()">Назад</button>
+    <button class="header-btn" data-action="CLOSE_MODAL">Назад</button>
     <div class="modal-title">Разделы</div>
-    <button class="header-btn-primary" onclick="hideRooms()">Готово</button>
+    <button class="header-btn-primary" data-action="CLOSE_MODAL">Готово</button>
   </div>
   <div class="screen-content">
     <!-- Красивая кнопка управления рутинными разделами -->
-    <div class="sections-manager-card" onclick="showSectionsManager()" style="
+    <div class="sections-manager-card" data-action="SHOW_SECTIONS" style="
       background: linear-gradient(135deg, 
         rgba(99, 102, 241, 0.1) 0%, 
         rgba(139, 92, 246, 0.1) 50%,
@@ -3464,7 +3464,7 @@ textarea.input {
         font-weight: 600;
       ">Обычные разделы</h3>
       <div id="roomsList"></div>
-      <button onclick="showAddRoom()" style="
+      <button data-action="SHOW_ADD_ROOM_MODAL" style="
         width: 100%;
         background: var(--bg-card);
         border: 2px dashed var(--border-primary);
@@ -3482,27 +3482,27 @@ textarea.input {
       </button>
     </div>
   </div>
-  <button class="add-room-fab" onclick="showAddSection()">+</button>
+  <button class="add-room-fab" data-action="SHOW_ADD_ROOM_MODAL">+</button>
 </div>
 
 <!-- PROFILE SCREEN -->
 <div class="screen" id="profileScreen">
   <div class="screen-header">
-    <button class="header-btn" onclick="hideProfile()">Назад</button>
+    <button class="header-btn" data-action="HIDE_PROFILE_MENU">Назад</button>
     <div class="modal-title">Профиль</div>
-    <button class="header-btn-primary" onclick="hideProfile()">Готово</button>
+    <button class="header-btn-primary" data-action="HIDE_PROFILE_MENU">Готово</button>
   </div>
   <div class="screen-content">
     <div class="profile-section">
       <div class="profile-avatar">
         <div class="avatar-circle">П</div>
         <div class="profile-name" id="profileName">Пользователь</div>
-        <button class="edit-name-btn" onclick="editName()">Изменить имя</button>
+        <button class="edit-name-btn" data-action="EDIT_NAME">Изменить имя</button>
       </div>
     </div>
     
     <div class="profile-menu">
-      <button class="profile-menu-btn" onclick="showAccount()">
+      <button class="profile-menu-btn" data-action="SHOW_ACCOUNT">
         <div class="menu-btn-icon" id="profileIcon">👤</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Аккаунт</div>
@@ -3511,7 +3511,7 @@ textarea.input {
         <div class="menu-btn-arrow">›</div>
       </button>
       
-      <button class="profile-menu-btn" onclick="showSettings()">
+      <button class="profile-menu-btn" data-action="SHOW_SETTINGS">
         <div class="menu-btn-icon" id="settingsIcon">⚙️</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Настройки</div>
@@ -3520,7 +3520,7 @@ textarea.input {
         <div class="menu-btn-arrow">›</div>
       </button>
       
-      <button class="profile-menu-btn" onclick="showSupport()">
+      <button class="profile-menu-btn" data-action="SHOW_SUPPORT">
         <div class="menu-btn-icon" id="supportIcon">💬</div>
         <div class="menu-btn-text">
           <div class="menu-btn-title">Поддержка</div>
@@ -3622,6 +3622,7 @@ const initialState = {
     ui: {
         currentDate: new Date().toISOString().split('T')[0],
         currentTab: 'tasks',
+        selectedTaskId: null,
         user: { name: 'Пользователь' }
     }
 };
@@ -3766,14 +3767,30 @@ function handleAction(action, params) {
         case 'CHANGE_DATE':
             changeDate(params.days);
             break;
+        case 'SET_DATE':
+            state.ui.currentDate = params.date;
+            state.ui.calendarViewDate = params.date;
+            break;
             
         // TASKS
         case 'ADD_TASK_MODAL':
             showAddModal();
-            return; // UI only, no state save yet
+            return;
         case 'CREATE_TASK':
             createTask(params);
             hideAddModal();
+            break;
+        case 'CREATE_TASK_FROM_MODAL':
+            {
+                const title = document.getElementById('planTitle')?.value;
+                const time = document.getElementById('planTime')?.value;
+                const room = document.getElementById('planRoom')?.value;
+                const date = document.getElementById('planDate')?.value;
+                if (title) {
+                    createTask({ title, time, room, date });
+                    hideAddModal();
+                }
+            }
             break;
         case 'TOGGLE_TASK':
             toggleTask(params.id);
@@ -3782,17 +3799,113 @@ function handleAction(action, params) {
             deleteTask(params.id);
             break;
         case 'SHOW_TASK_MENU':
-            showTaskMenu(params.id);
-            return; // UI only
+            state.ui.selectedTaskId = params.id;
+            const overlay = document.getElementById('overlay');
+            const menu = document.getElementById('menu');
+            if (overlay && menu) {
+                overlay.style.display = 'flex';
+                requestAnimationFrame(() => menu.classList.add('active'));
+            }
+            return;
             
+        case 'EDIT_TASK_FROM_MENU':
+            hideMenu();
+            showEditScreen(state.ui.selectedTaskId);
+            return;
+            
+        case 'DELETE_TASK_FROM_MENU':
+            if (state.ui.selectedTaskId) {
+                deleteTask(state.ui.selectedTaskId);
+            }
+            hideMenu();
+            break;
+            
+        case 'DELETE_TASK_FROM_EDIT':
+            if (state.ui.selectedTaskId && confirm('Удалить задачу?')) {
+                deleteTask(state.ui.selectedTaskId);
+                hideEditScreen();
+            }
+            break;
+            
+        case 'SAVE_TASK_EDIT':
+            saveTaskEdit();
+            hideEditScreen();
+            break;
+            
+        // NAVIGATION & ACCOUNT
+        case 'SHOW_PROFILE_MENU':
+            document.getElementById('profileScreen').style.display = 'block';
+            return;
+        case 'HIDE_PROFILE_MENU':
+            document.getElementById('profileScreen').style.display = 'none';
+            return;
+        case 'SHOW_ROOMS_MODAL':
+             document.getElementById('roomsScreen').style.display = 'block';
+             return;
+        case 'CLOSE_MODAL':
+            hideAllModals();
+            return;
+
+        // POPUPS
+        case 'SHOW_POPUP':
+            showPopup(params.title, params.message, params.buttons);
+            return;
+        case 'HIDE_POPUP':
+            hidePopup();
+            return;
+            
+        // CALENDAR
+        case 'SHOW_DATE_PICKER':
+            showDatePicker();
+            return;
+        case 'HIDE_CALENDAR':
+            hideCalendar();
+            return;
+        case 'CHANGE_CALENDAR_MONTH':
+            changeCalendarMonth(params.delta);
+            return;
+        case 'SELECT_DATE': // Legacy support if needed
+            state.ui.currentDate = params.date;
+            hideCalendar();
+            break;
+
+        // ROOMS
+        case 'SHOW_ADD_ROOM_MODAL': // showAddRoom replacement
+             showAddRoom();
+             return;
+        case 'SELECT_ROOM_ICON':
+             selectRoomIcon(params.icon);
+             return;
+        case 'SHOW_ROOM_NAME_INPUT':
+             showRoomNameInput();
+             return;
+        case 'CREATE_ROOM':
+             createRoom(params.name, params.icon);
+             hidePopup();
+             document.getElementById('roomsScreen').style.display = 'block';
+             break;
+             
+        // NOTIFICATIONS
+        case 'TOGGLE_NOTIFICATION':
+        case 'TOGGLE_IMPORTANT':
+            showPopup('Премиум функция', 'Доступно с подпиской Премиум', [{text:'OK', action: hidePopup}]);
+            return;
+        case 'SHOW_EDIT_DATE_PICKER':
+            showEditDatePicker();
+            return;
+
         // NUTRITION
         case 'CHANGE_WATER':
             changeWater(params.delta);
             break;
-        
-        // UI
-        case 'CLOSE_MODAL':
-            hideAllModals();
+            
+        // FALLBACK
+        case 'SHOW_ACCOUNT':
+        case 'SHOW_SETTINGS':
+        case 'SHOW_SUPPORT':
+        case 'EDIT_NAME':
+        case 'SHOW_SECTIONS':
+            alert('Функция в разработке (STABLE CORE)');
             return;
     }
     
@@ -3808,12 +3921,12 @@ function changeDate(days) {
     state.ui.currentDate = date.toISOString().split('T')[0];
 }
 
-function createTask({ title, time, room }) {
+function createTask({ title, time, room, date }) {
     if (!title) return;
     const newTask = {
         id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         title,
-        date: state.ui.currentDate,
+        date: date || state.ui.currentDate,
         time: time || '',
         room: room || 'Дом',
         completed: false,
@@ -3864,6 +3977,41 @@ function renderHeader() {
     if (dayTitle) dayTitle.textContent = formatDate(date);
     if (daySubtitle) daySubtitle.textContent = formatDateSubtitle(date);
     
+    // Also render sections/rooms as they might have changed
+    renderSections();
+}
+
+function renderSections() {
+    // 1. Populate Dropdown in Add Modal
+    const select = document.getElementById('planRoom');
+    if (select) {
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Без раздела</option>';
+        state.sections.forEach(room => {
+            const opt = document.createElement('option');
+            opt.value = room.title;
+            opt.textContent = `${room.icon || '📝'} ${room.title}`;
+            select.appendChild(opt);
+        });
+        select.value = currentVal;
+    }
+    
+    // 2. Populate Rooms Screen List
+    const list = document.getElementById('roomsList');
+    if (list) {
+        list.innerHTML = '';
+        state.sections.forEach(room => {
+            const item = document.createElement('div');
+            item.className = 'room-item';
+            item.innerHTML = `
+                <div class="room-icon">${room.icon || '📝'}</div>
+                <div class="room-name">${room.title}</div>
+            `;
+            // Maybe add delete button in future, keeping it simple for now
+            list.appendChild(item);
+        });
+    }
+}    
     // Progress
     const plans = getPlansForDate(state.ui.currentDate);
     const total = plans.length;
@@ -3895,7 +4043,7 @@ function renderTasksTab(container) {
                 <div class="empty-icon">📝</div>
                 <div class="empty-title">Нет задач</div>
                 <div class="empty-subtitle">Нажмите +, чтобы добавить задачу</div>
-                <button class="add-btn-large" onclick="showAdd()">
+                <button class="add-btn-large" data-action="ADD_TASK_MODAL">
                     Добавить первую задачу
                 </button>
             </div>
@@ -3906,9 +4054,9 @@ function renderTasksTab(container) {
         
         plans.forEach(plan => {
             html += `
-                <div class="plan ${plan.completed ? 'completed' : ''}" onclick="showTaskMenu('${plan.id}')">
+                <div class="plan ${plan.completed ? 'completed' : ''}" data-action="SHOW_TASK_MENU" data-params='{"id": "${plan.id}"}'>
                     <div class="checkbox ${plan.completed ? 'checked' : ''}" 
-                         onclick="event.stopPropagation(); handleAction('TOGGLE_TASK', {id: '${plan.id}'})"></div>
+                         data-action="TOGGLE_TASK" data-params='{"id": "${plan.id}"}'></div>
                     <div class="plan-content">
                         <div class="plan-title">
                             ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
@@ -3920,7 +4068,7 @@ function renderTasksTab(container) {
         });
         
         html += `
-            <button class="add-task-btn" onclick="showAdd()">
+            <button class="add-task-btn" data-action="ADD_TASK_MODAL">
                 <span class="add-icon">+</span>
                 Добавить задачу
             </button>
@@ -3950,9 +4098,9 @@ function renderNutritionTab(container) {
                         <div class="water-progress-fill" style="width: ${width}%"></div>
                     </div>
                     <div class="water-controls">
-                        <button class="water-btn minus" onclick="handleAction('CHANGE_WATER', {delta: -1})">−</button>
+                        <button class="water-btn minus" data-action="CHANGE_WATER" data-params='{"delta": -1}'>−</button>
                         <span class="water-current">${waterCurrent}</span>
-                        <button class="water-btn plus" onclick="handleAction('CHANGE_WATER', {delta: 1})">+</button>
+                        <button class="water-btn plus" data-action="CHANGE_WATER" data-params='{"delta": 1}'>+</button>
                     </div>
                 </div>
             </div>
@@ -4059,40 +4207,224 @@ function hideAddModal() {
 
 function hideAllModals() {
     document.querySelectorAll('.modal, .popup').forEach(m => m.style.display = 'none');
+    
+    // Hide specialized screens/overlays
+    const overlay = document.getElementById('overlay');
+    if (overlay) overlay.style.display = 'none';
+    
+    const menu = document.getElementById('menu');
+    if (menu) menu.classList.remove('active');
+    
+    const editScreen = document.getElementById('editPlanScreen');
+    if (editScreen) editScreen.style.display = 'none';
+    
+    const roomsScreen = document.getElementById('roomsScreen');
+    if (roomsScreen) roomsScreen.style.display = 'none';
+    
+    const calendar = document.getElementById('calendar');
+    if (calendar) calendar.style.display = 'none';
 }
 
-// Global exposure for legacy onclick attributes in HTML
-window.showAdd = showAddModal;
-window.hideAdd = hideAddModal;
-window.switchTab = (tab) => handleAction('SWITCH_TAB', { tab });
-window.changeDate = (days) => handleAction('CHANGE_DATE', { days });
+function hideMenu() {
+    const overlay = document.getElementById('overlay');
+    if (overlay) overlay.style.display = 'none';
+    const menu = document.getElementById('menu');
+    if (menu) menu.classList.remove('active');
+}
 
-// Task Menu (Legacy support)
-window.showTaskMenu = (id) => {
+function showEditScreen(id) {
     const task = state.plans.find(p => p.id === id);
     if (!task) return;
     
-    // Using a simple confirm as requested by "simple and predictable"
-    // Ideally we would show a custom bottom sheet, but I will assume standard confirm is safer for stability
-    // However, user said "восстановить работу Готово, Удалить, Отмена"
-    // This implies there was a menu. 
-    // I will try to implement a simple custom menu logic if the HTML exists for it.
-    // Looking at previous code, there was `showPlanMenu`.
-    
-    // I'll assume I can just use confirm for Delete for now to be safe.
-    if (confirm(`Удалить задачу "${task.title}"?`)) {
-        handleAction('DELETE_TASK', { id });
+    const screen = document.getElementById('editPlanScreen');
+    if (screen) {
+        screen.style.display = 'block';
+        
+        const titleInput = document.getElementById('editPlanTitle');
+        if (titleInput) titleInput.value = task.title;
+        
+        const dateSpan = document.getElementById('editPlanDate');
+        if (dateSpan) dateSpan.textContent = new Date(task.date).toLocaleDateString('ru-RU');
     }
-};
+}
 
-// Add Task Handler (bound to the button in modal)
-window.addTask = () => {
-    const title = document.getElementById('taskTitle')?.value;
-    const time = document.getElementById('taskTime')?.value;
-    const room = document.getElementById('taskRoom')?.value;
+function hideEditScreen() {
+    const screen = document.getElementById('editPlanScreen');
+    if (screen) screen.style.display = 'none';
+    state.ui.selectedTaskId = null;
+}
+
+function saveTaskEdit() {
+    const id = state.ui.selectedTaskId;
+    const task = state.plans.find(p => p.id === id);
+    if (!task) return;
     
-    handleAction('CREATE_TASK', { title, time, room });
-};
+    const titleInput = document.getElementById('editPlanTitle');
+    if (titleInput && titleInput.value) {
+        task.title = titleInput.value;
+    }
+}
+
+// --- RESTORED FUNCTIONS (STABLE CORE) ---
+
+// Popup System
+function showPopup(title, message, buttons = []) {
+    const popup = document.getElementById('popup');
+    if (!popup) return;
+    
+    const titleEl = popup.querySelector('.popup-title') || document.getElementById('popupTitle');
+    const msgEl = popup.querySelector('.popup-message') || document.getElementById('popupMessage');
+    const btnsEl = popup.querySelector('.popup-buttons') || document.getElementById('popupButtons');
+    
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.innerHTML = message;
+    
+    if (btnsEl) {
+        btnsEl.innerHTML = '';
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.className = `popup-btn ${btn.type || 'confirm'}`;
+            button.textContent = btn.text;
+            button.onclick = btn.action;
+            btnsEl.appendChild(button);
+        });
+    }
+    
+    popup.classList.add('show');
+    popup.style.display = 'flex';
+}
+
+function hidePopup() {
+    const popup = document.getElementById('popup');
+    if (popup) {
+        popup.classList.remove('show');
+        popup.style.display = 'none';
+    }
+}
+
+// Calendar System
+function showDatePicker() {
+    state.ui.calendarViewDate = state.ui.calendarViewDate || state.ui.currentDate;
+    renderCalendar();
+    const calendar = document.getElementById('calendar');
+    if (calendar) calendar.style.display = 'flex';
+}
+
+function hideCalendar() {
+    const calendar = document.getElementById('calendar');
+    if (calendar) calendar.style.display = 'none';
+}
+
+function changeCalendarMonth(delta) {
+    let date = new Date(state.ui.calendarViewDate || state.ui.currentDate);
+    date.setMonth(date.getMonth() + delta);
+    state.ui.calendarViewDate = date.toISOString().split('T')[0];
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const viewDate = new Date(state.ui.calendarViewDate || state.ui.currentDate);
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    const title = document.getElementById('calendarTitle');
+    if (title) title.textContent = `${monthNames[month]} ${year}`;
+    
+    const grid = document.getElementById('calendarGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - (firstDay.getDay() || 7) + 1);
+    
+    const today = new Date();
+    const selected = new Date(state.ui.currentDate);
+    
+    for (let i = 0; i < 42; i++) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+        const dStr = d.toISOString().split('T')[0];
+        
+        const btn = document.createElement('button');
+        btn.className = 'calendar-day';
+        btn.textContent = d.getDate();
+        
+        if (d.getMonth() !== month) btn.classList.add('other-month');
+        if (dStr === today.toISOString().split('T')[0]) btn.classList.add('today');
+        if (dStr === selected.toISOString().split('T')[0]) btn.classList.add('selected');
+        
+        btn.onclick = () => handleAction('SET_DATE', { date: dStr });
+        
+        grid.appendChild(btn);
+    }
+}
+
+// Rooms / Sections
+function showAddRoom() {
+    state.ui.tempIcon = '📝';
+    showRoomIconSelector();
+}
+
+function showRoomIconSelector() {
+    const icons = ['📝', '🏠', '💼', '🏃', '🍽️', '🎓', '✈️', '🛒', '💊', '💤'];
+    
+    let html = '<div class="icon-selector" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px;">';
+    icons.forEach(icon => {
+        html += `<div class="icon-option" style="font-size:24px; cursor:pointer; padding:10px; border-radius:10px; text-align:center;" 
+                 data-action="SELECT_ROOM_ICON" data-params='{"icon": "${icon}"}'>${icon}</div>`;
+    });
+    html += '</div>';
+    
+    showPopup('Выберите иконку', html, [
+        { text: 'Отмена', type: 'cancel', action: () => handleAction('HIDE_POPUP') },
+        { text: 'Далее', type: 'confirm', action: () => handleAction('SHOW_ROOM_NAME_INPUT') }
+    ]);
+}
+
+function selectRoomIcon(icon) {
+    state.ui.tempIcon = icon;
+    document.querySelectorAll('.icon-option').forEach(el => el.style.background = 'transparent');
+    const selected = Array.from(document.querySelectorAll('.icon-option')).find(el => el.textContent === icon);
+    if (selected) selected.style.background = 'var(--bg-secondary)';
+}
+
+function showRoomNameInput() {
+    showPopup(`${state.ui.tempIcon} Новый раздел`, 
+        `<input id="newRoomName" class="input" placeholder="Название раздела" autofocus>`,
+        [
+            { text: 'Отмена', type: 'cancel', action: () => handleAction('HIDE_POPUP') },
+            { text: 'Создать', type: 'confirm', action: () => {
+                const name = document.getElementById('newRoomName').value;
+                if (name) handleAction('CREATE_ROOM', { name, icon: state.ui.tempIcon });
+            }}
+        ]
+    );
+}
+
+function createRoom(name, icon) {
+    const newRoom = {
+        id: 'room_' + Date.now(),
+        title: name,
+        icon: icon
+    };
+    state.sections.push(newRoom);
+    saveState();
+}
+
+function showEditDatePicker() {
+    showPopup('Изменить дату', 'Выберите дату', [
+        { text: 'Отмена', action: hidePopup },
+        { text: 'Сегодня', action: () => { 
+            const d = new Date().toISOString().split('T')[0];
+            document.getElementById('editPlanDate').textContent = new Date(d).toLocaleDateString('ru-RU');
+            hidePopup();
+        }}
+    ]);
+}
 
 // Init
 window.addEventListener('load', initApp);

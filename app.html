@@ -946,6 +946,35 @@ body{
   gap: var(--spacing-lg);
 }
 
+/* ИНДИКАТОР ПОРЯДКА ЗАДАЧ */
+.task-order-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-right: var(--spacing-sm);
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.plan:hover .task-order-indicator {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+}
+
+.plan.completed .task-order-indicator {
+  background: var(--text-muted);
+  opacity: 0.6;
+}
+
 .plan-main-content {
   flex: 1;
   cursor: pointer;
@@ -974,7 +1003,7 @@ body{
   pointer-events: auto;
 }
 
-.edit-task-btn, .delete-task-btn {
+.edit-task-btn, .delete-task-btn, .order-up-btn, .order-down-btn {
   width: 28px;
   height: 28px;
   border-radius: 14px;
@@ -1018,7 +1047,22 @@ body{
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 
-.edit-task-btn:active, .delete-task-btn:active {
+.order-up-btn, .order-down-btn {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: var(--accent-secondary);
+  font-size: 12px;
+}
+
+.order-up-btn:hover, .order-down-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--accent-primary);
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+}
+
+.edit-task-btn:active, .delete-task-btn:active, .order-up-btn:active, .order-down-btn:active {
   transform: scale(1.05);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -3871,6 +3915,94 @@ function removeDuplicateTasks() {
   }
 }
 
+// СИСТЕМА ПРИОРИТЕТОВ И ПОРЯДКА ЗАДАЧ
+function getNextOrderForDate(dateStr) {
+  // Получаем все задачи на эту дату
+  const dateTasks = plans.filter(plan => plan.date === dateStr);
+  
+  // Находим максимальный порядок и добавляем 1
+  const maxOrder = dateTasks.reduce((max, task) => {
+    const taskOrder = task.order || 0;
+    return taskOrder > max ? taskOrder : max;
+  }, 0);
+  
+  return maxOrder + 1;
+}
+
+function moveTaskUp(taskId) {
+  const task = plans.find(p => p.id === taskId);
+  if (!task) return;
+  
+  // Получаем все задачи на эту дату, отсортированные по порядку
+  const dateTasks = plans
+    .filter(p => p.date === task.date)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  const currentIndex = dateTasks.findIndex(p => p.id === taskId);
+  
+  if (currentIndex > 0) {
+    // Меняем местами с предыдущей задачей
+    const prevTask = dateTasks[currentIndex - 1];
+    const tempOrder = task.order;
+    task.order = prevTask.order;
+    prevTask.order = tempOrder;
+    
+    savePlans();
+    render();
+    console.log(`Задача "${task.title}" перемещена вверх`);
+  }
+}
+
+function moveTaskDown(taskId) {
+  const task = plans.find(p => p.id === taskId);
+  if (!task) return;
+  
+  // Получаем все задачи на эту дату, отсортированные по порядку
+  const dateTasks = plans
+    .filter(p => p.date === task.date)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  const currentIndex = dateTasks.findIndex(p => p.id === taskId);
+  
+  if (currentIndex < dateTasks.length - 1) {
+    // Меняем местами со следующей задачей
+    const nextTask = dateTasks[currentIndex + 1];
+    const tempOrder = task.order;
+    task.order = nextTask.order;
+    nextTask.order = tempOrder;
+    
+    savePlans();
+    render();
+    console.log(`Задача "${task.title}" перемещена вниз`);
+  }
+}
+
+function setTaskOrder(taskId, newOrder) {
+  const task = plans.find(p => p.id === taskId);
+  if (!task) return;
+  
+  task.order = newOrder;
+  savePlans();
+  render();
+  console.log(`Порядок задачи "${task.title}" изменен на ${newOrder}`);
+}
+
+function reorderTasksForDate(dateStr) {
+  // Получаем все задачи на эту дату
+  const dateTasks = plans.filter(p => p.date === dateStr);
+  
+  // Сортируем по текущему порядку
+  dateTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  // Переназначаем порядок с шагом 10 для возможности вставки между задачами
+  dateTasks.forEach((task, index) => {
+    task.order = (index + 1) * 10;
+  });
+  
+  savePlans();
+  console.log(`Переупорядочены задачи для даты ${dateStr}`);
+}
+
 function isTaskDeleted(taskId) {
   return deletedTaskIds.includes(taskId);
 }
@@ -4028,20 +4160,28 @@ function getPlansForDate(date) {
   
   console.log('Отфильтрованные планы на день:', dayPlans);
   
-  // Сортируем по времени: сначала задачи с временем (по времени), потом без времени
+  // НОВАЯ СОРТИРОВКА: сначала по порядку (order), потом по времени
   const sortedPlans = dayPlans.sort((a, b) => {
-    // Если у обеих задач есть время - сортируем по времени
+    // Сначала сортируем по порядку выполнения (order)
+    const orderA = a.order || 0;
+    const orderB = b.order || 0;
+    
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    
+    // Если порядок одинаковый, сортируем по времени
     if (a.time && b.time) {
       return a.time.localeCompare(b.time);
     }
-    // Задачи с временем идут первыми
+    // Задачи с временем идут первыми при одинаковом порядке
     if (a.time && !b.time) return -1;
     if (!a.time && b.time) return 1;
     // Если у обеих нет времени - оставляем исходный порядок
     return 0;
   });
   
-  console.log('Отсортированные планы на день:', sortedPlans);
+  console.log('Отсортированные планы на день (по порядку и времени):', sortedPlans);
   return sortedPlans;
 }
 
@@ -4107,8 +4247,47 @@ function loadData() {
           }
         }
       }
+      
+      // НОВАЯ МИГРАЦИЯ: Добавляем порядок задач, если его нет
+      if (typeof plan.order === 'undefined') {
+        plan.order = 0; // Временно устанавливаем 0, позже переупорядочим
+        needsSave = true;
+        console.log(`Добавлен порядок для задачи "${plan.title}"`);
+      }
+      
       return plan;
     });
+    
+    // Переупорядочиваем задачи по датам, если были добавлены порядки
+    if (needsSave) {
+      // Группируем задачи по датам
+      const tasksByDate = {};
+      plans.forEach(plan => {
+        if (!tasksByDate[plan.date]) {
+          tasksByDate[plan.date] = [];
+        }
+        tasksByDate[plan.date].push(plan);
+      });
+      
+      // Переупорядочиваем каждую дату
+      Object.keys(tasksByDate).forEach(dateStr => {
+        const dateTasks = tasksByDate[dateStr];
+        // Сортируем по времени, потом по названию
+        dateTasks.sort((a, b) => {
+          if (a.time && b.time) return a.time.localeCompare(b.time);
+          if (a.time && !b.time) return -1;
+          if (!a.time && b.time) return 1;
+          return a.title.localeCompare(b.title);
+        });
+        
+        // Назначаем порядок
+        dateTasks.forEach((task, index) => {
+          task.order = (index + 1) * 10;
+        });
+      });
+      
+      console.log('Переупорядочены задачи по датам');
+    }
     
     // Сохраняем если были изменения
     if (needsSave) {
@@ -4323,7 +4502,8 @@ function syncSectionsToPlans(date) {
             completed: false,
             sectionId: section.id, // ID раздела
             templateId: template.id, // ID шаблона
-            createdFromSection: true // Флаг что задача создана из раздела
+            createdFromSection: true, // Флаг что задача создана из раздела
+            order: getNextOrderForDate(dateStr) // Порядок выполнения
           };
           
           plans.push(newTask);
@@ -4480,13 +4660,15 @@ function render() {
       console.log('Начинаем рендеринг планов в элемент:', plansEl);
       
       let html = '';
-      todayPlans.forEach(plan => {
+      todayPlans.forEach((plan, index) => {
         try {
           console.log('Рендерим план:', plan);
+          const orderNumber = index + 1; // Порядковый номер для отображения
           html += `
             <div class="plan-wrapper" data-plan-id="${plan.id}">
               <div class="plan ${plan.completed ? 'completed' : ''}" data-plan-id="${plan.id}">
                 <div class="plan-with-checkbox">
+                  <div class="task-order-indicator">${orderNumber}</div>
                   <div class="checkbox ${plan.completed ? 'checked' : ''}" onclick="toggleComplete('${plan.id}', event)"></div>
                   <div class="plan-main-content" onclick="handleTaskContentClick('${plan.id}', event)">
                     <div class="plan-header">
@@ -4494,6 +4676,8 @@ function render() {
                         ${plan.time ? `<span class="plan-time-inline">${plan.time}</span>` : ''}${escapeHtml(plan.title)}
                       </div>
                       <div class="plan-actions">
+                        <button class="order-up-btn" onclick="event.stopPropagation(); moveTaskUp('${plan.id}')" title="Переместить вверх">↑</button>
+                        <button class="order-down-btn" onclick="event.stopPropagation(); moveTaskDown('${plan.id}')" title="Переместить вниз">↓</button>
                         <button class="edit-task-btn" onclick="event.stopPropagation(); editPlanDirect('${plan.id}', event)" title="Редактировать">✏️</button>
                         <button class="delete-task-btn" onclick="event.stopPropagation(); deletePlanDirect('${plan.id}', event)" title="Удалить">×</button>
                       </div>
@@ -4564,6 +4748,8 @@ function handleTaskContentClick(planId, event) {
   // Если клик был по кнопкам действий, не обрабатываем
   if (event.target.classList.contains('edit-task-btn') || 
       event.target.classList.contains('delete-task-btn') ||
+      event.target.classList.contains('order-up-btn') ||
+      event.target.classList.contains('order-down-btn') ||
       event.target.closest('.plan-actions')) {
     return;
   }
@@ -4578,6 +4764,8 @@ function handleTaskClick(planElement, event) {
   if (event.target.classList.contains('checkbox') || 
       event.target.classList.contains('edit-task-btn') ||
       event.target.classList.contains('delete-task-btn') ||
+      event.target.classList.contains('order-up-btn') ||
+      event.target.classList.contains('order-down-btn') ||
       event.target.closest('.plan-actions')) {
     return;
   }
@@ -5166,7 +5354,8 @@ function savePlan() {
     date: date,
     time: time || null, // Сохраняем время (может быть null)
     room: room || null,
-    completed: false
+    completed: false,
+    order: selectedPlanId ? (plans.find(p => p.id === selectedPlanId)?.order || 0) : getNextOrderForDate(date) // Порядок выполнения
   };
   
   console.log('Создана задача:', plan);
@@ -6911,9 +7100,26 @@ function showDebugMenu() {
     [
       { text: 'Отмена', type: 'cancel', action: hidePopup },
       { text: 'Очистить дубликаты', type: 'confirm', action: manualRemoveDuplicates },
+      { text: 'Переупорядочить задачи', type: 'confirm', action: reorderCurrentDayTasks },
       { text: 'Показать статистику', type: 'confirm', action: showAppStats }
     ]
   );
+}
+
+function reorderCurrentDayTasks() {
+  hidePopup();
+  
+  setTimeout(() => {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    reorderTasksForDate(dateStr);
+    render();
+    
+    showPopup(
+      '✅ Задачи переупорядочены',
+      'Задачи на текущий день были переупорядочены по времени и названию.',
+      [{ text: 'OK', type: 'confirm', action: hidePopup }]
+    );
+  }, 100);
 }
 
 function manualRemoveDuplicates() {
@@ -8072,7 +8278,8 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
       room: 'Питание',
       completed: false,
       createdFromMeal: true, // Помечаем что задача создана из приема пищи
-      mealId: mealId // Связываем с приемом пищи
+      mealId: mealId, // Связываем с приемом пищи
+      order: getNextOrderForDate(dateStr) // Порядок выполнения
     };
     
     // Добавляем задачу в планы
@@ -8259,7 +8466,8 @@ function saveMeal(dateStr, mealType) {
       room: 'Питание',
       completed: false,
       createdFromMeal: true, // Помечаем что задача создана из приема пищи
-      mealId: mealType // Связываем с приемом пищи
+      mealId: mealType, // Связываем с приемом пищи
+      order: getNextOrderForDate(dateStr) // Порядок выполнения
     };
     
     console.log('Создали новую задачу:', newTask);

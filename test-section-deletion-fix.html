@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест исправления удаления разделов</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .storage-info { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест исправления удаления разделов</h1>
+    
+    <div class="test-step info">
+        <h3>Описание проблемы:</h3>
+        <p>Удаленные рутинные разделы возвращаются после обновления страницы</p>
+        <p><strong>Ожидаемое поведение:</strong> Удаленные разделы НЕ должны возвращаться</p>
+    </div>
+
+    <div class="test-step">
+        <h3>Шаг 1: Очистка localStorage</h3>
+        <button onclick="clearStorage()">Очистить localStorage</button>
+        <div id="clear-result"></div>
+    </div>
+
+    <div class="test-step">
+        <h3>Шаг 2: Симуляция загрузки приложения</h3>
+        <button onclick="simulateAppLoad()">Загрузить приложение</button>
+        <div id="load-result"></div>
+    </div>
+
+    <div class="test-step">
+        <h3>Шаг 3: Проверка созданных разделов</h3>
+        <button onclick="checkSections()">Проверить разделы</button>
+        <div id="sections-result"></div>
+    </div>
+
+    <div class="test-step">
+        <h3>Шаг 4: Удаление раздела</h3>
+        <button onclick="deleteTestSection()">Удалить раздел "Утренняя зарядка"</button>
+        <div id="delete-result"></div>
+    </div>
+
+    <div class="test-step">
+        <h3>Шаг 5: Симуляция перезагрузки</h3>
+        <button onclick="simulateReload()">Симулировать reload</button>
+        <div id="reload-result"></div>
+    </div>
+
+    <div class="test-step">
+        <h3>Шаг 6: Финальная проверка</h3>
+        <button onclick="finalCheck()">Проверить результат</button>
+        <div id="final-result"></div>
+    </div>
+
+    <div class="storage-info">
+        <h4>Состояние localStorage:</h4>
+        <div id="storage-state"></div>
+    </div>
+
+    <script>
+        // Копируем необходимые функции из app.html
+        let sections = [];
+        let deletedSectionIds = [];
+
+        // Функции для работы с удаленными разделами
+        function isSectionDeleted(sectionId) {
+            return deletedSectionIds.includes(sectionId);
+        }
+
+        function markSectionAsDeleted(sectionId) {
+            if (!deletedSectionIds.includes(sectionId)) {
+                deletedSectionIds.push(sectionId);
+                saveDeletedSectionIds();
+                console.log(`🗑️ Раздел помечен как удаленный: ${sectionId}`);
+            }
+        }
+
+        function saveDeletedSectionIds() {
+            try {
+                localStorage.setItem('planner_deleted_section_ids', JSON.stringify(deletedSectionIds));
+                console.log('Удаленные разделы сохранены:', deletedSectionIds);
+            } catch (e) {
+                console.error('Ошибка сохранения удаленных разделов:', e);
+            }
+        }
+
+        function loadDeletedSectionIds() {
+            try {
+                const saved = localStorage.getItem('planner_deleted_section_ids');
+                deletedSectionIds = saved ? JSON.parse(saved) : [];
+                console.log('Загружены удаленные разделы:', deletedSectionIds);
+            } catch (e) {
+                console.error('Ошибка загрузки удаленных разделов:', e);
+                deletedSectionIds = [];
+            }
+        }
+
+        function saveSections() {
+            try {
+                localStorage.setItem('planner_sections', JSON.stringify(sections));
+                console.log('Разделы сохранены:', sections);
+            } catch (e) {
+                console.error('Ошибка сохранения разделов:', e);
+            }
+        }
+
+        function loadSections() {
+            try {
+                const savedSections = localStorage.getItem('planner_sections');
+                sections = savedSections ? JSON.parse(savedSections) : [];
+                console.log(`Загружено разделов: ${sections.length}`);
+            } catch (e) {
+                console.error('Ошибка при загрузке разделов:', e);
+                sections = [];
+            }
+        }
+
+        // Симуляция создания демонстрационных разделов (ИСПРАВЛЕННАЯ ЛОГИКА)
+        function createDefaultSections() {
+            console.log('Проверяем демонстрационные разделы...');
+            
+            // Утренняя зарядка - каждый день (только если не удален и не существует)
+            if (!isSectionDeleted(1001) && !sections.find(s => s.id === 1001)) {
+                console.log('Создаем раздел: Утренняя зарядка');
+                sections.push({
+                    id: 1001,
+                    name: 'Утренняя зарядка',
+                    icon: '🏃',
+                    activityRule: { type: 'daily' },
+                    templateTasks: [
+                        { id: 1, title: 'Разминка', time: '07:00' },
+                        { id: 2, title: 'Упражнения', time: '07:15' },
+                        { id: 3, title: 'Растяжка', time: '07:30' }
+                    ],
+                    createdAt: new Date().toISOString()
+                });
+            }
+            
+            // Уборка - через день (только если не удален и не существует)
+            if (!isSectionDeleted(1002) && !sections.find(s => s.id === 1002)) {
+                console.log('Создаем раздел: Уборка дома');
+                sections.push({
+                    id: 1002,
+                    name: 'Уборка дома',
+                    icon: '🧹',
+                    activityRule: { type: 'every_other_day', value: 0 },
+                    templateTasks: [
+                        { id: 4, title: 'Пропылесосить', time: '10:00' },
+                        { id: 5, title: 'Протереть пыль', time: '10:30' }
+                    ],
+                    createdAt: new Date().toISOString()
+                });
+            }
+            
+            // Работа - только в будни (только если не удален и не существует)
+            if (!isSectionDeleted(1003) && !sections.find(s => s.id === 1003)) {
+                console.log('Создаем раздел: Рабочие задачи');
+                sections.push({
+                    id: 1003,
+                    name: 'Рабочие задачи',
+                    icon: '💼',
+                    activityRule: { type: 'weekdays', value: [1, 2, 3, 4, 5] },
+                    templateTasks: [
+                        { id: 6, title: 'Проверить почту', time: '09:00' },
+                        { id: 7, title: 'Планерка', time: '10:00' },
+                        { id: 8, title: 'Отчет за день', time: '18:00' }
+                    ],
+                    createdAt: new Date().toISOString()
+                });
+            }
+            
+            saveSections();
+            console.log('Проверка демонстрационных разделов завершена');
+        }
+
+        // Симуляция удаления раздела (ИСПРАВЛЕННАЯ ЛОГИКА)
+        function deleteSection(sectionId) {
+            const section = sections.find(s => s.id == sectionId);
+            if (!section) return false;
+            
+            // КРИТИЧЕСКИЙ ФИХ: Помечаем раздел как удаленный ПЕРЕД удалением
+            markSectionAsDeleted(sectionId);
+            
+            // Удаляем раздел
+            sections = sections.filter(s => s.id != sectionId);
+            
+            saveSections();
+            
+            console.log(`✅ Раздел "${section.name}" удален и помечен как удаленный навсегда`);
+            return true;
+        }
+
+        // Тестовые функции
+        function clearStorage() {
+            localStorage.removeItem('planner_sections');
+            localStorage.removeItem('planner_deleted_section_ids');
+            sections = [];
+            deletedSectionIds = [];
+            
+            document.getElementById('clear-result').innerHTML = 
+                '<div class="success">✅ localStorage очищен</div>';
+            updateStorageState();
+        }
+
+        function simulateAppLoad() {
+            loadDeletedSectionIds();
+            loadSections();
+            createDefaultSections();
+            
+            document.getElementById('load-result').innerHTML = 
+                `<div class="success">✅ Приложение загружено. Создано разделов: ${sections.length}</div>`;
+            updateStorageState();
+        }
+
+        function checkSections() {
+            const sectionsHtml = sections.map(s => 
+                `<li>ID: ${s.id}, Название: "${s.name}", Иконка: ${s.icon}</li>`
+            ).join('');
+            
+            document.getElementById('sections-result').innerHTML = 
+                `<div class="info">
+                    <p>Всего разделов: ${sections.length}</p>
+                    <ul>${sectionsHtml}</ul>
+                </div>`;
+            updateStorageState();
+        }
+
+        function deleteTestSection() {
+            const success = deleteSection(1001);
+            
+            document.getElementById('delete-result').innerHTML = success ?
+                '<div class="success">✅ Раздел "Утренняя зарядка" удален</div>' :
+                '<div class="error">❌ Раздел не найден</div>';
+            updateStorageState();
+        }
+
+        function simulateReload() {
+            // Симулируем полную перезагрузку
+            sections = [];
+            deletedSectionIds = [];
+            
+            // Загружаем как при старте приложения
+            loadDeletedSectionIds();
+            loadSections();
+            createDefaultSections();
+            
+            document.getElementById('reload-result').innerHTML = 
+                `<div class="info">🔄 Симуляция reload завершена. Разделов: ${sections.length}</div>`;
+            updateStorageState();
+        }
+
+        function finalCheck() {
+            const deletedSection = sections.find(s => s.id === 1001);
+            const isInDeletedList = deletedSectionIds.includes(1001);
+            
+            let result = '';
+            if (!deletedSection && isInDeletedList) {
+                result = '<div class="success">✅ ТЕСТ ПРОЙДЕН: Удаленный раздел НЕ вернулся!</div>';
+            } else if (deletedSection) {
+                result = '<div class="error">❌ ТЕСТ НЕ ПРОЙДЕН: Удаленный раздел вернулся!</div>';
+            } else {
+                result = '<div class="error">❌ ТЕСТ НЕ ПРОЙДЕН: Раздел не в списке удаленных!</div>';
+            }
+            
+            document.getElementById('final-result').innerHTML = result;
+            updateStorageState();
+        }
+
+        function updateStorageState() {
+            const sectionsData = localStorage.getItem('planner_sections');
+            const deletedData = localStorage.getItem('planner_deleted_section_ids');
+            
+            document.getElementById('storage-state').innerHTML = `
+                <p><strong>planner_sections:</strong> ${sectionsData || 'пусто'}</p>
+                <p><strong>planner_deleted_section_ids:</strong> ${deletedData || 'пусто'}</p>
+                <p><strong>В памяти sections:</strong> ${sections.length} разделов</p>
+                <p><strong>В памяти deletedSectionIds:</strong> [${deletedSectionIds.join(', ')}]</p>
+            `;
+        }
+
+        // Инициализация
+        updateStorageState();
+    </script>
+</body>
+</html>

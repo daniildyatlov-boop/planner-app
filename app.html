@@ -3637,6 +3637,7 @@ let plans = [];
 let rooms = []; // Теперь будет массив объектов {name: string, icon: string}
 let sections = []; // НОВАЯ СИСТЕМА: разделы с правилами активности и шаблонными задачами
 let deletedTaskIds = []; // КРИТИЧЕСКИЙ ФИХ: простой массив удаленных ID задач
+let deletedSectionIds = []; // КРИТИЧЕСКИЙ ФИХ: простой массив удаленных ID разделов
 let selectedPlanId = null;
 let calendarDate = new Date();
 let selectedRoomIcon = ICONS.navigation.home; // Используем единую систему иконок
@@ -3708,6 +3709,18 @@ function markTaskAsDeleted(taskId) {
   }
 }
 
+function isSectionDeleted(sectionId) {
+  return deletedSectionIds.includes(sectionId);
+}
+
+function markSectionAsDeleted(sectionId) {
+  if (!deletedSectionIds.includes(sectionId)) {
+    deletedSectionIds.push(sectionId);
+    saveDeletedSectionIds();
+    console.log(`🗑️ Раздел помечен как удаленный: ${sectionId}`);
+  }
+}
+
 function saveDeletedTaskIds() {
   try {
     localStorage.setItem('planner_deleted_task_ids', JSON.stringify(deletedTaskIds));
@@ -3724,6 +3737,25 @@ function loadDeletedTaskIds() {
   } catch (e) {
     console.error('Ошибка при загрузке удаленных задач:', e);
     deletedTaskIds = [];
+  }
+}
+
+function saveDeletedSectionIds() {
+  try {
+    localStorage.setItem('planner_deleted_section_ids', JSON.stringify(deletedSectionIds));
+  } catch (e) {
+    console.error('Ошибка при сохранении удаленных разделов:', e);
+  }
+}
+
+function loadDeletedSectionIds() {
+  try {
+    const saved = localStorage.getItem('planner_deleted_section_ids');
+    deletedSectionIds = saved ? JSON.parse(saved) : [];
+    console.log('Загружены удаленные разделы:', deletedSectionIds.length, 'ID');
+  } catch (e) {
+    console.error('Ошибка при загрузке удаленных разделов:', e);
+    deletedSectionIds = [];
   }
 }
 
@@ -3752,6 +3784,12 @@ function cleanupOldDeletedTaskIds() {
     saveDeletedTaskIds();
     console.log(`🧹 Очищены старые удаленные задачи: ${initialCount - deletedTaskIds.length}`);
   }
+}
+
+function cleanupOldDeletedSectionIds() {
+  // Для разделов не делаем автоочистку, так как они могут быть удалены навсегда
+  // Пользователь может удалить раздел и не хочет чтобы он появился через месяц
+  console.log('Удаленные разделы сохраняются навсегда');
 }
 
 // UTILS
@@ -3866,6 +3904,9 @@ function loadData() {
     
     // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи ПЕРЕД синхронизацией
     loadDeletedTaskIds();
+    
+    // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные разделы ПЕРЕД созданием разделов по умолчанию
+    loadDeletedSectionIds();
     
     console.log(`Загружено планов: ${plans.length}, разделов: ${rooms.length}`);
     console.log('Загруженные планы:', plans);
@@ -4135,11 +4176,12 @@ function initSectionsSync() {
   // Загружаем разделы
   loadSections();
   
-  // Создаем демонстрационные разделы если их нет
-  if (sections.length === 0) {
-    console.log('Создаем демонстрационные разделы...');
-    
-    // Утренняя зарядка - каждый день
+  // Создаем демонстрационные разделы индивидуально (не зависимо от общего количества)
+  console.log('Проверяем демонстрационные разделы...');
+  
+  // Утренняя зарядка - каждый день (только если не удален и не существует)
+  if (!isSectionDeleted(1001) && !sections.find(s => s.id === 1001)) {
+    console.log('Создаем раздел: Утренняя зарядка');
     sections.push({
       id: 1001, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID
       name: 'Утренняя зарядка',
@@ -4152,8 +4194,11 @@ function initSectionsSync() {
       ],
       createdAt: new Date().toISOString()
     });
-    
-    // Уборка - через день
+  }
+  
+  // Уборка - через день (только если не удален и не существует)
+  if (!isSectionDeleted(1002) && !sections.find(s => s.id === 1002)) {
+    console.log('Создаем раздел: Уборка дома');
     sections.push({
       id: 1002, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID
       name: 'Уборка дома',
@@ -4165,8 +4210,11 @@ function initSectionsSync() {
       ],
       createdAt: new Date().toISOString()
     });
-    
-    // Работа - только в будни
+  }
+  
+  // Работа - только в будни (только если не удален и не существует)
+  if (!isSectionDeleted(1003) && !sections.find(s => s.id === 1003)) {
+    console.log('Создаем раздел: Рабочие задачи');
     sections.push({
       id: 1003, // КРИТИЧЕСКИЙ ФИХ: Стабильный ID
       name: 'Рабочие задачи',
@@ -4179,10 +4227,11 @@ function initSectionsSync() {
       ],
       createdAt: new Date().toISOString()
     });
-    
-    saveSections();
-    console.log('Демонстрационные разделы созданы');
   }
+  
+  // Сохраняем разделы если были изменения
+  saveSections();
+  console.log('Проверка демонстрационных разделов завершена');
   
   // КРИТИЧЕСКИЙ ФИХ: Очищаем старые записи об удаленных задачах
   cleanupOldDeletedTaskIds();
@@ -5967,6 +6016,9 @@ function deleteSection(sectionId, event) {
   if (!section) return;
   
   if (confirm(`Удалить раздел "${section.name}"? Все связанные задачи будут удалены.`)) {
+    // КРИТИЧЕСКИЙ ФИХ: Помечаем раздел как удаленный ПЕРЕД удалением
+    markSectionAsDeleted(sectionId);
+    
     // Удаляем раздел
     sections = sections.filter(s => s.id != sectionId);
     
@@ -5989,7 +6041,7 @@ function deleteSection(sectionId, event) {
     updateRoomsSelect();
     renderPlans();
     
-    console.log(`✅ Раздел "${section.name}" удален`);
+    console.log(`✅ Раздел "${section.name}" удален и помечен как удаленный навсегда`);
   }
 }
 
@@ -6225,6 +6277,9 @@ function deleteSection(sectionId, event) {
     const initialCount = plans.length;
     plans = plans.filter(plan => plan.sectionId != sectionId);
     const removedTasksCount = initialCount - plans.length;
+    
+    // КРИТИЧЕСКИЙ ФИХ: Помечаем раздел как удаленный ПЕРЕД удалением из массива
+    markSectionAsDeleted(sectionId);
     
     // Удаляем сам раздел
     sections = sections.filter(s => s.id != sectionId);

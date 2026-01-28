@@ -1,5 +1,6 @@
 import { state } from '../state/state.js';
 import { formatDate, formatDateSubtitle } from '../utils/date.js';
+import { renderSectionsList } from './sections.js';
 
 export function renderHeader() {
     const date = new Date(state.ui.currentDate);
@@ -108,12 +109,27 @@ function populateEditScreen() {
     
     const title = document.getElementById('editPlanTitle');
     const time = document.getElementById('editPlanTime');
-    const date = document.getElementById('editPlanDate');
-    const id = document.getElementById('editPlanId'); // Hidden input?
+    const date = document.getElementById('editPlanDateInput');
     
     if (title) title.value = task.title;
     if (time) time.value = task.time || '';
-    if (date) date.textContent = formatDate(task.date);
-    // We might need to store ID somewhere to save.
-    // I'll add a hidden input or just rely on selectedTaskId in state.
+    if (date) date.value = task.date;
+    
+    // Toggles
+    const notifToggle = document.getElementById('notificationToggle');
+    if (notifToggle) {
+        if (task.notification) notifToggle.classList.add('active');
+        else notifToggle.classList.remove('active');
+    }
+    
+    const impToggle = document.getElementById('importantToggle');
+    if (impToggle) {
+        if (task.important) impToggle.classList.add('active');
+        else impToggle.classList.remove('active');
+    }
+}
+
+export function toggleSwitch(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active');
 }

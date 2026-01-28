@@ -314,6 +314,34 @@
     </div>
 
     <!-- POPUP -->
+    <!-- SECTIONS SCREEN -->
+    <div class="screen" id="sectionsScreen">
+        <div class="screen-header">
+            <button class="header-btn" data-action="CLOSE_MODAL">Назад</button>
+            <div class="modal-title">Рутинные разделы</div>
+            <button class="header-btn-primary" data-action="CLOSE_MODAL">Готово</button>
+        </div>
+        <div class="screen-content">
+            <div id="sectionsList"></div>
+        </div>
+        <button class="add-room-fab" data-action="SHOW_ADD_SECTION_MODAL">+</button>
+    </div>
+
+    <!-- ADD SECTION MODAL -->
+    <div class="modal" id="addSectionModal">
+        <div class="modal-header">
+            <button class="header-btn" data-action="CLOSE_MODAL">Отмена</button>
+            <div class="modal-title">Новый раздел</div>
+            <button class="header-btn-primary" data-action="CREATE_SECTION_FROM_MODAL">Создать</button>
+        </div>
+        <div class="modal-content">
+            <div class="form-group">
+                <label class="label">Название</label>
+                <input class="input" id="newSectionTitle" placeholder="Например: Утро">
+            </div>
+        </div>
+    </div>
+
     <div class="popup" id="popup">
         <div class="popup-content">
             <div class="popup-title" id="popupTitle">Заголовок</div>

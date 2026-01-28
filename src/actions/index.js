@@ -26,8 +26,25 @@ export function handleAction(action, params = {}) {
             break;
             
         case 'CREATE_TASK_FROM_MODAL':
-            if (params.title) {
-                Tasks.createTask(params);
+            const titleInput = document.getElementById('planTitle');
+            const dateInput = document.getElementById('planDate');
+            const timeInput = document.getElementById('planTime');
+            const roomInput = document.getElementById('planRoom');
+            
+            if (titleInput && titleInput.value.trim()) {
+                Tasks.createTask({
+                    title: titleInput.value.trim(),
+                    date: dateInput ? dateInput.value : state.ui.currentDate,
+                    time: timeInput ? timeInput.value : '',
+                    sectionId: roomInput ? roomInput.value : null
+                });
+                
+                // Clear inputs
+                titleInput.value = '';
+                if (timeInput) timeInput.value = '';
+                if (roomInput) roomInput.value = '';
+                
+                UI.closeModals();
             }
             break;
             
@@ -55,16 +72,60 @@ export function handleAction(action, params = {}) {
             break;
             
         case 'DELETE_TASK_FROM_EDIT':
-             // Assuming confirmed by event handler logic or pre-check
              if (state.ui.selectedTaskId) {
                  Tasks.deleteTask(state.ui.selectedTaskId);
              }
              break;
              
         case 'SAVE_TASK_EDIT':
-            if (params.id && params.updates) {
-                Tasks.updateTask(params.id, params.updates);
+            if (state.ui.selectedTaskId) {
+                const editTitle = document.getElementById('editPlanTitle');
+                const editDate = document.getElementById('editPlanDateInput');
+                // We can support time if needed, but sticking to basics first
+                
+                const updates = {};
+                if (editTitle) updates.title = editTitle.value.trim();
+                if (editDate && editDate.value) updates.date = editDate.value;
+                
+                // Read toggles
+                const notifToggle = document.getElementById('notificationToggle');
+                if (notifToggle) updates.notification = notifToggle.classList.contains('active');
+                
+                const impToggle = document.getElementById('importantToggle');
+                if (impToggle) updates.important = impToggle.classList.contains('active');
+                
+                Tasks.updateTask(state.ui.selectedTaskId, updates);
+                UI.closeModals();
             }
+            break;
+            
+        case 'TOGGLE_NOTIFICATION':
+            UI.toggleSwitch('notificationToggle');
+            break;
+            
+        case 'TOGGLE_IMPORTANT':
+            UI.toggleSwitch('importantToggle');
+            break;
+
+        case 'SHOW_SECTIONS':
+            UI.setModal('sections');
+            break;
+
+        case 'SHOW_ADD_SECTION_MODAL':
+            UI.setModal('add_section');
+            break;
+
+        case 'CREATE_SECTION_FROM_MODAL':
+            const sectionTitle = document.getElementById('newSectionTitle');
+            if (sectionTitle && sectionTitle.value.trim()) {
+                Sections.createSection(sectionTitle.value.trim()); // Assuming Sections.createSection exists
+                sectionTitle.value = '';
+                UI.closeModals();
+            }
+            break;
+
+        case 'DELETE_SECTION':
+            Sections.deleteSection(params.id);
             break;
             
         case 'SHOW_PROFILE_MENU':

@@ -3668,6 +3668,15 @@ textarea.input {
         </div>
         <div class="menu-btn-arrow">›</div>
       </button>
+      
+      <button class="profile-menu-btn" onclick="showDebugMenu()">
+        <div class="menu-btn-icon" id="debugIcon">🔧</div>
+        <div class="menu-btn-text">
+          <div class="menu-btn-title">Отладка</div>
+          <div class="menu-btn-desc">Очистка дубликатов и статистика</div>
+        </div>
+        <div class="menu-btn-arrow">›</div>
+      </button>
     </div>
   </div>
 </div>
@@ -3830,6 +3839,35 @@ function generateDeterministicId(type, params) {
     default:
       console.error('Неизвестный тип задачи:', type);
       return `task:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+// КРИТИЧЕСКИЙ ФИХ: Функция для удаления дубликатов задач
+function removeDuplicateTasks() {
+  console.log('🔍 Проверяем дубликаты задач...');
+  const initialCount = plans.length;
+  const seenIds = new Set();
+  const uniquePlans = [];
+  
+  plans.forEach(plan => {
+    if (!seenIds.has(plan.id)) {
+      seenIds.add(plan.id);
+      uniquePlans.push(plan);
+    } else {
+      console.log(`🗑️ Найден дубликат задачи: "${plan.title}" (ID: ${plan.id})`);
+    }
+  });
+  
+  plans = uniquePlans;
+  const removedCount = initialCount - plans.length;
+  
+  if (removedCount > 0) {
+    console.log(`✅ Удалено ${removedCount} дубликатов задач`);
+    savePlans();
+    return true;
+  } else {
+    console.log('✅ Дубликатов не найдено');
+    return false;
   }
 }
 
@@ -4105,6 +4143,10 @@ function loadData() {
       saveRooms();
       console.log('Раздел "Питание" добавлен автоматически');
     }
+    
+    // 🔍 КРИТИЧЕСКИЙ ФИХ: Проверяем и удаляем дубликаты задач после загрузки
+    removeDuplicateTasks();
+    
   } catch (e) {
     console.error('Ошибка при загрузке данных:', e);
     // Инициализируем пустыми данными в случае ошибки
@@ -4124,6 +4166,12 @@ function savePlans() {
   try {
     console.log('Сохраняем планы:', plans);
     console.log('Количество планов для сохранения:', plans.length);
+    
+    // 🔍 КРИТИЧЕСКИЙ ФИХ: Удаляем дубликаты перед сохранением
+    const hadDuplicates = removeDuplicateTasks();
+    if (hadDuplicates) {
+      console.log('Дубликаты удалены перед сохранением');
+    }
     
     const dataToSave = JSON.stringify(plans);
     console.log('JSON для сохранения:', dataToSave);
@@ -6856,6 +6904,66 @@ function showSupport() {
   );
 }
 
+function showDebugMenu() {
+  showPopup(
+    '🔧 Отладка',
+    'Выберите действие для отладки приложения:',
+    [
+      { text: 'Отмена', type: 'cancel', action: hidePopup },
+      { text: 'Очистить дубликаты', type: 'confirm', action: manualRemoveDuplicates },
+      { text: 'Показать статистику', type: 'confirm', action: showAppStats }
+    ]
+  );
+}
+
+function manualRemoveDuplicates() {
+  hidePopup();
+  
+  setTimeout(() => {
+    const removed = removeDuplicateTasks();
+    if (removed) {
+      showPopup(
+        '✅ Дубликаты удалены',
+        'Найденные дубликаты задач были успешно удалены.',
+        [{ text: 'OK', type: 'confirm', action: () => { hidePopup(); render(); } }]
+      );
+    } else {
+      showPopup(
+        '✅ Дубликатов нет',
+        'Дубликаты задач не найдены. Все задачи уникальны.',
+        [{ text: 'OK', type: 'confirm', action: hidePopup }]
+      );
+    }
+  }, 100);
+}
+
+function showAppStats() {
+  hidePopup();
+  
+  setTimeout(() => {
+    const totalTasks = plans.length;
+    const completedTasks = plans.filter(p => p.completed).length;
+    const todayTasks = getPlansForDate(currentDate).length;
+    const mealTasks = plans.filter(p => p.createdFromMeal).length;
+    const sectionTasks = plans.filter(p => p.createdFromSection).length;
+    const manualTasks = plans.filter(p => !p.createdFromMeal && !p.createdFromSection).length;
+    
+    const stats = `Всего задач: ${totalTasks}
+Выполнено: ${completedTasks}
+На сегодня: ${todayTasks}
+Из питания: ${mealTasks}
+Из разделов: ${sectionTasks}
+Ручных: ${manualTasks}
+Разделов: ${rooms.length}`;
+    
+    showPopup(
+      '📊 Статистика приложения',
+      stats,
+      [{ text: 'OK', type: 'confirm', action: hidePopup }]
+    );
+  }, 100);
+}
+
 function openSupport() {
   const message = 'Здравствуйте! У меня есть вопрос по приложению Планер v6.0.';
   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(message)}`;
@@ -7934,20 +8042,44 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     date: dateStr
   });
   
-  // Создаем новую задачу
-  const newTask = {
-    id: taskId, // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID
-    title: taskTitle,
-    date: dateStr,
-    time: taskTime,
-    room: 'Питание',
-    completed: false,
-    createdFromMeal: true, // Помечаем что задача создана из приема пищи
-    mealId: mealId // Связываем с приемом пищи
-  };
+  // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
+  if (isTaskDeleted(taskId)) {
+    console.log(`⚠️ Задача питания "${mealId}" была удалена пользователем - пропускаем создание (ID: ${taskId})`);
+    saveNutritionData();
+    renderNutritionDay();
+    if (currentTab === 'tasks') {
+      render();
+    }
+    closeMealInputModal();
+    return; // Не создаем удаленную задачу
+  }
   
-  // Добавляем задачу в планы
-  plans.push(newTask);
+  // Проверяем, не существует ли уже такая задача
+  const existingTask = plans.find(plan => plan.id === taskId);
+  
+  if (existingTask) {
+    // Обновляем существующую задачу
+    existingTask.title = taskTitle;
+    existingTask.time = taskTime;
+    console.log('Обновлена существующая задача из приема пищи:', existingTask);
+  } else {
+    // Создаем новую задачу только если её нет
+    const newTask = {
+      id: taskId, // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID
+      title: taskTitle,
+      date: dateStr,
+      time: taskTime,
+      room: 'Питание',
+      completed: false,
+      createdFromMeal: true, // Помечаем что задача создана из приема пищи
+      mealId: mealId // Связываем с приемом пищи
+    };
+    
+    // Добавляем задачу в планы
+    plans.push(newTask);
+    console.log('Автоматически создана задача из приема пищи:', newTask);
+  }
+  
   savePlans();
   
   console.log('Автоматически создана задача из приема пищи:', newTask);

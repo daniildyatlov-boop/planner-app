@@ -3894,6 +3894,60 @@ function loadData() {
     // Заполняем существующий массив
     loadedPlans.forEach(plan => plans.push(plan));
     
+    // 🧹 ОДНОРАЗОВАЯ МИГРАЦИЯ: Удаляем все рутинные задачи из localStorage
+    const migrationKey = 'planner_migration_routine_cleanup';
+    if (!localStorage.getItem(migrationKey)) {
+      console.log('🧹 МИГРАЦИЯ: Удаляем рутинные задачи из localStorage...');
+      
+      const initialCount = plans.length;
+      
+      // Удаляем все рутинные задачи по критериям:
+      // 1. sectionId != null (задачи из разделов)
+      // 2. createdFromSection === true (флаг рутинной задачи)
+      // 3. ID начинается с "section:" (детерминированный ID рутинных задач)
+      for (let i = plans.length - 1; i >= 0; i--) {
+        const plan = plans[i];
+        const isRoutineTask = plan.sectionId != null || 
+                             plan.createdFromSection === true || 
+                             (plan.id && plan.id.toString().startsWith('section:'));
+        
+        if (isRoutineTask) {
+          console.log(`🗑️ Удаляем рутинную задачу: "${plan.title}" (ID: ${plan.id})`);
+          plans.splice(i, 1);
+        }
+      }
+      
+      const removedCount = initialCount - plans.length;
+      console.log(`🧹 МИГРАЦИЯ ЗАВЕРШЕНА: удалено ${removedCount} рутинных задач из ${initialCount}`);
+      
+      // Сохраняем очищенные планы
+      if (removedCount > 0) {
+        savePlans();
+      }
+      
+      // ДОПОЛНИТЕЛЬНАЯ ОЧИСТКА: Удаляем старые ключи localStorage которые могут содержать рутинные задачи
+      const oldKeys = ['plans', 'planner_rooms']; // Старые ключи
+      oldKeys.forEach(key => {
+        if (localStorage.getItem(key)) {
+          console.log(`🧹 Удаляем старый ключ localStorage: ${key}`);
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Удаляем демонстрационные разделы которые создают рутинные задачи
+      console.log('🧹 МИГРАЦИЯ: Удаляем демонстрационные разделы...');
+      const sectionsKey = 'planner_sections';
+      if (localStorage.getItem(sectionsKey)) {
+        console.log(`🗑️ Удаляем разделы из localStorage: ${sectionsKey}`);
+        localStorage.removeItem(sectionsKey);
+        sections.length = 0; // Очищаем массив разделов в памяти
+      }
+      
+      // Устанавливаем флаг что миграция выполнена
+      localStorage.setItem(migrationKey, 'true');
+      console.log('✅ Флаг миграции установлен - больше не будет повторяться');
+    }
+    
     rooms = JSON.parse(localStorage.getItem('planner_teams') || '[]');
     
     // КРИТИЧЕСКИЙ ФИХ: Загружаем удаленные задачи ПЕРЕД синхронизацией
@@ -4080,6 +4134,13 @@ function isSectionActiveOnDate(section, date) {
 
 // Синхронизирует разделы с планами на указанную дату
 function syncSectionsToPlans(date) {
+  // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: Функция полностью отключена
+  // Разделы больше НЕ создают задачи автоматически
+  console.log('⚠️ syncSectionsToPlans ОТКЛЮЧЕНА - разделы не создают задачи');
+  return; // Выходим сразу, ничего не делаем
+  
+  // Весь код ниже отключен
+  /*
   console.log('🔄 НАЧАЛО syncSectionsToPlans для даты:', date);
   console.log(`📊 ПЕРЕД СИНХРОНИЗАЦИЕЙ: планов: ${plans.length}, удаленных ID: ${deletedTaskIds.length}`);
   
@@ -4182,6 +4243,7 @@ function syncSectionsToPlans(date) {
   if (typeof updateRoomsSelect === 'function') {
     updateRoomsSelect();
   }
+  */
 }
 
 // Инициализирует синхронизацию разделов при старте приложения

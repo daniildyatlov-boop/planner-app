@@ -2,6 +2,7 @@ import { handleAction } from '../actions/index.js';
 import { render } from '../render/index.js';
 
 export function initEventDelegation() {
+    console.log('[DELEGATION ACTIVE]');
     document.body.addEventListener('click', handleGlobalClick);
     
     // Также можно добавить обработчики для других событий, если нужно (например, change для input)
@@ -47,4 +48,11 @@ function handleGlobalClick(event) {
     
     // Вызываем единый обработчик
     handleAction(action, params);
+    
+    // После любого действия обновляем UI
+    try {
+        render();
+    } catch (e) {
+        console.error('Render error after action:', action, e);
+    }
 }

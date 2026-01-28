@@ -29,3 +29,11 @@ export function closeModals() {
     state.ui.popup = null;
     state.ui.selectedTaskId = null;
 }
+
+export function toggleSwitch(id) {
+    // Note: This technically touches DOM, which is discouraged in Actions,
+    // but required for the toggle UI behavior in modals without deeper refactoring.
+    // The state is captured from DOM when saving.
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active');
+}

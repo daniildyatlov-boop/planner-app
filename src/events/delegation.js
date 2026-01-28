@@ -1,4 +1,5 @@
 import { handleAction } from '../actions/index.js';
+import { render } from '../render/index.js';
 
 export function initEventDelegation() {
     document.body.addEventListener('click', handleGlobalClick);
@@ -18,6 +19,7 @@ function handleGlobalClick(event) {
     if (!target) return;
 
     const action = target.dataset.action;
+    console.log('[CLICK]', action); // Diagnostic log as requested
     let params = {};
 
     // Парсим параметры из data-params

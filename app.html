@@ -3710,14 +3710,18 @@ function markTaskAsDeleted(taskId) {
 }
 
 function isSectionDeleted(sectionId) {
-  return deletedSectionIds.includes(sectionId);
+  // Приводим к числу для корректного сравнения
+  const numericId = Number(sectionId);
+  return deletedSectionIds.includes(numericId);
 }
 
 function markSectionAsDeleted(sectionId) {
-  if (!deletedSectionIds.includes(sectionId)) {
-    deletedSectionIds.push(sectionId);
+  // Приводим к числу для корректного сравнения
+  const numericId = Number(sectionId);
+  if (!deletedSectionIds.includes(numericId)) {
+    deletedSectionIds.push(numericId);
     saveDeletedSectionIds();
-    console.log(`🗑️ Раздел помечен как удаленный: ${sectionId}`);
+    console.log(`🗑️ Раздел помечен как удаленный: ${numericId}`);
   }
 }
 

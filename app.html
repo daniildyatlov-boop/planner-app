@@ -4186,7 +4186,7 @@ function syncSectionsToPlans(date) {
 
 // Инициализирует синхронизацию разделов при старте приложения
 function initSectionsSync() {
-  console.log('Инициализация синхронизации разделов...');
+  console.log('Инициализация системы разделов...');
   
   // Загружаем разделы
   loadSections();
@@ -4243,10 +4243,9 @@ function initSectionsSync() {
   // КРИТИЧЕСКИЙ ФИХ: Очищаем старые записи об удаленных задачах
   cleanupOldDeletedTaskIds();
   
-  // Синхронизируем на текущую дату
-  syncSectionsToPlans(currentDate);
-  
-  console.log('Синхронизация разделов завершена');
+  // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: НЕ создаем задачи при загрузке
+  // Задачи создаются ТОЛЬКО при действиях пользователя
+  console.log('Система разделов инициализирована БЕЗ автосоздания задач');
 }
 
 // RENDER
@@ -4405,9 +4404,8 @@ function changeDay(direction) {
     // Для вкладки задач
     currentDate.setDate(currentDate.getDate() + direction);
     
-    // НОВАЯ СИСТЕМА: Синхронизируем разделы при смене даты
-    syncSectionsToPlans(currentDate);
-    
+    // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: НЕ создаем задачи при смене даты
+    // Plans - единственный источник истины
     render();
   }
 }
@@ -5441,9 +5439,8 @@ function changeCalendarMonth(direction) {
 function selectDate(selectedDate) {
   currentDate = new Date(selectedDate);
   
-  // НОВАЯ СИСТЕМА: Синхронизируем разделы при выборе даты
-  syncSectionsToPlans(currentDate);
-  
+  // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: НЕ создаем задачи при выборе даты
+  // Plans - единственный источник истины
   render();
   hideCalendar();
 }
@@ -6016,8 +6013,9 @@ function saveEditedSection(sectionId) {
     
     saveSections();
     savePlans();
-    syncSectionsToPlans(currentDate);
     
+    // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: НЕ создаем задачи при редактировании раздела
+    // Задачи создаются ТОЛЬКО при действии пользователя
     console.log(`✅ Раздел обновлен: "${name}"`);
   }
   
@@ -6282,7 +6280,8 @@ function saveNewSection() {
   sections.push(newSection);
   saveSections();
   
-  // Синхронизируем с планами
+  // АРХИТЕКТУРНОЕ ИСПРАВЛЕНИЕ: Создаем задачи ТОЛЬКО при создании раздела (ОДИН РАЗ)
+  // После этого задачи создаются ТОЛЬКО при действии пользователя
   syncSectionsToPlans(currentDate);
   
   // Обновляем отображение

@@ -3571,10 +3571,6 @@ textarea.input {
     <div class="nav-icon" id="nutritionIcon">🍽️</div>
     <div class="nav-label">Питание</div>
   </button>
-  <button class="nav-item" onclick="switchTab('habits')" data-tab="habits">
-    <div class="nav-icon" id="habitsIcon">🎯</div>
-    <div class="nav-label">Привычки</div>
-  </button>
 </div>
 
 <!-- ADD PLAN MODAL -->
@@ -3972,9 +3968,8 @@ const ICONS = {
   // Навигация и интерфейс
   navigation: {
     tasks: '📝',
-    nutrition: '🍽️', 
-    habits: '🎯',
-    home: '🏠',
+    nutrition: '🍽️',
+    home: '�','
     profile: '👤',
     settings: '⚙️',
     support: '💬',
@@ -4030,9 +4025,6 @@ function initializeIcons() {
     
     const tasksIcon = document.getElementById('tasksIcon');
     if (tasksIcon) tasksIcon.textContent = ICONS.navigation.tasks;
-    
-    const habitsIcon = document.getElementById('habitsIcon');
-    if (habitsIcon) habitsIcon.textContent = ICONS.navigation.habits;
     
     const nutritionIcon = document.getElementById('nutritionIcon');
     if (nutritionIcon) nutritionIcon.textContent = ICONS.navigation.nutrition;
@@ -7255,11 +7247,6 @@ function showTabContent(tabName) {
       // Показываем интерфейс питания (пока заглушка)
       showNutritionTab();
       break;
-      
-    case 'habits':
-      // Показываем интерфейс привычек (пока заглушка)
-      showHabitsTab();
-      break;
   }
 }
 
@@ -8486,20 +8473,6 @@ function toggleMealComplete(dateStr, mealTypeId, event) {
   } catch (e) {
     console.error('Ошибка при переключении состояния приема пищи:', e);
   }
-}
-
-function showHabitsTab() {
-  const content = document.querySelector('.content');
-  content.innerHTML = `
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
-      <div style="font-size: 48px; margin-bottom: 20px;">🎯</div>
-      <h2 style="color: var(--text-primary); margin-bottom: 12px; font-size: 24px;">Привычки</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;">Трекинг привычек и целей скоро будет доступен</p>
-      <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border-primary);">
-        <p style="color: var(--text-muted); font-size: 14px;">🚀 В разработке</p>
-      </div>
-    </div>
-  `;
 }
 
 // INIT

@@ -19,6 +19,8 @@ export function initApp() {
         // 3. Первичный рендер
         render();
 
+        initIcons();
+
         // 4. Привязка событий (Event Delegation)
         // ВАЖНО: Вызывается ПОСЛЕ рендера, как требует STABLE CORE
         initEventDelegation();

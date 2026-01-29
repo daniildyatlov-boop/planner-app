@@ -7801,6 +7801,12 @@ function showNutritionTab() {
               <div class="meal-label">➕ Добавить прием пищи</div>
               <div class="meal-content">Создать новый прием пищи</div>
             </div>
+            
+            <!-- ОТЛАДОЧНАЯ КНОПКА -->
+            <div class="meal" onclick="showDebugInfo()" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); margin-top: 10px;">
+              <div class="meal-label" style="color: #6366f1;">🔍 Показать отладку</div>
+              <div class="meal-content" style="color: #8b5cf6;">Информация о приемах пищи</div>
+            </div>
           </div>
         </div>
       </div>
@@ -7815,6 +7821,62 @@ function showNutritionTab() {
     updateNutritionDayTitle();
     console.log('✅ Данные питания отрендерены');
   }, 50);
+}
+
+// ОТЛАДОЧНАЯ ФУНКЦИЯ - показывает информацию о приемах пищи
+function showDebugInfo() {
+  const dateStr = currentNutritionDate.toISOString().split('T')[0];
+  const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
+  const dayMeals = nutritionData.meals[dateStr] || {};
+  const mealTasks = plans.filter(p => p.createdFromMeal && p.date === dateStr);
+  
+  let debugText = `🔍 ОТЛАДОЧНАЯ ИНФОРМАЦИЯ\n\n`;
+  debugText += `📅 Текущая дата: ${dateStr}\n`;
+  debugText += `📅 Дата питания: ${currentNutritionDate.toDateString()}\n\n`;
+  debugText += `📊 ТИПЫ ПРИЕМОВ ПИЩИ (${dayMealTypes.length}):\n`;
+  
+  if (dayMealTypes.length === 0) {
+    debugText += `   Нет типов приемов пищи\n`;
+  } else {
+    dayMealTypes.forEach((type, index) => {
+      debugText += `   ${index + 1}. ${type.icon} ${type.name} (ID: ${type.id})\n`;
+      debugText += `      Время: ${type.time || 'не указано'}\n`;
+    });
+  }
+  
+  debugText += `\n🍽️ ДАННЫЕ ПРИЕМОВ ПИЩИ:\n`;
+  const mealIds = Object.keys(dayMeals);
+  if (mealIds.length === 0) {
+    debugText += `   Нет данных приемов пищи\n`;
+  } else {
+    mealIds.forEach((mealId, index) => {
+      const meal = dayMeals[mealId];
+      debugText += `   ${index + 1}. ID: ${mealId}\n`;
+      debugText += `      Содержимое: ${meal.content || 'не указано'}\n`;
+      debugText += `      Время: ${meal.time || 'не указано'}\n`;
+      debugText += `      Выполнено: ${meal.completed ? 'да' : 'нет'}\n`;
+    });
+  }
+  
+  debugText += `\n📝 ЗАДАЧИ ПИТАНИЯ (${mealTasks.length}):\n`;
+  if (mealTasks.length === 0) {
+    debugText += `   Нет задач питания\n`;
+  } else {
+    mealTasks.forEach((task, index) => {
+      debugText += `   ${index + 1}. ${task.title}\n`;
+      debugText += `      ID задачи: ${task.id}\n`;
+      debugText += `      ID приема пищи: ${task.mealId}\n`;
+      debugText += `      Выполнено: ${task.completed ? 'да' : 'нет'}\n`;
+    });
+  }
+  
+  debugText += `\n📊 ОБЩАЯ СТАТИСТИКА:\n`;
+  debugText += `   Всего планов: ${plans.length}\n`;
+  debugText += `   Планов питания: ${plans.filter(p => p.createdFromMeal).length}\n`;
+  debugText += `   Планов питания на эту дату: ${mealTasks.length}\n`;
+  
+  // Показываем в alert
+  alert(debugText);
 }
 
 function initNutrition() {
@@ -8366,6 +8428,10 @@ function addNewMealType() {
   console.log('Существующие типы приемов пищи:', nutritionData.mealTypes[dateStr] || []);
   console.log('Все данные питания:', nutritionData);
   
+  // ВИЗУАЛЬНАЯ ОТЛАДКА: Показываем информацию пользователю
+  const existingMealsCount = (nutritionData.mealTypes[dateStr] || []).length;
+  const debugInfo = `Дата: ${dateStr}\nСуществующих приемов пищи: ${existingMealsCount}`;
+  
   // Проверяем, что дата корректная
   if (!dateStr || dateStr === 'Invalid Date') {
     console.error('❌ Некорректная дата питания!');
@@ -8695,6 +8761,39 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   console.log('🍽️ Текущие данные приемов пищи для дня:', nutritionData.meals[dateStr]);
   console.log('📝 Общее количество планов:', plans.length);
   console.log('🍽️ Планы питания:', plans.filter(p => p.createdFromMeal));
+  
+  // ВИЗУАЛЬНАЯ ОТЛАДКА: Показываем результат пользователю
+  const mealsCount = (nutritionData.mealTypes[dateStr] || []).length;
+  const tasksCount = plans.filter(p => p.createdFromMeal && p.date === dateStr).length;
+  
+  // Временное уведомление для пользователя
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4ade80;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    z-index: 10000;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  `;
+  notification.innerHTML = `
+    ✅ Прием пищи добавлен!<br>
+    📅 Дата: ${dateStr}<br>
+    🍽️ Всего приемов пищи: ${mealsCount}<br>
+    📝 Задач питания: ${tasksCount}
+  `;
+  document.body.appendChild(notification);
+  
+  // Убираем уведомление через 3 секунды
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 3000);
   
   saveNutritionData();
   renderNutritionDay();

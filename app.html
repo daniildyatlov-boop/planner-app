@@ -8403,8 +8403,8 @@ function selectMealType(typeId, typeName, typeIcon, defaultTime) {
       showCustomMealTypeInput(dateStr);
     }, 300);
   } else {
-    // КРИТИЧЕСКИЙ ФИХ: Для предустановленных типов используем стабильный ID
-    const uniqueId = typeId + '_' + dateStr; // Детерминированный ID на основе типа и даты
+    // ИСПРАВЛЕНО: Создаем уникальный ID с временной меткой для избежания дубликатов
+    const uniqueId = typeId + '_' + dateStr + '_' + Date.now(); // Уникальный ID с временной меткой
     setTimeout(() => {
       showMealTimeInput(dateStr, uniqueId, typeName, typeIcon, defaultTime);
     }, 300);
@@ -8444,8 +8444,8 @@ function saveCustomMealType(dateStr) {
   
   hidePopup();
   
-  // КРИТИЧЕСКИЙ ФИХ: Генерируем детерминированный ID для кастомного приема пищи
-  const uniqueId = 'custom_' + mealName.toLowerCase().replace(/\s+/g, '_') + '_' + dateStr;
+  // ИСПРАВЛЕНО: Генерируем уникальный ID для кастомного приема пищи с временной меткой
+  const uniqueId = 'custom_' + mealName.toLowerCase().replace(/\s+/g, '_') + '_' + dateStr + '_' + Date.now();
   
   setTimeout(() => {
     showMealTimeInput(dateStr, uniqueId, mealName, '🍽️', '');
@@ -8518,25 +8518,6 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   
   console.log('Сохраняем прием пищи:', { dateStr, mealId, mealName, mealIcon, mealTime, mealContent });
   
-  // КРИТИЧЕСКИЙ ФИХ: Проверяем, не существует ли уже такой тип приема пищи на эту дату
-  if (!nutritionData.mealTypes[dateStr]) {
-    nutritionData.mealTypes[dateStr] = [];
-  }
-  
-  const existingMealType = nutritionData.mealTypes[dateStr].find(m => m.id === mealId);
-  if (existingMealType) {
-    console.log(`⚠️ Прием пищи "${mealName}" уже существует на дату ${dateStr}`);
-    showPopup(
-      'Прием пищи уже существует',
-      `"${mealName}" уже добавлен на эту дату. Хотите отредактировать существующий?`,
-      [
-        { text: 'Отмена', type: 'cancel', action: () => { hidePopup(); closeMealInputModal(); } },
-        { text: 'Редактировать', type: 'confirm', action: () => { hidePopup(); closeMealInputModal(); editMeal(dateStr, mealId); } }
-      ]
-    );
-    return;
-  }
-  
   // Создаем новый тип приема пищи
   const newMealType = {
     id: mealId,
@@ -8546,6 +8527,9 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   };
   
   // Добавляем к типам приемов пищи для этого дня
+  if (!nutritionData.mealTypes[dateStr]) {
+    nutritionData.mealTypes[dateStr] = [];
+  }
   nutritionData.mealTypes[dateStr].push(newMealType);
   
   // Сортируем по времени

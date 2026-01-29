@@ -7963,6 +7963,11 @@ function renderNutritionDay() {
     const dayMealTypes = nutritionData.mealTypes[dateStr] || [];
     const dayMeals = nutritionData.meals[dateStr] || {};
     
+    console.log('🔍 Рендерим приемы пищи для даты:', dateStr);
+    console.log('📋 Типы приемов пищи:', dayMealTypes);
+    console.log('🍽️ Данные приемов пищи:', dayMeals);
+    console.log('📊 Количество типов приемов пищи:', dayMealTypes.length);
+    
     // Анимация исчезновения старого контента
     mealsContainer.style.opacity = '0';
     mealsContainer.style.transform = 'translateY(20px)';
@@ -8598,7 +8603,19 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   if (!nutritionData.mealTypes[dateStr]) {
     nutritionData.mealTypes[dateStr] = [];
   }
-  nutritionData.mealTypes[dateStr].push(newMealType);
+  
+  // КРИТИЧЕСКИЙ ФИХ: Проверяем, не существует ли уже такой тип приема пищи
+  const existingMealType = nutritionData.mealTypes[dateStr].find(m => m.id === mealId);
+  if (existingMealType) {
+    console.log('⚠️ Тип приема пищи уже существует, обновляем:', existingMealType);
+    // Обновляем существующий тип
+    existingMealType.name = mealName;
+    existingMealType.icon = mealIcon;
+    existingMealType.time = mealTime;
+  } else {
+    console.log('✅ Добавляем новый тип приема пищи:', newMealType);
+    nutritionData.mealTypes[dateStr].push(newMealType);
+  }
   
   // Сортируем по времени
   nutritionData.mealTypes[dateStr].sort((a, b) => {
@@ -8622,11 +8639,13 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   const taskTitle = `${mealIcon} ${mealName}: ${mealContent}`;
   const taskTime = mealTime || null;
   
-  // КРИТИЧЕСКИЙ ФИХ: Генерируем детерминированный ID для задачи питания
+  // КРИТИЧЕСКИЙ ФИХ: Используем полный уникальный ID приема пищи для задачи
   const taskId = generateDeterministicId('meal', {
-    mealId: mealId,
+    mealId: mealId, // Используем полный уникальный ID, а не только базовый тип
     date: dateStr
   });
+  
+  console.log('🆔 Генерируем ID задачи:', taskId, 'для приема пищи:', mealId);
   
   // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
   if (isTaskDeleted(taskId)) {
@@ -8643,36 +8662,39 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   // Проверяем, не существует ли уже такая задача
   const existingTask = plans.find(plan => plan.id === taskId);
   
+  console.log('🔍 Проверяем существующую задачу:', existingTask ? 'найдена' : 'не найдена');
+  
   if (existingTask) {
     // Обновляем существующую задачу
     existingTask.title = taskTitle;
     existingTask.time = taskTime;
-    console.log('Обновлена существующая задача из приема пищи:', existingTask);
+    console.log('✏️ Обновлена существующая задача из приема пищи:', existingTask);
   } else {
     // Создаем новую задачу только если её нет
     const newTask = {
-      id: taskId, // КРИТИЧЕСКИЙ ФИХ: Детерминированный ID
+      id: taskId, // КРИТИЧЕСКИЙ ФИХ: Уникальный ID на основе полного mealId
       title: taskTitle,
       date: dateStr,
       time: taskTime,
       room: 'Питание',
       completed: false,
       createdFromMeal: true, // Помечаем что задача создана из приема пищи
-      mealId: mealId, // Связываем с приемом пищи
+      mealId: mealId, // Связываем с приемом пищи (полный уникальный ID)
       order: getNextOrderForDate(dateStr) // Порядок выполнения
     };
     
     // Добавляем задачу в планы
     plans.push(newTask);
-    console.log('Автоматически создана задача из приема пищи:', newTask);
+    console.log('✅ Автоматически создана новая задача из приема пищи:', newTask);
   }
   
   savePlans();
   
-  console.log('Автоматически создана задача из приема пищи:', newTask);
-  
-  console.log('Текущие типы приемов пищи для дня:', nutritionData.mealTypes[dateStr]);
-  console.log('Текущие данные приемов пищи для дня:', nutritionData.meals[dateStr]);
+  console.log('💾 Данные сохранены');
+  console.log('📊 Текущие типы приемов пищи для дня:', nutritionData.mealTypes[dateStr]);
+  console.log('🍽️ Текущие данные приемов пищи для дня:', nutritionData.meals[dateStr]);
+  console.log('📝 Общее количество планов:', plans.length);
+  console.log('🍽️ Планы питания:', plans.filter(p => p.createdFromMeal));
   
   saveNutritionData();
   renderNutritionDay();
@@ -8682,6 +8704,7 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     render();
   }
   
+  console.log('✅ Прием пищи успешно сохранен и отрендерен');
   closeMealInputModal();
 }
 

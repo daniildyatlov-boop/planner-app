@@ -7879,6 +7879,61 @@ function showDebugInfo() {
   alert(debugText);
 }
 
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ СЕЛЕКТОРА ТИПОВ ПРИЕМОВ ПИЩИ
+function showMealTypeSelectorFixed(dateStr) {
+  console.log('📋 Показываем селектор типов приемов пищи для даты:', dateStr);
+  
+  // Проверяем, что дата корректная
+  if (!dateStr || dateStr === 'Invalid Date') {
+    console.error('❌ Некорректная дата в showMealTypeSelector!');
+    alert('Ошибка: некорректная дата. Попробуйте перезагрузить страницу.');
+    return;
+  }
+  
+  // Создаем модальное окно для выбора типа приема пищи
+  const modal = document.createElement('div');
+  modal.className = 'meal-type-modal';
+  modal.innerHTML = `
+    <div class="meal-type-modal-content">
+      <div class="meal-type-header">
+        <h3>🍽️ Выберите тип приема пищи</h3>
+        <button class="meal-type-close" onclick="closeMealTypeSelector()">×</button>
+      </div>
+      <div class="meal-type-options">
+        <div class="meal-type-option" onclick="selectMealType('breakfast', 'Завтрак', '🌅', '08:00')">
+          <span class="meal-type-icon">🌅</span>
+          <span class="meal-type-name">Завтрак</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('lunch', 'Обед', '🍽️', '13:00')">
+          <span class="meal-type-icon">🍽️</span>
+          <span class="meal-type-name">Обед</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('dinner', 'Ужин', '🌙', '19:00')">
+          <span class="meal-type-icon">🌙</span>
+          <span class="meal-type-name">Ужин</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('snack', 'Перекус', '🍎', '')">
+          <span class="meal-type-icon">🍎</span>
+          <span class="meal-type-name">Перекус</span>
+        </div>
+        <div class="meal-type-option" onclick="selectMealType('custom', 'Свой вариант', '🍴', '')">
+          <span class="meal-type-icon">🍴</span>
+          <span class="meal-type-name">Свой вариант</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  console.log('✅ Модальное окно добавлено в DOM');
+  
+  // Показываем модальное окно с анимацией
+  setTimeout(() => {
+    modal.classList.add('show');
+    console.log('✅ Модальное окно показано');
+  }, 10);
+}
+
 function initNutrition() {
   // Загружаем данные питания
   loadNutritionData();
@@ -8440,7 +8495,7 @@ function addNewMealType() {
   }
   
   // Показываем специальный селектор типов приемов пищи
-  showMealTypeSelector(dateStr);
+  showMealTypeSelectorFixed(dateStr);
 }
 
 function showMealTypeSelector(dateStr) {
@@ -8654,8 +8709,27 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     contentInput.focus();
     return;
   }
-  
+
   console.log('Сохраняем прием пищи:', { dateStr, mealId, mealName, mealIcon, mealTime, mealContent });
+  
+  // КРИТИЧЕСКИЙ ФИХ: Проверяем дубликаты ПЕРЕД добавлением
+  if (!nutritionData.mealTypes[dateStr]) {
+    nutritionData.mealTypes[dateStr] = [];
+  }
+  if (!nutritionData.meals[dateStr]) {
+    nutritionData.meals[dateStr] = {};
+  }
+  
+  // Проверяем, не существует ли уже такой прием пищи
+  const existingMealType = nutritionData.mealTypes[dateStr].find(m => m.id === mealId);
+  const existingMealData = nutritionData.meals[dateStr][mealId];
+  
+  if (existingMealType || existingMealData) {
+    console.log('⚠️ Прием пищи уже существует, пропускаем создание');
+    alert('Этот прием пищи уже добавлен!');
+    closeMealInputModal();
+    return;
+  }
   
   // Создаем новый тип приема пищи
   const newMealType = {
@@ -8665,23 +8739,9 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
     time: mealTime
   };
   
-  // Добавляем к типам приемов пищи для этого дня
-  if (!nutritionData.mealTypes[dateStr]) {
-    nutritionData.mealTypes[dateStr] = [];
-  }
-  
-  // КРИТИЧЕСКИЙ ФИХ: Проверяем, не существует ли уже такой тип приема пищи
-  const existingMealType = nutritionData.mealTypes[dateStr].find(m => m.id === mealId);
-  if (existingMealType) {
-    console.log('⚠️ Тип приема пищи уже существует, обновляем:', existingMealType);
-    // Обновляем существующий тип
-    existingMealType.name = mealName;
-    existingMealType.icon = mealIcon;
-    existingMealType.time = mealTime;
-  } else {
-    console.log('✅ Добавляем новый тип приема пищи:', newMealType);
-    nutritionData.mealTypes[dateStr].push(newMealType);
-  }
+  // Добавляем тип приема пищи
+  nutritionData.mealTypes[dateStr].push(newMealType);
+  console.log('✅ Добавлен новый тип приема пищи:', newMealType);
   
   // Сортируем по времени
   nutritionData.mealTypes[dateStr].sort((a, b) => {
@@ -8692,14 +8752,12 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   });
   
   // Сохраняем содержимое приема пищи
-  if (!nutritionData.meals[dateStr]) {
-    nutritionData.meals[dateStr] = {};
-  }
   nutritionData.meals[dateStr][mealId] = {
     content: mealContent,
     time: mealTime,
-    completed: false // Новые приемы пищи по умолчанию не выполнены
+    completed: false
   };
+  console.log('✅ Добавлены данные приема пищи:', nutritionData.meals[dateStr][mealId]);
   
   // 🍽️ АВТОМАТИЧЕСКИ СОЗДАЕМ ЗАДАЧУ В ПЛАНАХ
   const taskTitle = `${mealIcon} ${mealName}: ${mealContent}`;
@@ -8707,66 +8765,44 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   
   // КРИТИЧЕСКИЙ ФИХ: Используем полный уникальный ID приема пищи для задачи
   const taskId = generateDeterministicId('meal', {
-    mealId: mealId, // Используем полный уникальный ID, а не только базовый тип
+    mealId: mealId, // Используем полный уникальный ID
     date: dateStr
   });
   
   console.log('🆔 Генерируем ID задачи:', taskId, 'для приема пищи:', mealId);
   
-  // КРИТИЧЕСКИЙ ФИХ: Проверяем, не была ли эта задача удалена пользователем
-  if (isTaskDeleted(taskId)) {
-    console.log(`⚠️ Задача питания "${mealId}" была удалена пользователем - пропускаем создание (ID: ${taskId})`);
-    saveNutritionData();
-    renderNutritionDay();
-    if (currentTab === 'tasks') {
-      render();
-    }
-    closeMealInputModal();
-    return; // Не создаем удаленную задачу
-  }
-  
-  // Проверяем, не существует ли уже такая задача
+  // КРИТИЧЕСКИЙ ФИХ: Проверяем дубликаты задач
   const existingTask = plans.find(plan => plan.id === taskId);
   
-  console.log('🔍 Проверяем существующую задачу:', existingTask ? 'найдена' : 'не найдена');
-  
   if (existingTask) {
-    // Обновляем существующую задачу
-    existingTask.title = taskTitle;
-    existingTask.time = taskTime;
-    console.log('✏️ Обновлена существующая задача из приема пищи:', existingTask);
+    console.log('⚠️ Задача уже существует, пропускаем создание:', existingTask);
   } else {
-    // Создаем новую задачу только если её нет
+    // Создаем новую задачу
     const newTask = {
-      id: taskId, // КРИТИЧЕСКИЙ ФИХ: Уникальный ID на основе полного mealId
+      id: taskId,
       title: taskTitle,
       date: dateStr,
       time: taskTime,
       room: 'Питание',
       completed: false,
-      createdFromMeal: true, // Помечаем что задача создана из приема пищи
-      mealId: mealId, // Связываем с приемом пищи (полный уникальный ID)
-      order: getNextOrderForDate(dateStr) // Порядок выполнения
+      createdFromMeal: true,
+      mealId: mealId,
+      order: getNextOrderForDate(dateStr)
     };
     
     // Добавляем задачу в планы
     plans.push(newTask);
-    console.log('✅ Автоматически создана новая задача из приема пищи:', newTask);
+    console.log('✅ Создана новая задача из приема пищи:', newTask);
+    savePlans();
   }
   
-  savePlans();
+  // Сохраняем данные питания
+  saveNutritionData();
   
-  console.log('💾 Данные сохранены');
-  console.log('📊 Текущие типы приемов пищи для дня:', nutritionData.mealTypes[dateStr]);
-  console.log('🍽️ Текущие данные приемов пищи для дня:', nutritionData.meals[dateStr]);
-  console.log('📝 Общее количество планов:', plans.length);
-  console.log('🍽️ Планы питания:', plans.filter(p => p.createdFromMeal));
-  
-  // ВИЗУАЛЬНАЯ ОТЛАДКА: Показываем результат пользователю
-  const mealsCount = (nutritionData.mealTypes[dateStr] || []).length;
+  // Визуальное уведомление
+  const mealsCount = nutritionData.mealTypes[dateStr].length;
   const tasksCount = plans.filter(p => p.createdFromMeal && p.date === dateStr).length;
   
-  // Временное уведомление для пользователя
   const notification = document.createElement('div');
   notification.style.cssText = `
     position: fixed;
@@ -8788,17 +8824,15 @@ function saveMealWithAllData(dateStr, mealId, mealName, mealIcon) {
   `;
   document.body.appendChild(notification);
   
-  // Убираем уведомление через 3 секунды
   setTimeout(() => {
     if (notification.parentNode) {
       notification.parentNode.removeChild(notification);
     }
   }, 3000);
   
-  saveNutritionData();
+  // Обновляем отображение
   renderNutritionDay();
   
-  // Если мы на вкладке задач, обновляем их отображение
   if (currentTab === 'tasks') {
     render();
   }
@@ -8935,7 +8969,7 @@ function saveMeal(dateStr, mealType) {
     // 🍽️ АВТОМАТИЧЕСКИ СОЗДАЕМ ЗАДАЧУ В ПЛАНАХ
     // Получаем информацию о типе приема пищи
     const mealTypes = {
-      'breakfast': { name: 'Завтрак', icon: '�' },
+      'breakfast': { name: 'Завтрак', icon: '🌅' },
       'lunch': { name: 'Обед', icon: '🍽️' },
       'dinner': { name: 'Ужин', icon: '🌙' },
       'snack': { name: 'Перекус', icon: '🍎' }
